@@ -1,0 +1,1 @@
+linear-team-configurator-types.d.ts

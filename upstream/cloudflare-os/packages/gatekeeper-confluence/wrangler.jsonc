@@ -1,0 +1,30 @@
+{
+  "name": "gatekeeper-confluence",
+  "main": ".wrangler/validate/src/confluence.ts",
+  "build": {
+    "command": "pnpm exec capnweb-validate build --out .wrangler/validate",
+    "watch_dir": "src"
+  },
+  "compatibility_date": "2026-02-02",
+  "compatibility_flags": ["allow_irrevocable_stub_storage"],
+  "rules": [
+    { "type": "Text", "globs": ["**/*.txt", "**/*.svg"], "fallthrough": false }
+  ],
+  "migrations": [
+    {
+      "tag": "v0",
+      "new_sqlite_classes": [
+        "UserAccount",
+        "ConfluenceSiteGatekeeperImpl",
+        "ConfluenceSpaceGatekeeperImpl",
+        "ConfluenceContentGatekeeperImpl"
+      ]
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": { "invocation_logs": false }
+  }
+
+}

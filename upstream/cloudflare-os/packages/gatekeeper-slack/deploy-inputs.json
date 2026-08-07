@@ -1,0 +1,20 @@
+[
+  {
+    "name": "CLIENT_ID",
+    "kind": "secret",
+    "label": "OAuth client ID",
+    "consoleUrl": "https://api.slack.com/apps",
+    "setupSteps": [
+      "Create a Slack app (from scratch) in the workspace you want gadgets to read.",
+      "Under OAuth & Permissions, add the redirect URL below.",
+      "Enable token rotation (OAuth & Permissions > Token Rotation) — tokens are then short-lived and refreshed automatically.",
+      "Copy the app's Client ID and Client Secret (Basic Information > App Credentials) here."
+    ],
+    "redirectUriTemplate": "{PUBLIC_BASE_URL}/gatekeeper/slack/oauth"
+  },
+  {
+    "name": "CLIENT_SECRET",
+    "kind": "secret",
+    "label": "OAuth client secret"
+  }
+]

@@ -1,0 +1,8 @@
+.env
+secrets/
+qa/node_modules/
+upstream/cloudflare-os/.git/
+upstream/cloudflare-os/node_modules/
+upstream/cloudflare-os/.wrangler/
+upstream/cloudflare-os-starter/
+artifacts/source/

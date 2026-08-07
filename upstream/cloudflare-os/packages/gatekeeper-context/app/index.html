@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Sandboxed iframe: all data flows through MessagePort RPC; no network access. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; font-src data:; connect-src 'none'; worker-src 'none'; child-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none';" />
+    <title>Context Library</title>
+    <style>
+      /* The bundled palette CSS loads with the JS, so key these pre-paint fallbacks off the OS
+         preference to avoid a first-paint flash before the host pushes its resolved mode. */
+      html, body, #root { height: 100%; margin: 0; background: var(--color-kumo-base, #fffdfb); }
+      @media (prefers-color-scheme: dark) {
+        html, body, #root { background: var(--color-kumo-base, #16141d); }
+      }
+    </style>
+    <script>
+      // Set an initial data-mode before first paint from the OS preference; the host corrects it
+      // over RPC if the Workshop's explicit light/dark toggle differs.
+      document.documentElement.setAttribute(
+        'data-mode',
+        window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+      );
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,16 @@
+/* Floating panel that appears when the cursor is in a URL. Shares the shape of the activity
+ * popover: one surface, hairline border, floating shadow, and rows that pad themselves. */
+.capsuleOverlay {
+  position: absolute;
+  left: 0;
+  /* Default offset, overridden with the measured line the URL sits on. Matches
+   * CAPSULE_OVERLAY_GAP. */
+  bottom: calc(100% + 8px);
+  width: min(420px, 100%);
+  max-width: 100%;
+  z-index: 1000;
+  overflow: hidden;
+  border: 1px solid var(--color-kumo-line);
+  border-radius: 8px;
+  background: var(--color-kumo-base);
+}

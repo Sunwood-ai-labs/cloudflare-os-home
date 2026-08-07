@@ -1,0 +1,46 @@
+{
+  "name": "@gadgets/workshop-shared",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/api.js",
+  "types": "./dist/api.d.ts",
+  "exports": {
+    "./api": {
+      "types": "./src/api.ts",
+      "import": "./src/api.ts"
+    },
+    "./feature-flags": {
+      "types": "./src/feature-flags.ts",
+      "import": "./src/feature-flags.ts"
+    },
+    "./gatekeeper": {
+      "types": "./src/gatekeeper.ts",
+      "import": "./src/gatekeeper.ts"
+    },
+    "./cloudflare-gatekeeper": {
+      "types": "./src/cloudflare-gatekeeper.ts",
+      "import": "./src/cloudflare-gatekeeper.ts"
+    },
+    "./limits": {
+      "types": "./src/limits.ts",
+      "import": "./src/limits.ts"
+    },
+    "./external-message-gateway": {
+      "types": "./src/external-message-gateway.ts",
+      "import": "./src/external-message-gateway.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "types:check": "tsc --noEmit",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^5.20260722.1",
+    "capnweb": "^0.8.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,31 @@
+packages:
+  - packages/*
+
+overrides:
+  # Vitest peers can resolve vite@latest; pin 7.x until Oxc lowers Stage-3
+  # decorators (workers-sdk#12626).
+  vite: 7.3.6
+  # minimumReleaseAge gates direct deps but not these two, so pin them to the last
+  # mature release (CI verifies every lockfile entry against the release-age policy):
+  # - @types/node arrives as an optional vite/vitest peer resolved to `latest`.
+  # - @lezer/markdown is a deep transitive of @codemirror/lang-markdown.
+  '@types/node': 26.1.0
+  '@lezer/markdown': 1.6.4
+
+# Reject dependency versions published within this many minutes (24h), matching the
+# CI supply-chain policy so local installs can't commit a too-fresh lockfile.
+minimumReleaseAge: 1440
+
+minimumReleaseAgeExclude:
+  - capnweb
+  - capnweb-validate
+  - workerd
+  - "@cloudflare/workerd-*"
+
+allowBuilds:
+  '@google/genai': true
+  core-js-pure: true
+  esbuild: true
+  protobufjs: true
+  sharp: true
+  workerd: true

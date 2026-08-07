@@ -1,0 +1,28 @@
+{
+  "name": "cloudflare-os",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.17.0+sha512.cca3cea332ad254bb84145f966d19f4879615210346fc92c79a047f23a0d7b3cca3c3792f0076ba1f1831d277efbcf0a9119b31a9a60eca7fb3d6231f331ef72",
+  "scripts": {
+    "build": "pnpm run --recursive build",
+    "run-local": "node scripts/run-local.mjs",
+    "test": "node --test scripts/*.test.js && pnpm run --recursive --if-present test",
+    "dev-client": "cd packages/workshop-frontend && pnpm run dev",
+    "dev-server": "node run-dev-server.js",
+    "clean": "pnpm run --recursive clean",
+    "lint:check": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "types:check": "pnpm run --recursive --if-present types:check",
+    "lint": "pnpm run lint:check && pnpm run types:check",
+    "types:generate": "node scripts/generate-worker-types.mjs"
+  },
+  "devDependencies": {
+    "aws4fetch": "^1.0.20",
+    "jsonc-parser": "^3.3.1",
+    "oxlint": "^1.76.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.6",
+    "wrangler": "^4.119.0"
+  }
+}

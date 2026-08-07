@@ -1,0 +1,208 @@
+model_list:
+  - model_name: bedrock-mantle-grok-4.3
+    litellm_params:
+      model: bedrock_mantle/xai.grok-4.3
+      aws_region_name: us-east-1
+
+  - model_name: bedrock-mantle-gpt-oss-20b
+    litellm_params:
+      model: bedrock_mantle/openai.gpt-oss-20b
+      aws_region_name: us-east-1
+
+  - model_name: glm-4.6
+    litellm_params:
+      model: zai/glm-4.6
+      api_base: https://api.z.ai/api/coding/paas/v4
+      api_key: os.environ/ZAI_API_KEY
+      max_parallel_requests: 3
+
+  - model_name: glm-4.6v-flashx
+    litellm_params:
+      model: zai/glm-4.6v-flashx
+      api_base: https://api.z.ai/api/coding/paas/v4
+      api_key: os.environ/ZAI_API_KEY
+      max_parallel_requests: 3
+
+  - model_name: glm-4.7
+    litellm_params:
+      model: zai/glm-4.7
+      api_base: https://api.z.ai/api/coding/paas/v4
+      api_key: os.environ/ZAI_API_KEY
+      max_parallel_requests: 2
+      extra_body:
+        thinking:
+          type: disabled
+
+  - model_name: glm-image
+    litellm_params:
+      model: zai/glm-image
+      api_base: https://api.z.ai/api/coding/paas/v4
+      api_key: os.environ/ZAI_API_KEY
+      max_parallel_requests: 1
+    model_info:
+      mode: image_generation
+
+  - model_name: glm-5-turbo
+    litellm_params:
+      model: zai/glm-5-turbo
+      api_base: https://api.z.ai/api/coding/paas/v4
+      api_key: os.environ/ZAI_API_KEY
+      max_parallel_requests: 1
+
+  - model_name: glm-5v-turbo
+    litellm_params:
+      model: zai/glm-5v-turbo
+      api_base: https://api.z.ai/api/coding/paas/v4
+      api_key: os.environ/ZAI_API_KEY
+      max_parallel_requests: 1
+
+  - model_name: glm-5.1
+    litellm_params:
+      model: zai/glm-5.1
+      api_base: https://api.z.ai/api/coding/paas/v4
+      api_key: os.environ/ZAI_API_KEY
+      max_parallel_requests: 10
+
+  - model_name: glm-5.2
+    litellm_params:
+      model: zai/glm-5.2
+      api_base: https://api.z.ai/api/coding/paas/v4
+      api_key: os.environ/ZAI_API_KEY
+      max_parallel_requests: 10
+      extra_body:
+        thinking:
+          type: disabled
+
+  - model_name: glm-4.5
+    litellm_params:
+      model: zai/glm-4.5
+      api_base: https://api.z.ai/api/coding/paas/v4
+      api_key: os.environ/ZAI_API_KEY
+      max_parallel_requests: 10
+
+  - model_name: glm-4.6v
+    litellm_params:
+      model: zai/glm-4.6v
+      api_base: https://api.z.ai/api/coding/paas/v4
+      api_key: os.environ/ZAI_API_KEY
+      max_parallel_requests: 10
+
+  - model_name: glm-4.5-flash
+    litellm_params:
+      model: zai/glm-4.5-flash
+      api_key: os.environ/ZAI_API_KEY
+      extra_body:
+        thinking:
+          type: disabled
+
+  - model_name: nvidia-riva-translate-v2
+    litellm_params:
+      model: nvidia_nim/nvidia/riva-translate-4b-instruct-v2
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: os.environ/NVIDIA_API_KEY
+      max_parallel_requests: 1
+
+  - model_name: nvidia-ising-calibration-1.5-31b
+    litellm_params:
+      model: nvidia_nim/nvidia/ising-calibration-1.5-31b
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: os.environ/NVIDIA_API_KEY
+      max_parallel_requests: 1
+
+  - model_name: nvidia-nemotron-3-embed-1b
+    litellm_params:
+      model: nvidia_nim/nvidia/nemotron-3-embed-1b
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: os.environ/NVIDIA_API_KEY
+      max_parallel_requests: 1
+    model_info:
+      mode: embedding
+
+  - model_name: nvidia-inkling
+    litellm_params:
+      model: nvidia_nim/thinkingmachines/inkling
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: os.environ/NVIDIA_API_KEY
+      max_parallel_requests: 1
+
+  - model_name: nvidia-laguna-xs-2.1
+    litellm_params:
+      model: nvidia_nim/poolside/laguna-xs-2.1
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: os.environ/NVIDIA_API_KEY
+      max_parallel_requests: 1
+
+  - model_name: nvidia-glm-5.2
+    litellm_params:
+      model: nvidia_nim/z-ai/glm-5.2
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: os.environ/NVIDIA_API_KEY
+      max_parallel_requests: 1
+
+  - model_name: nvidia-minimax-m3
+    litellm_params:
+      model: nvidia_nim/minimaxai/minimax-m3
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: os.environ/NVIDIA_API_KEY
+      max_parallel_requests: 1
+
+  - model_name: gemini-gemma-4-26b-a4b-it
+    litellm_params:
+      model: gemini/gemma-4-26b-a4b-it
+      api_key: os.environ/GEMINI_API_KEY
+      max_parallel_requests: 1
+
+  - model_name: gemini-gemma-4-31b-it
+    litellm_params:
+      model: gemini/gemma-4-31b-it
+      api_key: os.environ/GEMINI_API_KEY
+      max_parallel_requests: 1
+
+  - model_name: gemini-gemma-4-26b-a4b-it-minimal
+    litellm_params:
+      model: gemini/gemma-4-26b-a4b-it
+      api_key: os.environ/GEMINI_API_KEY
+      max_parallel_requests: 1
+      extra_body:
+        generationConfig:
+          thinkingConfig:
+            thinkingLevel: minimal
+
+  - model_name: gemini-gemma-4-26b-a4b-it-high
+    litellm_params:
+      model: gemini/gemma-4-26b-a4b-it
+      api_key: os.environ/GEMINI_API_KEY
+      max_parallel_requests: 1
+      extra_body:
+        generationConfig:
+          thinkingConfig:
+            thinkingLevel: high
+
+  - model_name: gemini-gemma-4-31b-it-minimal
+    litellm_params:
+      model: gemini/gemma-4-31b-it
+      api_key: os.environ/GEMINI_API_KEY
+      max_parallel_requests: 1
+      extra_body:
+        generationConfig:
+          thinkingConfig:
+            thinkingLevel: minimal
+
+  - model_name: gemini-gemma-4-31b-it-high
+    litellm_params:
+      model: gemini/gemma-4-31b-it
+      api_key: os.environ/GEMINI_API_KEY
+      max_parallel_requests: 1
+      extra_body:
+        generationConfig:
+          thinkingConfig:
+            thinkingLevel: high
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  disable_spend_logs: true
+
+litellm_settings:
+  drop_params: true
+  request_timeout: 300
+  telemetry: false

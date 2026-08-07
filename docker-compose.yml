@@ -1,0 +1,60 @@
+services:
+  litellm:
+    build:
+      context: ./litellm
+      dockerfile: Dockerfile
+      args:
+        LITELLM_TAG: ${LITELLM_TAG:-v1.93.0}
+    image: cloudflare-os-local-litellm:${LITELLM_TAG:-v1.93.0}
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    env_file:
+      - .env
+    environment:
+      AWS_PROFILE: ${AWS_PROFILE:-default}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      BEDROCK_MANTLE_REGION: ${BEDROCK_MANTLE_REGION:-us-east-1}
+    ports:
+      - "127.0.0.1:${LITELLM_HOST_PORT:-4001}:4000"
+    volumes:
+      - ./litellm/config.yaml:/app/config.yaml:ro
+      - ./secrets/aws/config:/root/.aws/config:ro
+      - ./secrets/aws/login:/root/.aws/login:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:4000/health/liveliness')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 20s
+    restart: unless-stopped
+
+  cloudflare-os:
+    depends_on:
+      litellm:
+        condition: service_healthy
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      PUBLIC_BASE_URL: ${CFOS_PUBLIC_BASE_URL:-http://localhost:8877}
+      CFOS_DISABLE_DEV_WATCHERS: "true"
+      VITE_BACKEND_HOST: ${CFOS_BACKEND_HOST:-localhost:8877}
+      WRANGLER_DEV_IP: 0.0.0.0
+      TZ: Asia/Tokyo
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:8877:8877"
+    volumes:
+      - cloudflare-os-wrangler:/workspace/.wrangler
+      - pnpm-store:/pnpm/store
+    restart: unless-stopped
+
+volumes:
+  cloudflare-os-wrangler:
+  pnpm-store:

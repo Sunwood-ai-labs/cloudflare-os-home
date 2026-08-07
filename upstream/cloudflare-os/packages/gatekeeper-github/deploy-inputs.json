@@ -1,0 +1,20 @@
+[
+  {
+    "name": "CLIENT_ID",
+    "kind": "secret",
+    "label": "OAuth client ID",
+    "consoleUrl": "https://github.com/settings/developers",
+    "setupSteps": [
+      "In GitHub Developer settings, create a new OAuth App (an OAuth App, not a GitHub App — GitHub Apps ignore OAuth scopes).",
+      "Set the Homepage URL to your instance URL, and the Authorization callback URL to the redirect URI below.",
+      "Register the application, then generate a new client secret.",
+      "Copy the Client ID and client secret here."
+    ],
+    "redirectUriTemplate": "{PUBLIC_BASE_URL}/gatekeeper/github/oauth"
+  },
+  {
+    "name": "CLIENT_SECRET",
+    "kind": "secret",
+    "label": "OAuth client secret"
+  }
+]

@@ -1,0 +1,14 @@
+upstream/cloudflare-os/.git
+upstream/cloudflare-os/node_modules
+upstream/cloudflare-os/.wrangler
+upstream/cloudflare-os/**/node_modules
+upstream/cloudflare-os/**/dist
+upstream/cloudflare-os/**/.turbo
+upstream/cloudflare-os-starter
+artifacts
+qa/node_modules
+.env
+secrets
+litellm/config.yaml
+litellm/patch_litellm_mantle.py
+*.log

@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    // Node for the test process itself, plus Workers types for the fixture Worker and because the
+    // shared RPC API's types reference Workers globals (Fetcher, cloudflare:workers).
+    "types": ["node", "@cloudflare/workers-types"],
+    "noEmit": true,
+    "paths": {
+      "@gadgets/workshop-shared/*": ["../workshop-shared/src/*"]
+    }
+  },
+  "include": ["src", "__tests__", "fixtures"],
+  "exclude": ["node_modules"]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "@gadgets/integration-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./harness": "./src/harness.ts",
+    "./network-interceptor": "./src/network-interceptor.ts",
+    "./rpc-client": "./src/rpc-client.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "types:check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@gadgets/workshop-shared": "workspace:*",
+    "capnweb": "^0.8.0",
+    "jsonc-parser": "^3.3.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260722.1",
+    "@types/node": "^26.1.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10",
+    "wrangler": "~4.119.0"
+  }
+}

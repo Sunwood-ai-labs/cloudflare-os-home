@@ -1,0 +1,20 @@
+[
+  {
+    "name": "CLIENT_ID",
+    "kind": "secret",
+    "label": "OAuth client ID",
+    "consoleUrl": "https://www.notion.so/my-integrations",
+    "setupSteps": [
+      "Create a Notion integration and set its type to Public.",
+      "Add the redirect URI below to the integration's OAuth settings.",
+      "Enable the capabilities gadgets uses: read/insert/update content, read/insert comments, and read user information (no email needed).",
+      "Copy the OAuth client ID and client secret here."
+    ],
+    "redirectUriTemplate": "{PUBLIC_BASE_URL}/gatekeeper/notion/oauth"
+  },
+  {
+    "name": "CLIENT_SECRET",
+    "kind": "secret",
+    "label": "OAuth client secret"
+  }
+]

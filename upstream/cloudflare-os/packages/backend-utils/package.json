@@ -1,0 +1,35 @@
+{
+  "name": "@gadgets/backend-utils",
+  "version": "1.0.0",
+  "description": "Shared Worker-side libraries; not a standalone deployable Worker.",
+  "type": "module",
+  "exports": {
+    "./logger": {
+      "types": "./src/logger.ts",
+      "import": "./src/logger.ts"
+    },
+    "./observability-context": {
+      "types": "./src/observability-context.ts",
+      "import": "./src/observability-context.ts"
+    },
+    "./error-reporting": {
+      "types": "./src/error-reporting.ts",
+      "import": "./src/error-reporting.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "types:check": "tsc --noEmit && tsc -p tsconfig.type-tests.json",
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@gadgets/error-reporting": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.18.8",
+    "@cloudflare/workers-types": "^5.20260722.1",
+    "vitest": "^4.1.10"
+  }
+}

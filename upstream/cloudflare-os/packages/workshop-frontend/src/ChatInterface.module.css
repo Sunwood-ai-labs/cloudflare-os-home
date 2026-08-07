@@ -1,0 +1,186 @@
+/* ── Markdown content ─────────────────────────────────────────────────────── */
+.markdownContent {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.markdownContent p { margin: 0.4em 0; }
+.markdownContent p:first-child { margin-top: 0; }
+.markdownContent p:last-child  { margin-bottom: 0; }
+
+.markdownContent h1,
+.markdownContent h2,
+.markdownContent h3,
+.markdownContent h4 {
+  margin: 0.9em 0 0.4em;
+  font-weight: 600;
+  color: var(--text-color-kumo-default);
+}
+.markdownContent h1:first-child,
+.markdownContent h2:first-child,
+.markdownContent h3:first-child { margin-top: 0; }
+
+.markdownContent code {
+  background-color: var(--color-kumo-tint);
+  color: var(--color-kumo-brand);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85em;
+}
+
+.markdownContent pre {
+  background-color: var(--color-kumo-elevated);
+  border: 1px solid var(--color-kumo-line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  overflow-x: auto;
+  margin: 0.5em 0;
+}
+.markdownContent pre code {
+  background: none;
+  color: var(--text-color-kumo-default);
+  padding: 0;
+  font-size: 0.8em;
+}
+
+.markdownContent ul,
+.markdownContent ol {
+  margin: 0.4em 0;
+  padding-left: 1.5em;
+}
+.markdownContent ul {
+  list-style-type: disc;
+}
+.markdownContent ol {
+  list-style-type: decimal;
+}
+.markdownContent li { margin: 0.2em 0; }
+
+.markdownContent blockquote {
+  margin: 0.5em 0;
+  padding-left: 0.75em;
+  border-left: 2px solid var(--color-kumo-line);
+  color: var(--text-color-kumo-subtle);
+}
+
+.markdownContent a {
+  color: var(--color-kumo-brand);
+  text-decoration: none;
+}
+.markdownContent a:hover { text-decoration: underline; }
+
+.markdownContent hr {
+  border: none;
+  border-top: 1px solid var(--color-kumo-line);
+  margin: 0.8em 0;
+}
+
+.markdownTableWrapper {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.markdownContent table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.5em 0;
+  font-size: 0.85em;
+}
+.markdownContent th,
+.markdownContent td {
+  border: 1px solid var(--color-kumo-line);
+  padding: 0.4em 0.6em;
+  text-align: left;
+}
+.markdownContent th {
+  background-color: var(--color-kumo-elevated);
+  font-weight: 600;
+}
+.markdownContent img { max-width: 100%; height: auto; }
+
+/* ── Chat input ───────────────────────────────────────────────────────────── */
+.chatInputRoot {
+  container-type: inline-size;
+}
+
+.attachLabelText {
+  display: inline;
+}
+
+@container (max-width: 460px) {
+  .attachLabelText {
+    display: none;
+  }
+}
+
+/* ── Streaming placeholder ────────────────────────────────────────────────── */
+.thinkingShimmer {
+  color: var(--text-color-kumo-inactive);
+  background: linear-gradient(
+    90deg,
+    var(--text-color-kumo-inactive) 0%,
+    var(--text-color-kumo-subtle) 45%,
+    var(--text-color-kumo-inactive) 90%
+  );
+  background-size: 220% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: thinking-shimmer 1.8s linear infinite;
+}
+
+@keyframes thinking-shimmer {
+  from { background-position: 140% 0; }
+  to { background-position: -80% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thinkingShimmer {
+    animation: none;
+    background: none;
+    -webkit-text-fill-color: currentColor;
+  }
+}
+
+/* ── Observation markdown (inline, compact) ───────────────────────────────── */
+.observationMarkdown { line-height: 1.5; }
+.observationMarkdown p { margin: 0.2em 0; display: inline; }
+.observationMarkdown code {
+  background-color: var(--color-kumo-tint);
+  color: var(--color-kumo-brand);
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85em;
+}
+
+/* ── Composer text ────────────────────────────────────────────────────────── */
+/* Stacks the textarea over the mirror that paints its text (see ComposerMirror.module.css). */
+.capsuleInputWrapper {
+  position: relative;
+  flex: 1;
+}
+
+/* ── Capsule in messages ──────────────────────────────────────────────────── */
+/* A capsule reads as a mention: the vendor's logo leading a brand-colored title. It links to the
+ * resource, taking its color and hover underline from `.markdownContent a`. */
+.capsuleMention {
+  color: var(--color-kumo-brand);
+}
+/* A format's icon is an inline SVG rather than an <img>, so it takes currentColor and needs only to
+ * be nudged onto the text baseline. Spacing matches the capsule logo so the two read alike. */
+.capsuleMention .formatMentionIcon {
+  display: inline-block;
+  margin-right: 0.3em;
+  vertical-align: -0.15em;
+}
+
+/* Two classes to outrank `.markdownContent img`, which would otherwise reset the height. Height-only
+ * sizing keeps non-square logos in aspect. */
+.capsuleMention .capsuleMentionLogo {
+  display: inline-block;
+  height: 0.9em;
+  width: auto;
+  margin-right: 0.35em;
+  vertical-align: -0.1em;
+}

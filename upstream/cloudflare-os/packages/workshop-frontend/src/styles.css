@@ -1,0 +1,828 @@
+@source "../node_modules/@cloudflare/kumo/dist/**/*.{js,jsx,ts,tsx}";
+@import "@cloudflare/kumo/styles";
+@import "tailwindcss";
+@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
+
+@theme {
+  /* ===== FONTS ===== */
+  --font-sans: "FT Kunst Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Roboto", "Helvetica Neue", sans-serif;
+  --font-mono: "Apercu Mono Pro", "SF Mono", Menlo, Monaco, Consolas, monospace;
+
+  /* ===== TEXT SIZES (restore Tailwind defaults, overriding Kumo's 12/13/14/16px) ===== */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+
+  /* ===== KUMO SEMANTIC COLOR OVERRIDES =====
+     Near-neutral, barely-warm greys for every surface, border, and neutral text. The brand orange
+     is reserved for *intent only* (active item, links, primary action, focus) so it actually pops.
+     This is the single biggest lever between a "consumer/playground" feel and an enterprise one. */
+
+  /* Background tokens — near-white neutrals with a faint warm undertone */
+  --color-kumo-base: #fcfcfb;
+  --color-kumo-elevated: #f8f8f7;
+  --color-kumo-tint: #f3f3f1;
+  --color-kumo-overlay: #fbfbfa;
+  --color-kumo-recessed: #efeeec;
+  --color-kumo-control: #ffffff;
+  --color-kumo-contrast: #14110f;
+  --color-kumo-fill: #e8e7e4;
+  --color-kumo-fill-hover: #dededb;
+  --color-kumo-interact: #cac8c3;
+
+  /* Brand — warm orange accent (intent only) */
+  --color-kumo-brand: #ff4801;
+  --color-kumo-brand-hover: #e03f00;
+
+  /* Border / line tokens — neutral hairlines */
+  --color-kumo-line: #1411100f;
+  --color-kumo-ring: #cac8c3;
+
+  /* Chat surface tokens */
+  --color-kumo-bubble-user: #f1f0ee;
+
+  /* Status tints — keep functional colors, warm the tints */
+  --color-kumo-info: oklch(62.3% 0.214 259.815);
+  --color-kumo-info-tint: oklch(90% 0.06 250);
+  --color-kumo-warning: oklch(79.5% 0.184 86.047);
+  --color-kumo-warning-tint: oklch(92% 0.08 85);
+  --color-kumo-danger: oklch(63.7% 0.237 25.331);
+  --color-kumo-danger-tint: oklch(92% 0.06 25);
+  --color-kumo-success: oklch(72.3% 0.219 149.579);
+  --color-kumo-success-tint: oklch(92% 0.08 150);
+
+  /* Tooltip */
+  --color-kumo-tip-shadow: #14111014;
+  --color-kumo-tip-stroke: transparent;
+
+  /* Text color tokens — near-neutral greys (faint warm undertone, no brown) */
+  --text-color-kumo-default: #1c1a18;
+  --text-color-kumo-default-hover: #100f0d;
+  --text-color-kumo-inverse: #ffffff;
+  --text-color-kumo-strong: #100f0d;
+  --text-color-kumo-subtle: oklch(52% 0.006 60);
+  --text-color-kumo-inactive: oklch(66% 0.005 60);
+  --text-color-kumo-brand: #ff4801;
+  --text-color-kumo-link: #ff4801;
+  --text-color-kumo-success: oklch(72.3% 0.219 149.579);
+  --text-color-kumo-danger: oklch(63.7% 0.237 25.331);
+  --text-color-kumo-warning: oklch(47.6% 0.114 61.907);
+
+  /* ===== CUSTOM BRAND TOKENS (for direct use alongside Kumo tokens) ===== */
+  --color-accent-100: #ff4801;
+  --color-accent-200: #ff7038;
+  --color-background-100: #fcfcfb;
+  --color-background-200: #f8f8f7;
+  --color-background-300: #f3f3f1;
+  --color-foreground-100: #100f0d;
+  --color-foreground-200: #100f0d;
+  --color-foreground-300: #1c1a18;
+  --color-border-100: #e8e7e4;
+  --color-border-100-50: #e8e7e480;
+  --color-selection-bg: #ffe9e0;
+  --color-selection-text: #ff500a;
+  --color-shadow-accent-light: #ffa683;
+  --color-shadow-accent-dark: #b13200;
+
+  /* Category colors */
+  --color-compute-100: #0a95ff;
+  --color-compute-200: #0a95ff1a;
+  --color-storage-100: #ee0ddb;
+  --color-storage-200: #ee0ddb1a;
+  --color-ai-100: #19e306;
+  --color-ai-200: #f2f5e1;
+  --color-media-100: #9616ff;
+  --color-media-200: #f8ebee;
+
+  /* Status colors */
+  --color-status-live: oklch(72.3% 0.219 149.579);
+  --color-status-draft: oklch(68.1% 0.162 75.834);
+  --color-status-building: oklch(62.3% 0.214 259.815);
+
+  /* Spacing / layout */
+  --spacing: 0.25rem;
+  --container-md: 28rem;
+  --container-lg: 32rem;
+  --container-2xl: 42rem;
+  --container-3xl: 48rem;
+  --container-4xl: 56rem;
+
+  /* Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+
+  /* Transitions.
+     Default CSS curves are too weak to feel intentional; keep them for legacy callers but add
+     stronger custom variants (per Emil Kowalski's guidance) for UI motion:
+       --ease-out-strong    entrances / responsive feedback (starts fast)
+       --ease-in-out-strong on-screen movement / morphing
+       --ease-drawer        iOS-like drawer/sheet curve */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --default-transition-duration: 0.15s;
+  --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Shadows */
+  --shadow-stack: 1px 6px 6px 0 #fff3 inset, 0 0 0px 0 #ffffff59 inset,
+    0 4px 12px 0 #00000005, 0 0 0px 0 #00000005, 0 2px 12px 0 #00000008;
+}
+
+[data-mode="dark"] {
+  /* Seal-inspired dark palette: violet-tinted surfaces around hue 285, not neutral black. */
+  --color-kumo-base: oklch(0.115 0.012 285);
+  --color-kumo-elevated: oklch(0.155 0.011 285);
+  --color-kumo-tint: oklch(0.225 0.025 285);
+  --color-kumo-overlay: oklch(0.155 0.011 285);
+  --color-kumo-recessed: oklch(0.1 0.012 285);
+  --color-kumo-control: oklch(0.155 0.011 285);
+  --color-kumo-contrast: var(--color-kumo-brand);
+  --color-kumo-strong: var(--color-kumo-brand-hover);
+  --color-kumo-fill: oklch(0.225 0.025 285);
+  --color-kumo-fill-hover: oklch(0.295 0.045 285);
+  --color-kumo-interact: oklch(0.34 0.022 285);
+  --color-kumo-line: oklch(0.34 0.022 285);
+  --color-kumo-ring: oklch(0.52 0.065 285);
+  --color-kumo-bubble-user: oklch(0.225 0.025 285);
+
+  --color-kumo-brand: #b84e00;
+  --color-kumo-brand-hover: #a54200;
+
+  --color-kumo-info: oklch(62.3% 0.214 259.815);
+  --color-kumo-info-tint: oklch(0.25 0.065 259.815);
+  --color-kumo-warning: oklch(55.5% 0.163 48.998);
+  --color-kumo-warning-tint: oklch(0.27 0.06 84.429);
+  --color-kumo-danger: oklch(50.5% 0.213 27.518);
+  --color-kumo-danger-tint: oklch(0.25 0.065 25.331);
+  --color-kumo-success: oklch(52.7% 0.154 150.069);
+  --color-kumo-success-tint: oklch(0.25 0.06 150.069);
+
+  --color-kumo-tip-shadow: #00000066;
+  --color-kumo-tip-stroke: oklch(0.34 0.022 285);
+
+  --text-color-kumo-default: oklch(0.92 0.01 285);
+  --text-color-kumo-default-hover: oklch(0.97 0.006 285);
+  --text-color-kumo-inverse: #ffffff;
+  --text-color-kumo-strong: oklch(0.92 0.01 285);
+  --text-color-kumo-subtle: oklch(0.66 0.02 285);
+  --text-color-kumo-inactive: oklch(0.58 0.025 285);
+  --text-color-kumo-brand: #ff8a5c;
+  --text-color-kumo-link: #ff8a5c;
+  --text-color-kumo-success: oklch(79.2% 0.209 151.711);
+  --text-color-kumo-danger: oklch(70.4% 0.191 22.216);
+  --text-color-kumo-warning: oklch(82.8% 0.189 84.429);
+
+  --color-accent-100: #b84e00;
+  --color-accent-200: #ff8a5c;
+  --color-background-100: oklch(0.115 0.012 285);
+  --color-background-200: oklch(0.155 0.011 285);
+  --color-background-300: oklch(0.225 0.025 285);
+  --color-foreground-100: oklch(0.92 0.01 285);
+  --color-foreground-200: oklch(0.78 0.018 285);
+  --color-foreground-300: oklch(0.66 0.02 285);
+  --color-border-100: oklch(0.34 0.022 285);
+  --color-border-100-50: oklch(0.34 0.022 285 / 0.5);
+  --color-selection-bg: color-mix(in srgb, var(--color-kumo-brand) 28%, transparent);
+  --color-selection-text: oklch(0.97 0.006 285);
+  --color-shadow-accent-light: #ff663355;
+  --color-shadow-accent-dark: #00000080;
+
+  --color-compute-100: oklch(74% 0.16 250);
+  --color-compute-200: oklch(0.25 0.065 250);
+  --color-storage-100: oklch(78% 0.22 325);
+  --color-storage-200: oklch(0.25 0.07 325);
+  --color-ai-100: oklch(79.2% 0.209 151.711);
+  --color-ai-200: oklch(0.25 0.06 150);
+  --color-media-100: oklch(78% 0.19 300);
+  --color-media-200: oklch(0.25 0.07 300);
+
+  --color-status-live: oklch(79.2% 0.209 151.711);
+  --color-status-draft: oklch(82.8% 0.189 84.429);
+  --color-status-building: oklch(74% 0.16 250);
+
+  --shadow-stack: 1px 6px 6px 0 #ffffff08 inset, 0 0 0 1px #ffffff05 inset,
+    0 18px 40px 0 #00000033, 0 4px 12px 0 #0000002e;
+}
+
+body {
+  @apply m-0 antialiased;
+  font-family: var(--font-sans);
+  background-color: var(--color-kumo-base);
+  color: var(--text-color-kumo-default);
+}
+
+::selection {
+  background-color: var(--color-selection-bg);
+  color: var(--color-selection-text);
+}
+
+code {
+  font-family: var(--font-mono);
+}
+
+/* Prompt input focus */
+.prompt-input {
+  border-color: var(--color-kumo-line);
+  background: var(--color-kumo-base);
+  box-shadow: var(--shadow-stack);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.prompt-input:focus-within {
+  border-color: var(--color-kumo-brand);
+  box-shadow: var(--shadow-stack), 0 0 0 3px var(--color-selection-bg);
+}
+
+/* Template card hover */
+.template-card {
+  transition: transform 0.2s var(--ease-out),
+    box-shadow 0.2s var(--ease-out);
+}
+
+.template-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar for horizontal scroll areas */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Demo link hover */
+.demo-link {
+  transition: color 0.15s var(--ease-out);
+}
+.demo-link:hover {
+  color: var(--color-kumo-brand);
+}
+
+/* Connection chip */
+.connection-chip {
+  border-color: var(--color-kumo-line);
+  background: var(--color-kumo-elevated);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.connection-chip:hover {
+  border-color: var(--color-kumo-fill);
+  background: var(--color-kumo-tint);
+}
+
+.themed-surface-inset {
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-kumo-fill) 65%, transparent);
+}
+
+.themed-inset-outline {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-kumo-fill) 65%, transparent);
+}
+
+.themed-prompt-card-shadow {
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--color-kumo-fill) 75%, transparent),
+    0 1px 2px rgba(20, 17, 16, 0.03),
+    0 10px 28px -16px rgba(20, 17, 16, 0.12);
+}
+
+.themed-prompt-card-shadow:focus-within {
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--color-kumo-fill) 85%, transparent),
+    0 1px 2px rgba(20, 17, 16, 0.04),
+    0 14px 34px -14px rgba(20, 17, 16, 0.16);
+}
+
+.themed-user-bubble-shadow {
+  box-shadow:
+    0 1px 1px rgba(82, 16, 0, 0.03),
+    inset 0 1px 0 color-mix(in srgb, var(--color-kumo-fill) 65%, transparent);
+}
+
+.themed-thumbnail-shadow {
+  box-shadow: 0 2px 14px rgba(20, 17, 16, 0.1);
+}
+
+.themed-floating-shadow {
+  box-shadow: 0 8px 20px rgba(82, 16, 0, 0.1);
+}
+
+.themed-floating-shadow-lg {
+  box-shadow: 0 14px 36px rgba(82, 16, 0, 0.1);
+}
+
+.themed-bottom-shadow {
+  box-shadow: 0 4px 10px -8px rgba(82, 16, 0, 0.1);
+}
+
+.themed-compact-shadow {
+  box-shadow: 0 8px 24px -20px rgba(82, 16, 0, 0.28);
+}
+
+.themed-compact-shadow:focus-within {
+  box-shadow: 0 10px 28px -20px rgba(82, 16, 0, 0.34);
+}
+
+.themed-card-hover-shadow:hover {
+  box-shadow: 0 8px 20px -16px rgba(82, 16, 0, 0.12);
+}
+
+.themed-row-hover-shadow:hover {
+  box-shadow: 0 8px 20px -18px rgba(82, 16, 0, 0.28);
+}
+
+.themed-accent-glow {
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-kumo-brand) 12%, transparent) 0%,
+    color-mix(in srgb, var(--color-kumo-tint) 38%, transparent) 38%,
+    transparent 70%
+  );
+}
+
+[data-mode="dark"] .themed-prompt-card-shadow {
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--color-kumo-fill-hover) 42%, transparent),
+    0 1px 2px rgba(0, 0, 0, 0.24),
+    0 10px 28px -16px rgba(0, 0, 0, 0.45);
+}
+
+[data-mode="dark"] .themed-prompt-card-shadow:focus-within {
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--color-kumo-fill-hover) 52%, transparent),
+    0 1px 2px rgba(0, 0, 0, 0.28),
+    0 14px 34px -14px rgba(0, 0, 0, 0.55);
+}
+
+[data-mode="dark"] .themed-surface-inset {
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-kumo-line) 80%, transparent);
+}
+
+[data-mode="dark"] .themed-inset-outline {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-kumo-line) 80%, transparent);
+}
+
+[data-mode="dark"] .themed-user-bubble-shadow {
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 color-mix(in srgb, var(--color-kumo-line) 80%, transparent);
+}
+
+[data-mode="dark"] .themed-thumbnail-shadow {
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.34);
+}
+
+[data-mode="dark"] .themed-floating-shadow {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.32);
+}
+
+[data-mode="dark"] .themed-floating-shadow-lg {
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.38);
+}
+
+[data-mode="dark"] .themed-bottom-shadow {
+  box-shadow: 0 4px 10px -8px rgba(0, 0, 0, 0.48);
+}
+
+[data-mode="dark"] .themed-compact-shadow {
+  box-shadow: 0 8px 24px -20px rgba(0, 0, 0, 0.5);
+}
+
+[data-mode="dark"] .themed-compact-shadow:focus-within {
+  box-shadow: 0 10px 28px -20px rgba(0, 0, 0, 0.62);
+}
+
+[data-mode="dark"] .themed-card-hover-shadow:hover {
+  box-shadow: 0 8px 20px -16px rgba(0, 0, 0, 0.55);
+}
+
+[data-mode="dark"] .themed-row-hover-shadow:hover {
+  box-shadow: 0 8px 20px -18px rgba(0, 0, 0, 0.58);
+}
+
+/* Base UI positions an anchored popup by putting a `transform` on its positioner, the element that
+   wraps the popup inside the portal. That transform makes the positioner a stacking context, so the
+   z-index the popup carries only orders it against its own siblings and counts for nothing against
+   the page: a `z-[1]` sticky table header outranked a `z-[1100]` popover. Put the z-index where the
+   stacking context is.
+
+   Matched on the popup Kumo puts inside, not on `[role="presentation"]` alone, which dialogs also
+   use for their backdrop and viewport — raising those would bury a dialog under its own backdrop. */
+[data-base-ui-portal] > [role="presentation"]:has(> .kumo-popover-popup) {
+  z-index: 1100;
+}
+
+/* Keep global notifications above dialogs, which use z-indexes up to 1200. */
+[role="region"][aria-label="Notifications"] {
+  z-index: 2000;
+}
+
+/* Toast slide-in animation */
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.25s var(--ease-out) forwards;
+}
+
+/* Share modal: inline confirm + composer entrances. */
+@keyframes share-confirm-in {
+  from {
+    opacity: 0;
+    transform: translateX(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.share-confirm-in {
+  animation: share-confirm-in 0.16s var(--ease-out) both;
+}
+
+@keyframes share-expand-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.share-expand-in {
+  animation: share-expand-in 0.18s var(--ease-out) both;
+}
+
+/* Opacity-only entrance: used where the element must not move layout (e.g. the link composer
+   swapping in place of the create trigger). */
+@keyframes share-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.share-fade-in {
+  animation: share-fade-in 0.16s var(--ease-out) both;
+}
+
+/* Newly added people / link rows briefly flash to confirm they landed. */
+@keyframes share-row-land {
+  0%,
+  20% {
+    background-color: var(--color-kumo-tint);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.share-row-land {
+  animation: share-row-land 2.2s var(--ease-out);
+}
+
+@keyframes presence-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.presence-pop-in {
+  animation: presence-pop-in 0.22s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+}
+
+@keyframes presence-pop-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+
+.presence-pop-out {
+  animation: presence-pop-out 0.13s var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .share-confirm-in,
+  .share-expand-in,
+  .share-fade-in,
+  .share-row-land,
+  .presence-pop-in,
+  .presence-pop-out {
+    animation: none;
+  }
+}
+
+/* Sidebar list scroll: thin and unobtrusive. The thumb is transparent at rest and only fades in
+   while the user is actually interacting with the rail (hover / active scroll), so the rail stays
+   calm by default. */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.2s ease;
+}
+.sidebar-scroll:hover,
+.sidebar-scroll:focus-within {
+  scrollbar-color: color-mix(in srgb, var(--color-kumo-interact) 60%, transparent) transparent;
+}
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+.sidebar-scroll:hover::-webkit-scrollbar-thumb,
+.sidebar-scroll:focus-within::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-kumo-interact) 55%, transparent);
+}
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-kumo-interact) 80%, transparent);
+}
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-scroll::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Chat panel resizer */
+.chat-panel {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-kumo-line) transparent;
+}
+
+.chat-panel::-webkit-scrollbar {
+  width: 4px;
+}
+
+.chat-panel::-webkit-scrollbar-thumb {
+  background: var(--color-kumo-line);
+  border-radius: 4px;
+}
+
+.chat-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.presence-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-kumo-line) transparent;
+}
+
+.presence-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.presence-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-kumo-line);
+  border-radius: 4px;
+}
+
+.presence-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.new-gatekeeper-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-kumo-line) 55%, transparent) transparent;
+  scrollbar-gutter: stable;
+}
+
+.new-gatekeeper-scroll-balanced {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-kumo-line) 55%, transparent) transparent;
+  scrollbar-gutter: stable both-edges;
+}
+
+.new-gatekeeper-scroll-balanced::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.new-gatekeeper-scroll-balanced::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-kumo-line) 55%, transparent);
+  border-radius: 999px;
+}
+
+.new-gatekeeper-scroll-balanced::-webkit-scrollbar-thumb:hover {
+  background: var(--color-kumo-line);
+}
+
+.new-gatekeeper-scroll-balanced::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.new-gatekeeper-scroll-balanced::-webkit-scrollbar-button {
+  display: none;
+}
+
+.new-gatekeeper-scroll::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.new-gatekeeper-scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-kumo-line) 55%, transparent);
+  border-radius: 999px;
+}
+
+.new-gatekeeper-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-kumo-line);
+}
+
+.new-gatekeeper-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.new-gatekeeper-scroll::-webkit-scrollbar-button {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .connectors-hero-flow-line {
+    animation: connectors-hero-flow 700ms linear infinite;
+    stroke: color-mix(in srgb, var(--color-kumo-brand) 52%, currentColor);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connectors-hero-flow-line {
+    animation: none;
+  }
+}
+
+.reveal-row {
+  opacity: 0;
+  transform: translateY(4px);
+  animation: reveal-row 220ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes reveal-row {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-row {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
+
+@keyframes connectors-hero-flow {
+  to {
+    stroke-dashoffset: 10;
+  }
+}
+
+/* Right panel tab active */
+.panel-tab-active {
+  color: var(--color-kumo-brand);
+  border-color: var(--color-kumo-brand);
+}
+
+.file-row-active {
+  box-shadow: inset 3px 0 0 var(--color-kumo-brand);
+}
+
+@supports (color: color-mix(in srgb, black, white)) {
+  .file-row-active {
+    box-shadow:
+      inset 3px 0 0 var(--color-kumo-brand),
+      inset 0 0 0 1px color-mix(in srgb, var(--color-kumo-brand) 28%, transparent);
+  }
+}
+
+/* Make Kumo Select dropdown options match text-sm instead of the hardcoded text-base */
+[role="listbox"] [role="option"] {
+  font-size: var(--text-sm) !important;
+  line-height: var(--text-sm--line-height) !important;
+}
+
+/* Thinking indicator shimmer */
+@keyframes thinking {
+  0% { left: -33%; }
+  50% { left: 100%; }
+  100% { left: -33%; }
+}
+
+/* Prompt breathing glow */
+@keyframes prompt-breathe {
+  0%, 100% { opacity: 0.35; transform: scale(0.95); }
+  50% { opacity: 0.55; transform: scale(1.05); }
+}
+
+.prompt-glow {
+  position: absolute;
+  inset: -24px -32px;
+  border-radius: 2rem;
+  background: radial-gradient(ellipse at center, var(--color-kumo-brand) 0%, transparent 70%);
+  opacity: 0.35;
+  filter: blur(40px);
+  z-index: -1;
+  pointer-events: none;
+  animation: prompt-breathe 5s ease-in-out infinite;
+  transition: opacity 0.6s ease;
+}
+
+.prompt-glow-hidden {
+  opacity: 0;
+  animation-play-state: paused;
+}
+
+/* The working canvas is flat. The old dotted grid read as "whiteboard/sketch/playground" and
+   undercut the enterprise feel — none of our reference apps (Linear, Claude, …) texture the
+   working surface. Kept as a no-op class so existing callers don't need to change. */
+.dotted-bg {
+  background-image: none;
+}
+
+/* Press feedback: subtle scale-down on :active so pressable elements feel like they're listening.
+   Use on buttons/triggers that are clicked occasionally (not high-frequency nav). */
+.press {
+  transition: transform 140ms var(--ease-out-strong);
+}
+.press:active {
+  transform: scale(0.97);
+}
+/* :active applies to ancestors too, so pressing a nested control (e.g. a card's overflow menu)
+   would otherwise animate the whole card as if the card itself had been clicked. Mark such
+   subtrees `press-exempt` to opt them out. */
+.press:has(.press-exempt:active) {
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .press {
+    transition: none;
+  }
+  .press:active {
+    transform: none;
+  }
+}
+
+/* Kumo Select: use text-sm consistently for trigger and dropdown options.
+   The trigger can be overridden via className, but the dropdown options have
+   hardcoded text-base with no override mechanism — this global rule fixes it. */
+[role="listbox"] [role="option"] {
+  font-size: 0.875rem !important; /* text-sm: 14px */
+  line-height: 1.25rem !important;
+}
+
+/* Prevent body scroll on desktop home page (two-column layout) */
+@media (min-width: 1024px) {
+  body:has(.home-layout) {
+    overflow-y: hidden;
+  }
+}
+
+/* Keep the app header from sitting above modal backdrops without depending on
+   Kumo's internal backdrop class names. */
+body:has([role="dialog"], [role="alertdialog"]) .app-header {
+  z-index: 0;
+}
