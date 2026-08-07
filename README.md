@@ -150,10 +150,7 @@ For the interpretation behind these images, see the [evidence guide](https://sun
 
 ## 🔬 Investigation trail
 
-The gallery above is the short version. Expand this section to see the wider UI trail behind the conclusions: setup, model configuration, chat persistence, network routing, Tailscale, and the agent run.
-
-<details>
-<summary>Open the complete verified UI set</summary>
+The gallery above is the short version. The sections below keep the wider UI trail visible: setup, model configuration, chat persistence, network routing, Tailscale, and the agent run.
 
 ### Setup and capability surface
 
@@ -200,8 +197,6 @@ The gallery above is the short version. Expand this section to see the wider UI 
 </table>
 
 The [research log](RESEARCH-LOG.md) contains the Open WebUI comparison, cost notes, source-code findings, and the distinction between what was observed locally and what remains unverified. No Open WebUI UI screenshot was captured in this run, so that comparison is not presented as image evidence.
-
-</details>
 
 ## 🧪 Verification
 
