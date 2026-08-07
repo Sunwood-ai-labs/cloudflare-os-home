@@ -1,5 +1,17 @@
 # Verification inventory
 
+The runtime results below were captured during the initial integration pass. Repository polish checks were added on 2026-08-07.
+
+## Repository polish QA
+
+- [x] English and Japanese README entry points are present and cross-linked.
+- [x] VitePress builds both locales with dead-link checking enabled.
+- [x] GitHub Actions workflows cover documentation builds, public-payload checks, and Pages deployment.
+- [x] Logo, favicon, and OGP assets are wired into the documentation site.
+- [x] `npm audit --omit=dev --audit-level=high` reports no production dependency vulnerabilities.
+- [x] Local-only `.env`, AWS files, and source screenshots remain excluded from the public payload.
+- [x] Docker Compose services are healthy on 2026-08-07; Cloudflare OS and LiteLLM HTTP smoke checks returned 200.
+
 ## Functional checks
 
 - [x] Compose configuration validates.

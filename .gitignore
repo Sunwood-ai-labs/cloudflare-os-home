@@ -6,3 +6,7 @@ upstream/cloudflare-os/node_modules/
 upstream/cloudflare-os/.wrangler/
 upstream/cloudflare-os-starter/
 artifacts/source/
+docs/node_modules/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+docs/.vitepress/.temp/

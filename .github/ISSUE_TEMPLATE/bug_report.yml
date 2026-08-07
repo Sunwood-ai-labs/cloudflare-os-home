@@ -1,0 +1,37 @@
+name: Bug report
+description: Report a reproducible problem with the local lab.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please remove credentials, private hostnames, Workspace IDs, and personal screenshots before submitting.
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Docker Desktop version, and whether the Linux engine is enabled.
+      placeholder: Windows 11, Docker Desktop 4.x, Linux engine enabled
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include the smallest reproducible sequence.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Paste redacted logs or link to a sanitized screenshot.
+      render: text
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true

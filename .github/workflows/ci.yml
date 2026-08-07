@@ -1,0 +1,58 @@
+name: Repository QA
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    name: Build bilingual docs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+      - name: Install docs dependencies
+        run: npm ci
+      - name: Build docs
+        run: npm run docs:build
+
+  structure:
+    name: Check public repository structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+      - name: Validate Compose file
+        shell: bash
+        run: |
+          cp .env.example .env
+          docker compose config --quiet
+      - name: Syntax-check QA scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r file; do
+            node --check "$file"
+          done < <(find qa -maxdepth 1 -type f -name '*.mjs' -print)
+      - name: Reject private payloads
+        shell: bash
+        run: |
+          set -euo pipefail
+          tracked="$(git ls-files)"
+          ! grep -E '(^|/)(\.env|secrets|qa/node_modules|artifacts/source)(/|$)' <<< "$tracked"
+      - name: Check whitespace
+        run: git diff --check

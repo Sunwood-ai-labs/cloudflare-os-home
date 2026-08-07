@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Cloudflare OS Home</title>
+  <desc id="desc">A local agent-first workspace powered by Cloudflare OS and LiteLLM.</desc>
+  <rect width="1200" height="630" fill="#FFFDF9"/>
+  <circle cx="1030" cy="80" r="250" fill="#FFF0E5"/>
+  <circle cx="1080" cy="610" r="230" fill="#E8F5F1"/>
+  <rect x="90" y="112" width="150" height="150" rx="38" fill="#FFF4EA" stroke="#29221F" stroke-width="5"/>
+  <path d="M123 183 165 145l42 38v39a9 9 0 0 1-9 9h-66a9 9 0 0 1-9-9Z" fill="#E66A3C"/>
+  <path d="m116 184 49-46 49 46" fill="none" stroke="#29221F" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/>
+  <path d="M152 226v-34h26v34" fill="#FFF4EA"/>
+  <circle cx="199" cy="147" r="10" fill="#2BA89A"/>
+  <path d="M199 157v18M189 166h20" fill="none" stroke="#29221F" stroke-linecap="round" stroke-width="5"/>
+  <text x="90" y="370" fill="#29221F" font-family="Arial, Segoe UI, sans-serif" font-size="66" font-weight="700">Cloudflare OS Home</text>
+  <text x="94" y="432" fill="#C94D2D" font-family="Arial, Segoe UI, sans-serif" font-size="30" font-weight="600">A local, agent-first workspace</text>
+  <text x="94" y="492" fill="#655750" font-family="Arial, Segoe UI, sans-serif" font-size="25">Cloudflare OS · LiteLLM · Docker Compose · Tailscale</text>
+  <path d="M94 548h420" stroke="#E66A3C" stroke-linecap="round" stroke-width="8"/>
+</svg>

@@ -16,6 +16,6 @@ COPY upstream/cloudflare-os/ /workspace/
 
 RUN pnpm install --frozen-lockfile
 
-EXPOSE 8787
+EXPOSE 8877
 
 CMD ["pnpm", "run-local"]
