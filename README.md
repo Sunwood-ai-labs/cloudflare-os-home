@@ -148,6 +148,61 @@ A quick visual tour of the four most useful checkpoints. Click any image to open
 
 For the interpretation behind these images, see the [evidence guide](https://sunwood-ai-labs.github.io/cloudflare-os-home/guide/evidence) and [research log](RESEARCH-LOG.md).
 
+## 🔬 Investigation trail
+
+The gallery above is the short version. Expand this section to see the wider UI trail behind the conclusions: setup, model configuration, chat persistence, network routing, Tailscale, and the agent run.
+
+<details>
+<summary>Open the complete verified UI set</summary>
+
+### Setup and capability surface
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/01-login.png"><img src="artifacts/screenshots/01-login.png" alt="Cloudflare OS first login" width="100%" /></a><br /><sub><b>First login</b> — local account setup.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/03-model-modal.png"><img src="artifacts/screenshots/03-model-modal.png" alt="Cloudflare OS model picker" width="100%" /></a><br /><sub><b>Model picker</b> — add an AI provider.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/04-model-form.png"><img src="artifacts/screenshots/04-model-form.png" alt="Cloudflare OS model form" width="100%" /></a><br /><sub><b>Model form</b> — OpenAI-compatible fields.</sub></td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/05-model-configured.png"><img src="artifacts/screenshots/05-model-configured.png" alt="Configured LiteLLM model in onboarding" width="100%" /></a><br /><sub><b>Model selected</b> — LiteLLM · glm-4.7 is available.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/06-home.png"><img src="artifacts/screenshots/06-home.png" alt="Cloudflare OS home workspace" width="100%" /></a><br /><sub><b>Workspace home</b> — work starts from a workspace.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/09-mobile-home.png"><img src="artifacts/screenshots/09-mobile-home.png" alt="Cloudflare OS mobile-width home" width="100%" /></a><br /><sub><b>Responsive layout</b> — mobile-width home view.</sub></td>
+  </tr>
+</table>
+
+### Chat, persistence, and the knowledge caveat
+
+<table>
+  <tr>
+    <td width="50%" valign="top"><a href="artifacts/screenshots/07-chat-response-final.png"><img src="artifacts/screenshots/07-chat-response-final.png" alt="Ordinary Cloudflare OS chat response" width="100%" /></a><br /><sub><b>Ordinary chat</b> — the model answered without using tools or external knowledge.</sub></td>
+    <td width="50%" valign="top"><a href="artifacts/screenshots/08-reload.png"><img src="artifacts/screenshots/08-reload.png" alt="Cloudflare OS conversation after reload" width="100%" /></a><br /><sub><b>Persistence</b> — the conversation remained after reload.</sub></td>
+  </tr>
+</table>
+
+> **Knowledge/RAG status:** the local run did not verify an Open WebUI-style Knowledge collection or RAG search screen. The ordinary-chat image is evidence of that limitation and of why grounded knowledge should not be assumed.
+
+### LiteLLM routing and Tailscale
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/10-network-model-form.png"><img src="artifacts/screenshots/10-network-model-form.png" alt="Cloudflare OS LiteLLM network model form" width="100%" /></a><br /><sub><b>In-network URL</b> — http://litellm:4000/v1.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/13-tailscale-reload.png"><img src="artifacts/screenshots/13-tailscale-reload.png" alt="Cloudflare OS reload through Tailscale" width="100%" /></a><br /><sub><b>Tailscale reload</b> — the same workspace survives the tailnet path.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/14-tailscale-mobile-home.png"><img src="artifacts/screenshots/14-tailscale-mobile-home.png" alt="Cloudflare OS mobile view through Tailscale" width="100%" /></a><br /><sub><b>Tailscale mobile</b> — responsive access over tailnet-only HTTPS.</sub></td>
+  </tr>
+</table>
+
+### Agent execution progression
+
+<table>
+  <tr>
+    <td width="100%" valign="top"><a href="artifacts/screenshots/16-agent-gadget-result.png"><img src="artifacts/screenshots/16-agent-gadget-result.png" alt="Cloudflare OS agent Gadget execution result" width="100%" /></a><br /><sub><b>Tool execution</b> — the agent produced a Gadget result before the final reviewable draft.</sub></td>
+  </tr>
+</table>
+
+The [research log](RESEARCH-LOG.md) contains the Open WebUI comparison, cost notes, source-code findings, and the distinction between what was observed locally and what remains unverified. No Open WebUI UI screenshot was captured in this run, so that comparison is not presented as image evidence.
+
+</details>
+
 ## 🧪 Verification
 
 ```powershell

@@ -148,6 +148,61 @@ node .\qa\agentic-gadget-smoke.mjs
 
 画像の意味や制約は[証跡ガイド](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/guide/evidence)と[調査ログ](RESEARCH-LOG.md)にまとめています。
 
+## 🔬 調査トレイル
+
+上のギャラリーは要点版です。ここを展開すると、セットアップ、モデル設定、チャット永続化、ネットワーク経路、Tailscale、エージェント実行まで、結論の背景になった画面を確認できます。
+
+<details>
+<summary>検証済みUIの全体を見る</summary>
+
+### セットアップと機能の入口
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/01-login.png"><img src="artifacts/screenshots/01-login.png" alt="Cloudflare OS初回ログイン" width="100%" /></a><br /><sub><b>初回ログイン</b> — ローカルアカウント設定。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/03-model-modal.png"><img src="artifacts/screenshots/03-model-modal.png" alt="Cloudflare OSモデル選択" width="100%" /></a><br /><sub><b>モデル選択</b> — AIプロバイダーを追加。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/04-model-form.png"><img src="artifacts/screenshots/04-model-form.png" alt="Cloudflare OSモデル登録フォーム" width="100%" /></a><br /><sub><b>モデル登録フォーム</b> — OpenAI互換の入力欄。</sub></td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/05-model-configured.png"><img src="artifacts/screenshots/05-model-configured.png" alt="オンボーディングで設定済みのLiteLLMモデル" width="100%" /></a><br /><sub><b>モデル選択完了</b> — LiteLLM · glm-4.7を利用可能に。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/06-home.png"><img src="artifacts/screenshots/06-home.png" alt="Cloudflare OSホームワークスペース" width="100%" /></a><br /><sub><b>ワークスペースホーム</b> — 作業はWorkspaceから始まる。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/09-mobile-home.png"><img src="artifacts/screenshots/09-mobile-home.png" alt="Cloudflare OSモバイル幅ホーム" width="100%" /></a><br /><sub><b>レスポンシブ表示</b> — モバイル幅のホーム画面。</sub></td>
+  </tr>
+</table>
+
+### チャット、永続化、ナレッジの注意点
+
+<table>
+  <tr>
+    <td width="50%" valign="top"><a href="artifacts/screenshots/07-chat-response-final.png"><img src="artifacts/screenshots/07-chat-response-final.png" alt="Cloudflare OS通常チャットの回答" width="100%" /></a><br /><sub><b>通常チャット</b> — ツールや外部知識を使わずにモデルが回答。</sub></td>
+    <td width="50%" valign="top"><a href="artifacts/screenshots/08-reload.png"><img src="artifacts/screenshots/08-reload.png" alt="リロード後のCloudflare OS会話" width="100%" /></a><br /><sub><b>永続化</b> — リロード後も会話が残ることを確認。</sub></td>
+  </tr>
+</table>
+
+> **ナレッジ/RAGの状態:** ローカル実験では、Open WebUIのKnowledge collectionやRAG検索画面と同等のものは確認できませんでした。この通常チャット画像は、その制約と、根拠付きナレッジを自動で期待できないことの証跡です。
+
+### LiteLLM経路とTailscale
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/10-network-model-form.png"><img src="artifacts/screenshots/10-network-model-form.png" alt="Cloudflare OSのLiteLLMネットワークモデル登録" width="100%" /></a><br /><sub><b>ネットワーク内URL</b> — http://litellm:4000/v1。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/13-tailscale-reload.png"><img src="artifacts/screenshots/13-tailscale-reload.png" alt="Tailscale経由のCloudflare OSリロード" width="100%" /></a><br /><sub><b>Tailscaleリロード</b> — tailnet経路でも同じWorkspaceを確認。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/14-tailscale-mobile-home.png"><img src="artifacts/screenshots/14-tailscale-mobile-home.png" alt="Tailscale経由のCloudflare OSモバイル画面" width="100%" /></a><br /><sub><b>Tailscaleモバイル</b> — tailnet限定HTTPSでレスポンシブ表示。</sub></td>
+  </tr>
+</table>
+
+### エージェント実行の経過
+
+<table>
+  <tr>
+    <td width="100%" valign="top"><a href="artifacts/screenshots/16-agent-gadget-result.png"><img src="artifacts/screenshots/16-agent-gadget-result.png" alt="Cloudflare OSエージェントのGadget実行結果" width="100%" /></a><br /><sub><b>ツール実行</b> — 最終的なレビュー可能Draftの前にGadgetの実行結果を確認。</sub></td>
+  </tr>
+</table>
+
+[調査ログ](RESEARCH-LOG.md)には、Open WebUI比較、費用、ソースコード調査、ローカルで観測した内容と未検証事項の区別を記録しています。今回の実験ではOpen WebUIのUIスクショ自体は撮影していないため、比較を画像証拠としては扱っていません。
+
+</details>
+
 ## 🧪 検証
 
 ```powershell
