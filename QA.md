@@ -11,6 +11,8 @@ The runtime results below were captured during the initial integration pass. Rep
 - [x] `npm audit --omit=dev --audit-level=high` reports no production dependency vulnerabilities.
 - [x] Local-only `.env`, AWS files, and source screenshots remain excluded from the public payload.
 - [x] Docker Compose services are healthy on 2026-08-07; Cloudflare OS and LiteLLM HTTP smoke checks returned 200.
+- [x] GitHub Pages is enabled in workflow mode; English, Japanese, and evidence routes return HTTP 200.
+- [x] The public `Repository QA` and `Deploy documentation` workflows pass on `main`.
 
 ## Functional checks
 
