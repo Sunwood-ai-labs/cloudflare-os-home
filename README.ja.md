@@ -119,6 +119,35 @@ node .\qa\agentic-gadget-smoke.mjs
 
 成功すると、`Pending changes`、`Accept changes`、`Discard`を持つGadget Draftが作られます。チャット文章だけでなく、実際にツール・ファイル・コード実行が動いたことを示す、このリポジトリの主要な証跡です。
 
+## 📸 検証スクショ
+
+代表的な4つのチェックポイントを、まず見た目で確認できます。画像をクリックすると元のPNGを開けます。[QA inventory](QA.md)には17個すべてのチェックポイントを記録しています。
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="artifacts/screenshots/11-network-model-configured.png"><img src="artifacts/screenshots/11-network-model-configured.png" alt="LiteLLMモデルをCloudflare OSに登録" width="100%" /></a>
+      <br /><sub><b>1. モデル接続</b> — プロジェクト内LiteLLMのモデルを登録。</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="artifacts/screenshots/12-tailscale-chat-response.png"><img src="artifacts/screenshots/12-tailscale-chat-response.png" alt="Tailscale経由のCloudflare OSチャット" width="100%" /></a>
+      <br /><sub><b>2. Tailscale経路</b> — ワークスペース接続とモデル応答を確認（回答品質の制約は調査ログに記載）。</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="artifacts/screenshots/15-agent-request-sent.png"><img src="artifacts/screenshots/15-agent-request-sent.png" alt="Gadget作成を依頼するエージェントプロンプト" width="100%" /></a>
+      <br /><sub><b>3. エージェント依頼</b> — ファイル作成・実行・テストを明示的に要求。</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="artifacts/screenshots/17-agent-gadget-complete.png"><img src="artifacts/screenshots/17-agent-gadget-complete.png" alt="変更レビュー可能なGadget Draft" width="100%" /></a>
+      <br /><sub><b>4. Gadget Draft完成</b> — ファイル作成、コード実行、変更レビューまで確認。</sub>
+    </td>
+  </tr>
+</table>
+
+画像の意味や制約は[証跡ガイド](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/guide/evidence)と[調査ログ](RESEARCH-LOG.md)にまとめています。
+
 ## 🧪 検証
 
 ```powershell

@@ -119,6 +119,35 @@ node .\qa\agentic-gadget-smoke.mjs
 
 The run should produce a Gadget draft with `Pending changes`, `Accept changes`, and `Discard`. This is the strongest evidence in the repository that the flow is more than a chat-only response.
 
+## 📸 Evidence gallery
+
+A quick visual tour of the four most useful checkpoints. Click any image to open the full-resolution PNG; the [QA inventory](QA.md) lists all 17 checkpoints.
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="artifacts/screenshots/11-network-model-configured.png"><img src="artifacts/screenshots/11-network-model-configured.png" alt="Configured LiteLLM model in Cloudflare OS" width="100%" /></a>
+      <br /><sub><b>1. Model connected</b> — the project-local LiteLLM model is registered.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="artifacts/screenshots/12-tailscale-chat-response.png"><img src="artifacts/screenshots/12-tailscale-chat-response.png" alt="Cloudflare OS chat through the Tailscale endpoint" width="100%" /></a>
+      <br /><sub><b>2. Tailscale path works</b> — the workspace is reachable and the model responds; answer-quality limits are documented in the research log.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="artifacts/screenshots/15-agent-request-sent.png"><img src="artifacts/screenshots/15-agent-request-sent.png" alt="Agent request asking Cloudflare OS to build a Gadget" width="100%" /></a>
+      <br /><sub><b>3. Agent task submitted</b> — the prompt explicitly requires file creation, execution, and testing.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="artifacts/screenshots/17-agent-gadget-complete.png"><img src="artifacts/screenshots/17-agent-gadget-complete.png" alt="Completed Cloudflare OS Gadget draft with pending changes" width="100%" /></a>
+      <br /><sub><b>4. Gadget draft complete</b> — files were written, code ran, and changes are reviewable.</sub>
+    </td>
+  </tr>
+</table>
+
+For the interpretation behind these images, see the [evidence guide](https://sunwood-ai-labs.github.io/cloudflare-os-home/guide/evidence) and [research log](RESEARCH-LOG.md).
+
 ## 🧪 Verification
 
 ```powershell
