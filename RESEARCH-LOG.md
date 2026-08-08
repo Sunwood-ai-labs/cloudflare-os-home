@@ -265,7 +265,113 @@ executeCode
 失敗したら修正して再実行し、最後に変更ファイル・実行結果・未完了点を報告してください。
 ```
 
-## 11. 全スクリーンショット一覧
+## 11. Slides Blueprint実験（2026-08-08）
+
+### 目的
+
+上流READMEの「Make slides for my upcoming meeting with a customer.」という例を、プロジェクト内LiteLLM（`glm-4.7`）で実行し、Slides Blueprintがどこまで実用的に動くかを確認した。
+
+### 実行内容
+
+ホーム画面の「Build a team meeting deck」導線を確認したあと、次の依頼を送信した。
+
+```text
+Create a slide deck titled 「Cloudflare OSのローカル検証結果」 using the built-in Slides Blueprint.
+Write the deck in Japanese. Include 6 slides: Cloudflare OSとは、ローカル構成、確認できた機能、
+Gadgetエージェントの実行フロー、Open WebUIとの違い、制約と次の検証。
+Build the deck, test that it works, and report the created files and test result.
+```
+
+### 観測できたこと
+
+- Slides GadgetのDraftが作成され、プレビュー、`Slides`、`Code`、`Connections`、`Edit`、`Present`、`Export to PDF`の操作を確認できた。
+- エージェントは`server.js`と`client.js`を読み、`executeCode`でSlides Gadgetを操作した。
+- 変更を`Accept changes`で確定すると、Draft表示が通常のSlides Gadget表示に変わり、内容が保存された。
+- 最終的には7枚のスライドが生成された。1枚目は表紙、2〜6枚目は日本語の内容スライドだった。
+- 6枚目には「Open WebUIとの違い」と「制約と次の検証」が同居したため、依頼した6テーマとスライド枚数の対応は完全ではなかった。
+
+### 制約・失敗
+
+- 7枚目には`[TITLE]`と`[SUBTITLE]`が残り、テンプレート由来のプレースホルダーを自動除去できなかった。
+- `executeCode`の結果取得に失敗し、エージェントが複数回リトライした。最終的には手動で停止して変更を確定した。
+- `Export to PDF`ボタンは表示されたが、このブラウザー検証ではダウンロードイベントを確認できなかった。PDF出力は未確定とする。
+- したがって、Slides Blueprintは「Gadgetを作って編集可能なスライドを生成する」ことまでは確認できたが、要求枚数・内容・完成判定まで安定して自律実行できるとはまだ言えない。
+
+### スクリーンショット
+
+- [20-slides-deck-title.png](artifacts/screenshots/20-slides-deck-title.png): 日本語タイトルと表紙
+- [19-slides-deck-summary.png](artifacts/screenshots/19-slides-deck-summary.png): Open WebUI比較・制約スライド
+- [18-slides-deck-placeholder.png](artifacts/screenshots/18-slides-deck-placeholder.png): 未置換プレースホルダーが残った7枚目
+
+## 12. Tailscale経由のSlides検証（2026-08-08）
+
+### 配信構成
+
+- Cloudflare OS本体: `https://<tailnet-host>:8877/`（tailnet only）
+- スクリーンショットギャラリー: `https://<tailnet-host>:8890/`（tailnet only）
+- ギャラリーは`artifacts/screenshots`だけを`127.0.0.1:8890`で静的配信し、Tailscale Serveで8890番へ中継した。プロジェクト全体や`artifacts/source`は配信していない。
+
+### 検証結果
+
+- Tailscale URLへのログインはHTTP 200とCloudflare OSホーム表示まで確認できた。
+- スライド依頼をTailscale URLから送信し、Slides Gadget Draftが作成された。
+- 初期状態では4枚のテンプレートが表示された。その後、エージェントが既定スライドをクリアし、6枚を作成した。
+- 生成されたスライドを次へ進めて、次の6タイトルを画面上で確認した。
+  1. Cloudflare OSのローカル検証
+  2. ローカル構成
+  3. 確認できた機能
+  4. Gadgetエージェントの実行フロー
+  5. Open WebUIとの違い
+  6. 制約と次の検証
+- `Accept changes`後も1 / 6と6 / 6を表示でき、6枚の保存を確認した。
+
+### Tailscale経路で発生した問題
+
+- 初回の処理中にCloudflare OSコンテナの再起動とWebSocket再接続が発生した。
+- エージェントの最終応答は途中停止したが、直後にDraftを開くと6枚のスライドが表示された。したがって、生成結果は画面で確認し、エージェントの完了メッセージだけには依存していない。
+- この挙動は、モデル処理・Gadget更新・UI接続が別々に進むことを示している。今後は生成完了後に必ずスライド枚数とタイトルを画面で確認する。
+
+### スクリーンショットギャラリー
+
+- [index.html](artifacts/screenshots/index.html): Tailscale限定ギャラリー
+- [21-tailscale-access.png](artifacts/screenshots/21-tailscale-access.png): Tailscale経由の初期アクセス
+- [22-tailscale-home.png](artifacts/screenshots/22-tailscale-home.png): ログイン後のホーム
+- [23-tailscale-slide-prompt.png](artifacts/screenshots/23-tailscale-slide-prompt.png): スライド依頼
+- [24-tailscale-agent-start.png](artifacts/screenshots/24-tailscale-agent-start.png): エージェント開始
+- [25-tailscale-agent-progress.png](artifacts/screenshots/25-tailscale-agent-progress.png): 再接続状態
+- [26-tailscale-draft-output.png](artifacts/screenshots/26-tailscale-draft-output.png): Draft出力
+- [27-tailscale-slide-progress.png](artifacts/screenshots/27-tailscale-slide-progress.png): 初期テンプレート
+- [28-tailscale-slide-edit-state.png](artifacts/screenshots/28-tailscale-slide-edit-state.png): 編集状態
+- [29-tailscale-slide-failed.png](artifacts/screenshots/29-tailscale-slide-failed.png): 停止後の証跡
+- [30-tailscale-slide-1.png](artifacts/screenshots/30-tailscale-slide-1.png): 1 / 6
+- [31-tailscale-slide-2.png](artifacts/screenshots/31-tailscale-slide-2.png): 2 / 6
+- [32-tailscale-slide-3.png](artifacts/screenshots/32-tailscale-slide-3.png): 3 / 6
+- [33-tailscale-slide-4.png](artifacts/screenshots/33-tailscale-slide-4.png): 4 / 6
+- [34-tailscale-slide-5.png](artifacts/screenshots/34-tailscale-slide-5.png): 5 / 6
+- [35-tailscale-slide-6.png](artifacts/screenshots/35-tailscale-slide-6.png): 6 / 6
+- [36-tailscale-slide-accepted.png](artifacts/screenshots/36-tailscale-slide-accepted.png): Accept changes後の1 / 6
+- [37-tailscale-slide-6-accepted.png](artifacts/screenshots/37-tailscale-slide-6-accepted.png): Accept changes後の再表示途中の5 / 6
+- [38-tailscale-gallery.png](artifacts/screenshots/38-tailscale-gallery.png): ギャラリー自体をTailscale経由で表示
+- [39-tailscale-slide-6-accepted.png](artifacts/screenshots/39-tailscale-slide-6-accepted.png): Accept changes後の6 / 6を再撮影
+- [40-x-media-slide-1-3x2.png](artifacts/screenshots/40-x-media-slide-1-3x2.png): 初期のcrop案（ユーザー確認後は未採用）
+- [41-x-media-slide-6-3x2.png](artifacts/screenshots/41-x-media-slide-6-3x2.png): 初期のcrop案（ユーザー確認後は未採用）
+- [42-x-post-simulator.png](artifacts/screenshots/42-x-post-simulator.png): 初期の2画像同梱シミュレーター
+- [43-x-media-slide-1-original-frame.png](artifacts/screenshots/43-x-media-slide-1-original-frame.png): 元の1920×911画面を無加工で3:2フレームに配置
+- [44-x-media-slide-6-original-frame.png](artifacts/screenshots/44-x-media-slide-6-original-frame.png): 保存後6 / 6の元画面を無加工で3:2フレームに配置
+- [45-x-post-simulator-split.png](artifacts/screenshots/45-x-post-simulator-split.png): 分割版シミュレーター上部
+- [46-x-post-simulator-split-replies.png](artifacts/screenshots/46-x-post-simulator-split-replies.png): 表紙を返信に添付した状態
+- [47-x-post-simulator-final-reply.png](artifacts/screenshots/47-x-post-simulator-final-reply.png): 最終スライドを返信に添付した状態
+- [48-x-media-slide-1-original-frame.png](artifacts/screenshots/48-x-media-slide-1-original-frame.png): X添付用スライド1（元画面保持）
+- [49-x-media-slide-2-original-frame.png](artifacts/screenshots/49-x-media-slide-2-original-frame.png): X添付用スライド2（元画面保持）
+- [50-x-media-slide-3-original-frame.png](artifacts/screenshots/50-x-media-slide-3-original-frame.png): X添付用スライド3（元画面保持）
+- [51-x-media-slide-4-original-frame.png](artifacts/screenshots/51-x-media-slide-4-original-frame.png): X添付用スライド4（元画面保持）
+- [52-x-media-slide-5-original-frame.png](artifacts/screenshots/52-x-media-slide-5-original-frame.png): X添付用スライド5（元画面保持）
+- [53-x-media-slide-6-original-frame.png](artifacts/screenshots/53-x-media-slide-6-original-frame.png): X添付用スライド6（元画面保持）
+- [54-x-post-simulator-4plus2-top.png](artifacts/screenshots/54-x-post-simulator-4plus2-top.png): メイン投稿の4枚添付
+- [55-x-post-simulator-4plus2-middle.png](artifacts/screenshots/55-x-post-simulator-4plus2-middle.png): 返信2枚とGitHubリンク
+- [56-x-post-simulator-4plus2-middle2.png](artifacts/screenshots/56-x-post-simulator-4plus2-middle2.png): スライド3・4および返信5・6
+
+## 13. 全スクリーンショット一覧
 
 ### 初期調査資料
 
@@ -303,7 +409,7 @@ executeCode
 - [16-agent-gadget-result.png](artifacts/screenshots/16-agent-gadget-result.png)
 - [17-agent-gadget-complete.png](artifacts/screenshots/17-agent-gadget-complete.png)
 
-## 12. 再現用ファイル
+## 14. 再現用ファイル
 
 - [README.md](README.md): 起動方法、LiteLLM、Tailscale、費用と制約
 - [QA.md](QA.md): 実行済み検証チェックリスト
@@ -312,3 +418,53 @@ executeCode
 - [scripts/enable-tailscale-serve.ps1](scripts/enable-tailscale-serve.ps1): Tailscale Serve設定
 - [qa/agentic-gadget-smoke.mjs](qa/agentic-gadget-smoke.mjs): エージェント実験の送信
 - [qa/agentic-wait-and-evidence.mjs](qa/agentic-wait-and-evidence.mjs): 完了待ちと証跡取得
+
+## 15. GLM 5.2 内容重視Slides再検証（2026-08-08）
+
+### 目的と構成
+
+前回のSlides実験は、スライド枚数とテンプレート由来の未置換文言に課題が残った。今回はCloudflare OSのモデル選択を`LiteLLM · glm-5.2`へ切り替え、プロジェクト内LiteLLM（Cloudflare OSからは`http://litellm:4000/v1`）を経由して、本文まで埋まった検証資料を作る条件にした。
+
+内蔵のSlides Blueprintに、正確に8枚、各スライドにタイトル・リード文・3〜5個の具体的な本文、さらに構成図・実行フロー・比較表・検証カードを入れるよう依頼した。資料のテーマは、`cloudflare-os-home`の構成、Tailscale経路、LiteLLM、GLM 5.2、Open WebUI比較、今回確認できた範囲と未確認範囲である。
+
+### 生成された8枚
+
+1. `Cloudflare OS Home × GLM 5.2`（表紙）
+2. `前回の課題を洗い出し、今回の合格条件を設定する`
+3. `Browser/Tailscale → Cloudflare OS → LiteLLM → glm-5.2`
+4. `依頼から Accept changes まで、各段階の成果物を明示する`
+5. `編集可能な Gadget として保存され、複数ビューで扱える`
+6. `断定できない項目は「今回未確認」と区別して比較する`
+7. `8枚生成で確認する項目を検証カードに整理する`
+8. `実運用に向く範囲を確定し、次の検証を示す`
+
+構成図はBrowser→Tailscale→Cloudflare OS→LiteLLM→GLM 5.2、実行フローは依頼→Blueprint→Gadget作成→編集・コード実行→画面確認→Accept changesを表現した。比較表ではCloudflare OS HomeとOpen WebUIを、Knowledge/RAG・PDF・外部連携などの未確認項目を混同しないように分けた。
+
+### 目視で見つけて修正した点
+
+最初の8枚生成後に全スライドを画面で確認したところ、次の2点を修正した。
+
+- 表紙の`GLM 5.2`だけがオレンジ強調になり、背景に埋もれていたため、タイトル全体を白に統一した。
+- 2枚目と7枚目の検証説明に、`[TITLE]`、`[SUBTITLE]`、`Lorem ipsum`、`ここに入力`の文字列が「検出対象の例」として残っていたため、意味のある日本語へ置き換えた。最終本文ではプレースホルダー検索が0件になった。
+
+修正後の再検査では、8枚維持（`1 / 8`〜`8 / 8`）、プレースホルダー4種の検索0件、全ブロックの幾何オーバーフロー0件、密度の高い2・5・8枚目の縦方向フィットを確認した。`Accept changes`実行後もDraft表示が消え、通常のSlides Gadgetとして1枚目から8枚目まで再表示できた。
+
+### 確認できた範囲と残課題
+
+今回の実験で、GLM 5.2を使ったチャットからSlides Gadgetを作成し、図表と本文を含む8枚の編集可能な資料へ統合し、保存確定する流れは確認できた。一方、以下は今回の画面実験では断定していない。
+
+- `Export to PDF`の実ファイルダウンロードと、PDF各ページの描画検証
+- Knowledge/RAG専用画面、コレクション、検索結果の完全な動作
+- 外部サービス連携の完全動作
+- 数十分以上のエージェント実行と、再接続時の完了文停止問題（V06）
+
+### スクリーンショット
+
+- [57-glm-5.2-model-form.png](artifacts/screenshots/57-glm-5.2-model-form.png): GLM 5.2登録フォーム
+- [58-glm-5.2-model-configured.png](artifacts/screenshots/58-glm-5.2-model-configured.png): GLM 5.2登録後のAI Providers画面
+- [59-glm5.2-slide-prompt.png](artifacts/screenshots/59-glm5.2-slide-prompt.png): 内容重視8枚を依頼したプロンプト
+- [60-glm5.2-slide-1.png](artifacts/screenshots/60-glm5.2-slide-1.png)〜[67-glm5.2-slide-8.png](artifacts/screenshots/67-glm5.2-slide-8.png): 初回8枚の目視確認
+- [68-glm5.2-slide-1-final.png](artifacts/screenshots/68-glm5.2-slide-1-final.png): コントラスト修正後の表紙
+- [69-glm5.2-slide-2-final.png](artifacts/screenshots/69-glm5.2-slide-2-final.png): プレースホルダー修正後の合格条件
+- [70-glm5.2-slide-7-final.png](artifacts/screenshots/70-glm5.2-slide-7-final.png): プレースホルダー0件の検証カード
+- [71-glm5.2-slide-1-accepted.png](artifacts/screenshots/71-glm5.2-slide-1-accepted.png)〜[78-glm5.2-slide-8-accepted.png](artifacts/screenshots/78-glm5.2-slide-8-accepted.png): Accept changes後の確定版8枚

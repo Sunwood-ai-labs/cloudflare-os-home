@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Cloudflare OS Slides検証のX投稿シミュレーター">
+  <title>Cloudflare OS × Slides — X投稿シミュレーター</title>
+  <style>
+    :root { color-scheme: dark; --bg:#090b10; --panel:rgba(20,24,33,.94); --panel2:#121722; --line:#2a3342; --muted:#9aa6b8; --text:#f5f7fb; --accent:#ff7a18; --accent2:#ffb347; --ok:#65d394; --warn:#ffd166; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; color:var(--text); background:radial-gradient(circle at 80% 0%,rgba(255,122,24,.18),transparent 32rem),radial-gradient(circle at 0% 100%,rgba(90,107,255,.15),transparent 30rem),var(--bg); font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
+    a { color:#8fc5ff; }
+    .wrap { width:min(1220px,calc(100% - 32px)); margin:0 auto; padding:28px 0 56px; }
+    header { display:flex; justify-content:space-between; gap:20px; align-items:end; margin-bottom:24px; }
+    .eyebrow,.label { color:var(--accent2); font-size:11px; letter-spacing:.16em; font-weight:800; text-transform:uppercase; }
+    h1 { margin:6px 0 0; font-size:clamp(26px,4vw,44px); letter-spacing:-.04em; }
+    .status { border:1px solid rgba(255,209,102,.45); color:var(--warn); border-radius:999px; padding:9px 13px; font-size:12px; white-space:nowrap; }
+    .facts { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:24px; }
+    .fact,.review,.evidence { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:15px 17px; box-shadow:0 18px 50px rgba(0,0,0,.16); }
+    .fact strong { display:block; margin-top:5px; font-size:15px; }
+    .layout { display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:18px; align-items:start; }
+    .thread { position:relative; }
+    .post { display:grid; grid-template-columns:44px minmax(0,1fr); gap:13px; padding:21px; background:var(--panel); border:1px solid var(--line); border-radius:20px; }
+    .avatar { width:44px; height:44px; display:grid; place-items:center; border-radius:50%; background:linear-gradient(145deg,#ff8b36,#c54200); color:white; font-weight:900; font-size:20px; }
+    .avatar.small { width:34px; height:34px; font-size:15px; }
+    .identity { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:14px; }
+    .identity strong { font-size:15px; }
+    .verified { color:white; background:#1d9bf0; width:17px; height:17px; display:inline-grid; place-items:center; border-radius:50%; font-size:11px; font-weight:900; }
+    .handle,.replying,.meta { color:var(--muted); font-size:12px; }
+    .more { margin-left:auto; color:var(--muted); }
+    .post-text { white-space:pre-wrap; line-height:1.75; font-size:16px; margin:17px 0; }
+    .media-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+    .media { display:block; overflow:hidden; border:1px solid #394657; border-radius:14px; background:#0e1219; text-decoration:none; }
+    .media img { display:block; width:100%; aspect-ratio:3/2; object-fit:cover; }
+    .media figcaption { padding:9px 10px; color:var(--muted); font-size:11px; line-height:1.35; }
+    .meta { display:flex; justify-content:space-between; gap:12px; padding-top:13px; margin-top:13px; border-top:1px solid var(--line); }
+    .actions { display:flex; justify-content:space-between; max-width:420px; color:#748196; padding-top:16px; font-size:18px; }
+    .thread-line { width:2px; height:24px; background:#3b4657; margin-left:42px; }
+    .reply { padding:17px 21px; grid-template-columns:34px minmax(0,1fr); }
+    .replying { margin-bottom:9px; }
+    .reply .post-text { margin:10px 0 14px; }
+    .reply-link { display:block; padding:13px 14px; border:1px solid #344052; border-radius:12px; background:var(--panel2); text-decoration:none; }
+    .reply-link strong { display:block; color:var(--text); font-size:13px; }
+    .reply-link span { color:var(--muted); font-size:12px; }
+    .review { position:sticky; top:18px; }
+    .review h2,.evidence h2 { margin:4px 0 14px; font-size:18px; }
+    .checks { list-style:none; padding:0; margin:0; display:grid; gap:11px; }
+    .checks li { display:grid; grid-template-columns:22px 1fr; gap:8px; color:#d7deea; font-size:13px; line-height:1.45; }
+    .ok { color:var(--ok); font-weight:900; } .warning { color:var(--warn); font-weight:900; }
+    .evidence { margin-top:18px; }
+    .evidence-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .evidence code { color:#dce6f6; font-size:12px; overflow-wrap:anywhere; }
+    footer { margin-top:22px; color:var(--muted); font-size:12px; }
+    @media (max-width:820px) { .layout{grid-template-columns:1fr;} .review{position:static;} .facts{grid-template-columns:repeat(2,1fr);} }
+    @media (max-width:520px) { .wrap{width:calc(100% - 20px);padding-top:18px;} header{align-items:start;flex-direction:column;} .facts,.media-grid,.evidence-grid{grid-template-columns:1fr;} .post{padding:15px;} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div><div class="eyebrow">Sunwood build in public · payload review</div><h1>Cloudflare OS × Slides</h1></div>
+      <div class="status">未投稿・最終承認待ち</div>
+    </header>
+
+    <section class="facts" aria-label="投稿メタデータ">
+      <div class="fact"><span class="label">Target</span><strong>@hAru_mAki_ch</strong></div>
+      <div class="fact"><span class="label">Mode</span><strong>Progress</strong></div>
+      <div class="fact"><span class="label">Arc</span><strong>やってみた❶</strong></div>
+      <div class="fact"><span class="label">Media</span><strong>4枚 + 2枚に分割</strong></div>
+    </section>
+
+    <div class="layout">
+      <main class="thread" aria-label="X投稿の直列プレビュー">
+        <article class="post">
+          <div class="avatar" aria-hidden="true">M</div>
+          <div>
+            <div class="identity"><strong>Maki / Sunwood AI Labs</strong><span class="verified">✓</span><span class="handle">@hAru_mAki_ch · いま</span><span class="more">•••</span></div>
+            <p class="post-text">Cloudflare OS × Slides やってみた❶
+
+Tailscale経由で、Slides Blueprintに
+「Cloudflare OSのローカル検証」スライドを作らせてみたぞ！！！
+
+✅ 6枚のタイトルを生成
+✅ 画面を1枚ずつ確認
+✅ Accept changes後も保存を確認
+
+初回はコンテナ再起動と再接続でエージェントの応答が止まったけど、
+画面側のDraftには6枚残っていた。
+エージェントの完了文だけじゃなく、生成物を目視確認するのが大事だな、、、</p>
+            <div class="media-grid" aria-label="メイン投稿の添付画像4件">
+              <a class="media" href="https://madesk.tail8be30.ts.net:8890/48-x-media-slide-1-original-frame.png" target="_blank" rel="noreferrer"><img src="https://madesk.tail8be30.ts.net:8890/48-x-media-slide-1-original-frame.png" alt="スライド1 Cloudflare OSのローカル検証"><figcaption>スライド1｜Cloudflare OSのローカル検証</figcaption></a>
+              <a class="media" href="https://madesk.tail8be30.ts.net:8890/49-x-media-slide-2-original-frame.png" target="_blank" rel="noreferrer"><img src="https://madesk.tail8be30.ts.net:8890/49-x-media-slide-2-original-frame.png" alt="スライド2 ローカル構成"><figcaption>スライド2｜ローカル構成</figcaption></a>
+              <a class="media" href="https://madesk.tail8be30.ts.net:8890/50-x-media-slide-3-original-frame.png" target="_blank" rel="noreferrer"><img src="https://madesk.tail8be30.ts.net:8890/50-x-media-slide-3-original-frame.png" alt="スライド3 確認できた機能"><figcaption>スライド3｜確認できた機能</figcaption></a>
+              <a class="media" href="https://madesk.tail8be30.ts.net:8890/51-x-media-slide-4-original-frame.png" target="_blank" rel="noreferrer"><img src="https://madesk.tail8be30.ts.net:8890/51-x-media-slide-4-original-frame.png" alt="スライド4 Gadgetエージェントの実行フロー"><figcaption>スライド4｜Gadgetエージェントの実行フロー</figcaption></a>
+            </div>
+            <div class="meta"><span>メイン投稿 · URLなし · 添付4件</span><span>未投稿</span></div>
+            <div class="actions" aria-hidden="true"><span>○</span><span>↻</span><span>♡</span><span>⌁</span></div>
+          </div>
+        </article>
+
+        <div class="thread-line" aria-hidden="true"></div>
+
+        <article class="post reply">
+          <div class="avatar small" aria-hidden="true">M</div>
+          <div>
+            <div class="replying">返信先: <span>@hAru_mAki_ch</span></div>
+            <div class="identity"><strong>Maki / Sunwood AI Labs</strong><span class="verified">✓</span><span class="handle">@hAru_mAki_ch · いま</span></div>
+            <p class="post-text">残りの2枚も返信に分けて載せるぞ！！！
+5枚目はOpen WebUIとの違い、6枚目は制約と次の検証。
+6枚すべての生成結果を確認できた！！！</p>
+            <div class="media-grid" aria-label="返信の添付画像2件">
+              <a class="media" href="https://madesk.tail8be30.ts.net:8890/52-x-media-slide-5-original-frame.png" target="_blank" rel="noreferrer"><img src="https://madesk.tail8be30.ts.net:8890/52-x-media-slide-5-original-frame.png" alt="スライド5 Open WebUIとの違い"><figcaption>スライド5｜Open WebUIとの違い</figcaption></a>
+              <a class="media" href="https://madesk.tail8be30.ts.net:8890/53-x-media-slide-6-original-frame.png" target="_blank" rel="noreferrer"><img src="https://madesk.tail8be30.ts.net:8890/53-x-media-slide-6-original-frame.png" alt="スライド6 制約と次の検証"><figcaption>スライド6｜制約と次の検証</figcaption></a>
+            </div>
+            <div class="meta"><span>メイン投稿への返信 · 添付2件</span><span>未投稿</span></div>
+          </div>
+        </article>
+
+        <div class="thread-line" aria-hidden="true"></div>
+
+        <article class="post reply">
+          <div class="avatar small" aria-hidden="true">M</div>
+          <div>
+            <div class="replying">返信先: <span>@hAru_mAki_ch</span></div>
+            <div class="identity"><strong>Maki / Sunwood AI Labs</strong><span class="verified">✓</span><span class="handle">@hAru_mAki_ch · いま</span></div>
+            <p class="post-text">検証ログと再現手順はこちら。</p>
+            <a class="reply-link" href="https://github.com/Sunwood-ai-labs/cloudflare-os-home" target="_blank" rel="noreferrer"><strong>github.com/Sunwood-ai-labs/cloudflare-os-home</strong><span>README・QA・RESEARCH-LOG・スクリーンショット</span></a>
+            <div class="meta"><span>直前の返信への返信</span><span>URL 1件</span></div>
+          </div>
+        </article>
+      </main>
+
+      <aside class="review" aria-label="公開前チェック">
+        <div class="label">Final review</div><h2>公開前チェック</h2>
+        <ul class="checks">
+          <li><span class="ok">✓</span><span>メイン本文にURLなし</span></li>
+          <li><span class="ok">✓</span><span>メイン投稿は添付4件</span></li>
+          <li><span class="ok">✓</span><span>返信は添付2件</span></li>
+          <li><span class="ok">✓</span><span>6枚すべてを使用</span></li>
+          <li><span class="ok">✓</span><span>各投稿の添付数は4件以下</span></li>
+          <li><span class="ok">✓</span><span>元画面は無加工、上下余白のみ追加</span></li>
+          <li><span class="ok">✓</span><span>GitHub URLは最後の別返信</span></li>
+          <li><span class="ok">✓</span><span>初回の再接続問題を記載</span></li>
+          <li><span class="warning">!</span><span>Xには送信していない</span></li>
+        </ul>
+      </aside>
+    </div>
+
+    <section class="evidence"><div class="label">Evidence & provenance</div><h2>6枚の添付ファイル</h2>
+      <div class="evidence-grid">
+        <div><code>48-x-media-slide-1-original-frame.png</code><br><span class="meta">元画像: 30-tailscale-slide-1.png</span></div>
+        <div><code>49-x-media-slide-2-original-frame.png</code><br><span class="meta">元画像: 31-tailscale-slide-2.png</span></div>
+        <div><code>50-x-media-slide-3-original-frame.png</code><br><span class="meta">元画像: 32-tailscale-slide-3.png</span></div>
+        <div><code>51-x-media-slide-4-original-frame.png</code><br><span class="meta">元画像: 33-tailscale-slide-4.png</span></div>
+        <div><code>52-x-media-slide-5-original-frame.png</code><br><span class="meta">元画像: 34-tailscale-slide-5.png</span></div>
+        <div><code>53-x-media-slide-6-original-frame.png</code><br><span class="meta">元画像: 35-tailscale-slide-6.png</span></div>
+      </div>
+    </section>
+    <footer>このページは投稿内容の確認専用です。Xへの送信・予約・キュー投入は行いません。画像はtailnet限定の8890番ギャラリーから読み込んでいます。</footer>
+  </div>
+</body>
+</html>

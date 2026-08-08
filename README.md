@@ -91,7 +91,7 @@ Project-local LiteLLM container
 Configured model providers
 ```
 
-Cloudflare OS owns the workspace, agent loop, Gadget tools, and reviewable changes. LiteLLM owns OpenAI-compatible model routing. The model itself is interchangeable; the current evidence was produced with `glm-4.7`.
+Cloudflare OS owns the workspace, agent loop, Gadget tools, and reviewable changes. LiteLLM owns OpenAI-compatible model routing. The model itself is interchangeable; the original integration evidence used `glm-4.7`, while the latest content-focused Slides rerun used `glm-5.2` through the same project-local LiteLLM route.
 
 ## 🌐 Tailscale access
 
@@ -121,7 +121,7 @@ The run should produce a Gadget draft with `Pending changes`, `Accept changes`, 
 
 ## 📸 Evidence gallery
 
-A quick visual tour of the four most useful checkpoints. Click any image to open the full-resolution PNG; the [QA inventory](QA.md) lists all 17 checkpoints.
+A quick visual tour of the four most useful checkpoints. Click any image to open the full-resolution PNG; the [QA inventory](QA.md) lists the full checkpoint inventory.
 
 <table>
   <tr>
@@ -193,6 +193,43 @@ The gallery above is the short version. The sections below keep the wider UI tra
 <table>
   <tr>
     <td width="100%" valign="top"><a href="artifacts/screenshots/16-agent-gadget-result.png"><img src="artifacts/screenshots/16-agent-gadget-result.png" alt="Cloudflare OS agent Gadget execution result" width="100%" /></a><br /><sub><b>Tool execution</b> — the agent produced a Gadget result before the final reviewable draft.</sub></td>
+  </tr>
+</table>
+
+### Slides Blueprint experiment
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/20-slides-deck-title.png"><img src="artifacts/screenshots/20-slides-deck-title.png" alt="Cloudflare OS Japanese slide deck title" width="100%" /></a><br /><sub><b>Slides title</b> — the generated deck opens as a Slides Gadget.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/19-slides-deck-summary.png"><img src="artifacts/screenshots/19-slides-deck-summary.png" alt="Cloudflare OS slide deck summary" width="100%" /></a><br /><sub><b>Generated content</b> — Japanese slides cover the comparison and limitations.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/18-slides-deck-placeholder.png"><img src="artifacts/screenshots/18-slides-deck-placeholder.png" alt="Cloudflare OS slide deck placeholder" width="100%" /></a><br /><sub><b>Known limitation</b> — the seventh template slide retained placeholders.</sub></td>
+  </tr>
+</table>
+
+### GLM 5.2 content-focused rerun
+
+The latest run switched the Cloudflare OS model picker to `LiteLLM · glm-5.2` and asked the built-in Slides Blueprint for an exactly eight-slide, Japanese, content-heavy verification deck. Each slide was required to contain a title, lead, and concrete body content, with an architecture diagram, execution flow, comparison table, and verification cards. The first visual pass exposed a low-contrast cover title and literal placeholder examples; both were corrected before `Accept changes`.
+
+<table>
+  <tr>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/58-glm-5.2-model-configured.png"><img src="artifacts/screenshots/58-glm-5.2-model-configured.png" alt="GLM 5.2 registered in Cloudflare OS" width="100%" /></a><br /><sub><b>Model selected</b> — project-local LiteLLM exposes `glm-5.2`.</sub></td>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/68-glm5.2-slide-1-final.png"><img src="artifacts/screenshots/68-glm5.2-slide-1-final.png" alt="GLM 5.2 slide deck cover" width="100%" /></a><br /><sub><b>Cover</b> — corrected contrast and environment details.</sub></td>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/69-glm5.2-slide-2-final.png"><img src="artifacts/screenshots/69-glm5.2-slide-2-final.png" alt="GLM 5.2 slide acceptance criteria" width="100%" /></a><br /><sub><b>Acceptance criteria</b> — no placeholder text and substantive bodies.</sub></td>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/70-glm5.2-slide-7-final.png"><img src="artifacts/screenshots/70-glm5.2-slide-7-final.png" alt="GLM 5.2 slide verification cards" width="100%" /></a><br /><sub><b>Verification cards</b> — 8/8, placeholder 0, body present, save check.</sub></td>
+  </tr>
+</table>
+
+The accepted final set is [71–78](artifacts/screenshots/71-glm5.2-slide-1-accepted.png) through the saved [8 / 8 conclusion](artifacts/screenshots/78-glm5.2-slide-8-accepted.png). The UI verification recorded exactly `1 / 8` through `8 / 8`, a placeholder scan of zero, and zero geometric overflows. PDF file download, Knowledge/RAG behavior, external integrations, and long-running reconnect stability remain explicitly unverified.
+
+### Tailscale evidence gallery
+
+The slide run was repeated through the tailnet-only Cloudflare OS URL. The complete timeline is available from the local gallery at `https://<tailnet-host>:8890/` after starting the evidence server.
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/30-tailscale-slide-1.png"><img src="artifacts/screenshots/30-tailscale-slide-1.png" alt="Tailscale slide one" width="100%" /></a><br /><sub><b>1 / 6</b> — the title slide is visible through Tailscale.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/35-tailscale-slide-6.png"><img src="artifacts/screenshots/35-tailscale-slide-6.png" alt="Tailscale slide six" width="100%" /></a><br /><sub><b>6 / 6</b> — the final slide is reachable through the same route.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/38-tailscale-gallery.png"><img src="artifacts/screenshots/38-tailscale-gallery.png" alt="Tailscale screenshot gallery" width="100%" /></a><br /><sub><b>Evidence gallery</b> — the screenshot page itself is tailnet-only.</sub></td>
   </tr>
 </table>
 

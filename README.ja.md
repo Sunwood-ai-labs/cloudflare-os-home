@@ -91,7 +91,7 @@ Cloudflare OSコンテナ
 設定済みモデルプロバイダー
 ```
 
-Cloudflare OSはワークスペース、エージェントループ、Gadgetツール、レビュー可能な変更を担当します。LiteLLMはOpenAI互換のモデルルーティングを担当します。モデルは交換可能で、今回の証跡では`glm-4.7`を使いました。
+Cloudflare OSはワークスペース、エージェントループ、Gadgetツール、レビュー可能な変更を担当します。LiteLLMはOpenAI互換のモデルルーティングを担当します。モデルは交換可能で、最初の統合証跡では`glm-4.7`、最新の内容重視Slides再検証では同じプロジェクト内LiteLLM経由で`glm-5.2`を使いました。
 
 ## 🌐 Tailscaleアクセス
 
@@ -121,7 +121,7 @@ node .\qa\agentic-gadget-smoke.mjs
 
 ## 📸 検証スクショ
 
-代表的な4つのチェックポイントを、まず見た目で確認できます。画像をクリックすると元のPNGを開けます。[QA inventory](QA.md)には17個すべてのチェックポイントを記録しています。
+代表的な4つのチェックポイントを、まず見た目で確認できます。画像をクリックすると元のPNGを開けます。[QA inventory](QA.md)には全チェックポイントを記録しています。
 
 <table>
   <tr>
@@ -193,6 +193,43 @@ node .\qa\agentic-gadget-smoke.mjs
 <table>
   <tr>
     <td width="100%" valign="top"><a href="artifacts/screenshots/16-agent-gadget-result.png"><img src="artifacts/screenshots/16-agent-gadget-result.png" alt="Cloudflare OSエージェントのGadget実行結果" width="100%" /></a><br /><sub><b>ツール実行</b> — 最終的なレビュー可能Draftの前にGadgetの実行結果を確認。</sub></td>
+  </tr>
+</table>
+
+### Slides Blueprint実験
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/20-slides-deck-title.png"><img src="artifacts/screenshots/20-slides-deck-title.png" alt="Cloudflare OS日本語スライドのタイトル" width="100%" /></a><br /><sub><b>スライドタイトル</b> — 生成されたSlides Gadgetを確認。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/19-slides-deck-summary.png"><img src="artifacts/screenshots/19-slides-deck-summary.png" alt="Cloudflare OSスライドのまとめ" width="100%" /></a><br /><sub><b>生成内容</b> — Open WebUI比較と制約を日本語で生成。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/18-slides-deck-placeholder.png"><img src="artifacts/screenshots/18-slides-deck-placeholder.png" alt="Cloudflare OSスライドのプレースホルダー" width="100%" /></a><br /><sub><b>既知の制約</b> — 7枚目にテンプレートの未置換文字列が残った。</sub></td>
+  </tr>
+</table>
+
+### GLM 5.2 内容重視の再検証
+
+最新の実験ではCloudflare OSのモデル選択を`LiteLLM · glm-5.2`へ切り替え、内蔵Slides Blueprintに、正確に8枚・日本語・内容重視の検証資料を作らせました。各スライドにタイトル、リード文、具体的な本文を入れ、構成図・実行フロー・比較表・検証カードも使う条件にしています。初回の目視で見つかった表紙タイトルの低コントラストと、本文中のプレースホルダー例は、`Accept changes`前に修正しました。
+
+<table>
+  <tr>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/58-glm-5.2-model-configured.png"><img src="artifacts/screenshots/58-glm-5.2-model-configured.png" alt="Cloudflare OSに登録したGLM 5.2" width="100%" /></a><br /><sub><b>モデル選択</b> — プロジェクト内LiteLLMの`glm-5.2`。</sub></td>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/68-glm5.2-slide-1-final.png"><img src="artifacts/screenshots/68-glm5.2-slide-1-final.png" alt="GLM 5.2スライド表紙" width="100%" /></a><br /><sub><b>表紙</b> — コントラスト修正後。</sub></td>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/69-glm5.2-slide-2-final.png"><img src="artifacts/screenshots/69-glm5.2-slide-2-final.png" alt="GLM 5.2スライドの合格条件" width="100%" /></a><br /><sub><b>合格条件</b> — プレースホルダーなし、本文あり。</sub></td>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/70-glm5.2-slide-7-final.png"><img src="artifacts/screenshots/70-glm5.2-slide-7-final.png" alt="GLM 5.2スライドの検証カード" width="100%" /></a><br /><sub><b>検証カード</b> — 8/8、プレースホルダー0件、本文あり、保存確認。</sub></td>
+  </tr>
+</table>
+
+確定後の全スライドは[71–78](artifacts/screenshots/71-glm5.2-slide-1-accepted.png)から、最後の[8 / 8結論](artifacts/screenshots/78-glm5.2-slide-8-accepted.png)まで保存しています。UI上で`1 / 8`〜`8 / 8`、プレースホルダー検索0件、幾何オーバーフロー0件を確認しました。PDF実体のダウンロード、Knowledge/RAG、外部連携、長時間実行時の再接続安定性は、引き続き未確認です。
+
+### Tailscale証跡ギャラリー
+
+tailnet限定のCloudflare OS URLからスライド生成を再実行しました。証跡全体は、証跡サーバー起動後に `https://<tailnet-host>:8890/` で確認できます。
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/30-tailscale-slide-1.png"><img src="artifacts/screenshots/30-tailscale-slide-1.png" alt="Tailscale経由のスライド1" width="100%" /></a><br /><sub><b>1 / 6</b> — Tailscale経由で表紙を表示。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/35-tailscale-slide-6.png"><img src="artifacts/screenshots/35-tailscale-slide-6.png" alt="Tailscale経由のスライド6" width="100%" /></a><br /><sub><b>6 / 6</b> — 同じ経路で最終スライドを表示。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/38-tailscale-gallery.png"><img src="artifacts/screenshots/38-tailscale-gallery.png" alt="Tailscaleスクリーンショットギャラリー" width="100%" /></a><br /><sub><b>証跡ギャラリー</b> — 画像ページ自体もtailnet限定。</sub></td>
   </tr>
 </table>
 

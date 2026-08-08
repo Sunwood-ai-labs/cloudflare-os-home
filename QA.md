@@ -22,8 +22,16 @@ The runtime results below were captured during the initial integration pass. Rep
 - [x] Local authentication succeeds.
 - [x] A project-local LiteLLM-backed OpenAI-compatible model can be registered from the UI.
 - [x] A simple prompt returns a model response from `glm-4.7`.
+- [x] `LiteLLM · glm-5.2` can be registered from the UI through the project-local LiteLLM gateway and selected for a chat.
 - [x] The result survives a page reload.
 - [x] An agentic task creates a Gadget, writes `server.js`/`client.js`, executes code, and reports the test result.
+- [x] The Slides Blueprint creates a seven-slide Gadget Draft, populates slides 1–6 in Japanese, and persists the result after `Accept changes`.
+- [x] The Tailscale-only route on port 8877 returns HTTP 200 and accepts the dedicated local account.
+- [x] A Slides Blueprint run through the Tailscale URL creates exactly six titled slides and persists them after `Accept changes`.
+- [x] The Tailscale screenshot gallery on port 8890 returns HTTP 200, including representative slide images.
+- [x] The GLM 5.2 content-focused Slides run creates exactly eight substantive slides, includes diagrams/table/verification cards, finds zero placeholder strings, has zero geometric overflows, and persists after `Accept changes`.
+- [ ] The baseline Slides Blueprint run produces exactly six fully populated slides without leftover placeholders.
+- [ ] The `Export to PDF` action produces a browser download in the local setup.
 
 ## Visual evidence
 
@@ -45,6 +53,53 @@ Screenshots are saved under `artifacts/screenshots/` at the following checkpoint
 - [x] 15-agent-request-sent.png
 - [x] 16-agent-gadget-result.png
 - [x] 17-agent-gadget-complete.png
+- [x] 18-slides-deck-placeholder.png
+- [x] 19-slides-deck-summary.png
+- [x] 20-slides-deck-title.png
+- [x] 21-tailscale-access.png
+- [x] 22-tailscale-home.png
+- [x] 23-tailscale-slide-prompt.png
+- [x] 24-tailscale-agent-start.png
+- [x] 25-tailscale-agent-progress.png
+- [x] 26-tailscale-draft-output.png
+- [x] 27-tailscale-slide-progress.png
+- [x] 28-tailscale-slide-edit-state.png
+- [x] 29-tailscale-slide-failed.png
+- [x] 30-tailscale-slide-1.png
+- [x] 31-tailscale-slide-2.png
+- [x] 32-tailscale-slide-3.png
+- [x] 33-tailscale-slide-4.png
+- [x] 34-tailscale-slide-5.png
+- [x] 35-tailscale-slide-6.png
+- [x] 36-tailscale-slide-accepted.png
+- [x] 37-tailscale-slide-6-accepted.png
+- [x] 38-tailscale-gallery.png
+- [x] 39-tailscale-slide-6-accepted.png
+- [x] 40-x-media-slide-1-3x2.png
+- [x] 41-x-media-slide-6-3x2.png
+- [x] 42-x-post-simulator.png
+- [x] 43-x-media-slide-1-original-frame.png
+- [x] 44-x-media-slide-6-original-frame.png
+- [x] 45-x-post-simulator-split.png
+- [x] 46-x-post-simulator-split-replies.png
+- [x] 47-x-post-simulator-final-reply.png
+- [x] 48-x-media-slide-1-original-frame.png
+- [x] 49-x-media-slide-2-original-frame.png
+- [x] 50-x-media-slide-3-original-frame.png
+- [x] 51-x-media-slide-4-original-frame.png
+- [x] 52-x-media-slide-5-original-frame.png
+- [x] 53-x-media-slide-6-original-frame.png
+- [x] 54-x-post-simulator-4plus2-top.png
+- [x] 55-x-post-simulator-4plus2-middle.png
+- [x] 56-x-post-simulator-4plus2-middle2.png
+- [x] 57-glm-5.2-model-form.png
+- [x] 58-glm-5.2-model-configured.png
+- [x] 59-glm5.2-slide-prompt.png
+- [x] 60-glm5.2-slide-1.png through 67-glm5.2-slide-8.png (first visual pass)
+- [x] 68-glm5.2-slide-1-final.png
+- [x] 69-glm5.2-slide-2-final.png
+- [x] 70-glm5.2-slide-7-final.png
+- [x] 71-glm5.2-slide-1-accepted.png through 78-glm5.2-slide-8-accepted.png
 
 ## Exploratory checks
 
@@ -52,4 +107,7 @@ Screenshots are saved under `artifacts/screenshots/` at the following checkpoint
 - [x] Confirm Tailscale Serve returns HTTPS 200 at the machine's tailnet URL (redacted in the public log).
 - [x] Confirm the same chat flow works through the Tailscale URL.
 - [x] Confirm the coding-agent flow reaches a pending Gadget draft and exposes Accept/Discard changes.
+- [x] Open the generated Slides Gadget and verify slide navigation, `Slides`/`Code`/`Connections`, edit/present controls, and `Accept changes`.
+- [x] Verify the six slide titles through the Tailscale URL after the agent initially lost its connection and reconnected.
+- [x] Serve the screenshot gallery through a separate tailnet-only Tailscale Serve port.
 - [x] Record any upstream/local limitations separately from setup failures.
