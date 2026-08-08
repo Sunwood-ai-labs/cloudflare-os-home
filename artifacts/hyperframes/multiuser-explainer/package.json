@@ -1,0 +1,11 @@
+{
+  "name": "multiuser-explainer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.7.101 preview",
+    "check": "npx --yes hyperframes@0.7.101 check",
+    "render": "npx --yes hyperframes@0.7.101 render",
+    "publish": "npx --yes hyperframes@0.7.101 publish"
+  }
+}

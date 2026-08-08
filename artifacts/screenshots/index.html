@@ -14,6 +14,9 @@
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; }
     figure { margin: 0; padding: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
     img { display: block; width: 100%; height: auto; border-radius: 9px; background: #fff; }
+    video { display: block; width: 100%; border-radius: 9px; background: #000; }
+    .video-card { margin: 0 0 22px; padding: 16px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+    .video-card p { margin: 10px 0 0; color: #d6dbe3; }
     figcaption { padding: 10px 2px 2px; color: #d6dbe3; }
     .tag { display: inline-block; margin-right: 6px; padding: 1px 7px; border-radius: 999px; background: var(--accent); color: #15171b; font-size: 12px; font-weight: 700; }
     a { color: #ff9b72; }
@@ -22,7 +25,7 @@
 <body>
 <main>
   <h1>Cloudflare OS / Tailscale / GLM 5.2 slide evidence</h1>
-  <p class="note">このギャラリーはtailnet限定で配信しています。Cloudflare OS本体は <a href="https://madesk.tail8be30.ts.net:8877/">8877番</a>、この画像ギャラリーは8890番です。後半にGLM 5.2の確定版8枚を収録しています。</p>
+  <p class="note">このギャラリーはtailnet限定で配信しています。Cloudflare OS本体は <a data-app-port="8877" href="#">8877番</a>、この画像ギャラリーは8890番です。後半にGLM 5.2の確定版8枚を収録しています。</p>
   <section class="grid">
     <figure><img src="21-tailscale-access.png" loading="lazy" alt="Tailscale経由の初期アクセス"><figcaption><span class="tag">01</span>Tailscale経由の初期アクセス</figcaption></figure>
     <figure><img src="22-tailscale-home.png" loading="lazy" alt="Tailscale経由のCloudflare OSホーム"><figcaption><span class="tag">02</span>ログイン後のホーム画面</figcaption></figure>
@@ -99,7 +102,70 @@
     <figure><img src="96-x-post-simulator-glm5.2-continuation-media-reply.png" loading="lazy" alt="GLM 5.2続編X投稿シミュレーター5から8枚目の返信"><figcaption><span class="tag">73</span>修正版：続編の5〜8枚目</figcaption></figure>
     <figure><img src="97-x-post-simulator-glm5.2-github-reply.png" loading="lazy" alt="GLM 5.2続編X投稿シミュレーターGitHub返信"><figcaption><span class="tag">74</span>修正版：GitHub別返信</figcaption></figure>
   </section>
+  <h2>共同ホワイトボード実験（2026-08-08）</h2>
+  <p class="note">Cloudflare OSのエージェントが生成したGadgetを、付箋・描画・presence・2タブ同期・再読み込みまで検証した証拠です。途中のエラーと自動修正もそのまま収録しています。</p>
+  <section class="grid">
+    <figure><img src="98-whiteboard-home.png" loading="lazy" alt="共同ホワイトボード検証前のCloudflare OSホーム"><figcaption><span class="tag">WB-01</span>生成前のホーム</figcaption></figure>
+    <figure><img src="99-whiteboard-prompt.png" loading="lazy" alt="共同ホワイトボードの生成依頼"><figcaption><span class="tag">WB-02</span>共同編集要件を含む生成依頼</figcaption></figure>
+    <figure><img src="103-whiteboard-code-generated.png" loading="lazy" alt="共同ホワイトボードのserver.js生成"><figcaption><span class="tag">WB-03</span>server.jsのコード生成</figcaption></figure>
+    <figure><img src="104-whiteboard-agent-next-step.png" loading="lazy" alt="共同ホワイトボード生成中の書き込みエラー"><figcaption><span class="tag">WB-04</span>生成途中のツール引数エラー</figcaption></figure>
+    <figure><img src="105-whiteboard-error-recovery.png" loading="lazy" alt="共同ホワイトボードのエラー自動修正"><figcaption><span class="tag">WB-05</span>エラー原因の調査・修正</figcaption></figure>
+    <figure><img src="108-whiteboard-retest.png" loading="lazy" alt="共同ホワイトボードの修正後テスト"><figcaption><span class="tag">WB-06</span>22項目通過後のGadget</figcaption></figure>
+    <figure><img src="109-whiteboard-smoke-test.png" loading="lazy" alt="共同ホワイトボードのUIスモークテスト"><figcaption><span class="tag">WB-07</span>UIスモークテストPASSED</figcaption></figure>
+    <figure><img src="111-whiteboard-note-edit.png" loading="lazy" alt="共同ホワイトボードの付箋編集"><figcaption><span class="tag">WB-08</span>付箋の作成・編集</figcaption></figure>
+    <figure><img src="113-whiteboard-drawing-persisted.png" loading="lazy" alt="共同ホワイトボードの描画永続化"><figcaption><span class="tag">WB-09</span>描画イベントの共有状態</figcaption></figure>
+    <figure><img src="114-whiteboard-two-tabs-presence.png" loading="lazy" alt="共同ホワイトボードの2タブpresence"><figcaption><span class="tag">WB-10</span>2タブとusers: 2</figcaption></figure>
+    <figure><img src="115-whiteboard-realtime-tabB-to-tabA.png" loading="lazy" alt="共同ホワイトボードのリアルタイム同期"><figcaption><span class="tag">WB-11</span>タブBからタブAへの同期</figcaption></figure>
+    <figure><img src="116-whiteboard-reload-persistence.png" loading="lazy" alt="共同ホワイトボードの再読み込み後の保持"><figcaption><span class="tag">WB-12</span>reload後の保持</figcaption></figure>
+    <figure><img src="117-whiteboard-final.png" loading="lazy" alt="共同ホワイトボードの最終状態"><figcaption><span class="tag">WB-13</span>実験終了時の最終状態</figcaption></figure>
+    <figure><img src="118-multiuser-owner-share-modal.png" loading="lazy" alt="Owner側のGadget only共有設定"><figcaption><span class="tag">WB-14</span>Ownerの共有リンク設定</figcaption></figure>
+    <figure><img src="119-multiuser-collaborator-joined.png" loading="lazy" alt="別アカウントが共同ホワイトボードへ参加"><figcaption><span class="tag">WB-15</span>Collaborator参加直後</figcaption></figure>
+    <figure><img src="120-multiuser-collaborator-realtime-note.png" loading="lazy" alt="Collaboratorが付箋を追加"><figcaption><span class="tag">WB-16</span>Collaboratorの付箋追加</figcaption></figure>
+    <figure><img src="121-multiuser-owner-realtime-note.png" loading="lazy" alt="Owner側の別アカウント同期途中"><figcaption><span class="tag">WB-17</span>Owner側同期途中</figcaption></figure>
+    <figure><img src="122-multiuser-owner-sync-final.png" loading="lazy" alt="Owner側にCollaboratorの付箋が同期"><figcaption><span class="tag">WB-18</span>Owner側の最終同期</figcaption></figure>
+    <figure><img src="123-multiuser-revoke-error.png" loading="lazy" alt="共有リンク無効化時のエラー表示"><figcaption><span class="tag">WB-19</span>Revoke時の共有管理エラー</figcaption></figure>
+  </section>
+  <h2>HyperFrames説明動画：スクショで何をしたのか</h2>
+  <p class="note">生スクショだけでは操作の意味が伝わりにくいため、HyperFramesで「操作 → 参加 → 入力 → 同期 → 制限」を説明パネル付きの38秒動画にしました。各フレームは元スクショと対応する番号を表示しています。</p>
+  <div class="video-card">
+    <video controls preload="metadata" poster="124-hyperframe-multiuser-title.png">
+      <source src="hyperframe-multiuser-explainer.mp4" type="video/mp4">
+      お使いのブラウザは動画再生に対応していません。
+    </video>
+    <p><span class="tag">VIDEO</span>38秒：OwnerがGadget only共有リンクを発行し、別アカウントが付箋を追加、Ownerへリアルタイム同期するまでを説明。</p>
+  </div>
+  <section class="grid">
+    <figure><img src="124-hyperframe-multiuser-title.png" loading="lazy" alt="HyperFrames説明動画のタイトル"><figcaption><span class="tag">HF-01</span>全体の流れ：Owner → Gadget only → Collaborator → Realtime sync</figcaption></figure>
+    <figure><img src="125-hyperframe-share-action.png" loading="lazy" alt="HyperFramesで共有リンク発行を説明"><figcaption><span class="tag">HF-02</span>操作：Share → Gadget only → Create link</figcaption></figure>
+    <figure><img src="126-hyperframe-collaborator-join.png" loading="lazy" alt="HyperFramesでCollaborator参加を説明"><figcaption><span class="tag">HF-03</span>参加：別アカウントが同じGadgetへ入る</figcaption></figure>
+    <figure><img src="127-hyperframe-collaborator-note.png" loading="lazy" alt="HyperFramesでCollaboratorの付箋追加を説明"><figcaption><span class="tag">HF-04</span>入力：Collaboratorが付箋を追加し、notesが6から7へ</figcaption></figure>
+    <figure><img src="128-hyperframe-owner-sync.png" loading="lazy" alt="HyperFramesでOwner同期を説明"><figcaption><span class="tag">HF-05</span>確認：events 21 / notes 7 / strokes 3 / users 3</figcaption></figure>
+    <figure><img src="129-hyperframe-cleanup-finding.png" loading="lazy" alt="HyperFramesでRevoke制限を説明"><figcaption><span class="tag">HF-06</span>制限：アクセス削除は成功、Revoke UIは要追加検証</figcaption></figure>
+  </section>
+  <h2>X投稿用カルーセル：3:2スライド画像</h2>
+  <p class="note">説明動画のフレームではなく、そのまま投稿できるように再構成した完成スライドです。全6枚、1920×1280（3:2）。タイトルで結論を出し、以降は共有・参加・入力・同期・結論の順に並べています。</p>
+  <div class="video-card">
+    <video controls preload="metadata" poster="130-cloudflare-os-multiuser-slide-1-title.png">
+      <source src="cloudflare-os-multiuser-social-slides.mp4" type="video/mp4">
+      お使いのブラウザは動画再生に対応していません。
+    </video>
+    <p><span class="tag">CAROUSEL</span>投稿用6枚のプレビュー。PNGはそのままXへ添付できます。</p>
+  </div>
+  <section class="grid">
+    <figure><img src="130-cloudflare-os-multiuser-slide-1-title.png" loading="lazy" alt="共同編集できたことを伝えるタイトルスライド"><figcaption><span class="tag">POST-01</span>タイトル：別アカウントでも、共同編集できた。</figcaption></figure>
+    <figure><img src="131-cloudflare-os-multiuser-slide-2-share.png" loading="lazy" alt="Gadget only共有リンクを説明する投稿スライド"><figcaption><span class="tag">POST-02</span>共有：OwnerがGadget onlyの入口を作る。</figcaption></figure>
+    <figure><img src="132-cloudflare-os-multiuser-slide-3-join.png" loading="lazy" alt="Collaborator参加を説明する投稿スライド"><figcaption><span class="tag">POST-03</span>参加：別アカウントが同じGadgetへ入る。</figcaption></figure>
+    <figure><img src="133-cloudflare-os-multiuser-slide-4-note.png" loading="lazy" alt="Collaboratorの付箋追加を説明する投稿スライド"><figcaption><span class="tag">POST-04</span>入力：notesが6から7へ増える。</figcaption></figure>
+    <figure><img src="134-cloudflare-os-multiuser-slide-5-sync.png" loading="lazy" alt="Ownerへのリアルタイム同期を説明する投稿スライド"><figcaption><span class="tag">POST-05</span>同期：events 21 / notes 7 / strokes 3 / users 3。</figcaption></figure>
+    <figure><img src="135-cloudflare-os-multiuser-slide-6-verdict.png" loading="lazy" alt="共同編集の結論とRevoke制限を説明する投稿スライド"><figcaption><span class="tag">POST-06</span>結論：共同編集は実証、Revokeは追加検証。</figcaption></figure>
+  </section>
 </main>
-<script>document.querySelectorAll('img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; });</script>
+<script>
+  const appLink = document.querySelector("[data-app-port]");
+  if (appLink && window.location.hostname.endsWith(".ts.net")) {
+    appLink.href = "https://" + window.location.hostname + ":" + appLink.dataset.appPort + "/";
+  }
+  document.querySelectorAll('img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; });
+</script>
 </body>
 </html>

@@ -40,6 +40,7 @@ The focus is practical: ask an agent to create a Gadget, write files, execute co
 | Run the local workspace | [Quick start](#-quick-start) |
 | Understand the containers | [Architecture](https://sunwood-ai-labs.github.io/cloudflare-os-home/guide/architecture) |
 | Reproduce the agent test | [Agent smoke test](#-agent-smoke-test) |
+| Reproduce the collaborative whiteboard | [Whiteboard experiment](WHITEBOARD-EXPERIMENT.md) |
 | Compare the evidence | [Research log](RESEARCH-LOG.md) |
 | Diagnose a failed setup | [Troubleshooting](https://sunwood-ai-labs.github.io/cloudflare-os-home/guide/troubleshooting) |
 
@@ -223,6 +224,64 @@ The accepted final set is [71–78](artifacts/screenshots/71-glm5.2-slide-1-acce
 
 The follow-up X payload was published as a tailnet-reviewed [4 + 4 simulator](https://<tailnet-host>:8891/): four public-safe attachments on the main post, a separate attachment-free reply that points to the previous post, four attachments on the next linear continuation reply, and the GitHub URL in a separate final reply. See the [detailed GLM 5.2 experiment record](GLM5.2-SLIDES-EXPERIMENT.md) for the full timeline, screenshots, exact payload, and published X URLs. The original captures remain in the repository; only the two images containing private connection URLs are masked in the public payload.
 
+### Collaborative whiteboard Gadget experiment
+
+The upstream README's “Make a collaborative whiteboard app.” example was reproduced through the local `LiteLLM · glm-5.2` route. This is an agent-generated Gadget, not a fixed whiteboard product: the agent created a Durable Object-backed shared state, real-time subscriptions, presence, sticky notes, freehand drawing, and an in-app smoke test. The agent recovered from a storage API mistake, reached `passed=true` for 22 checks, and the UI was first verified across two tabs and then across a separate account joining a `Gadget only` share link.
+
+<table>
+  <tr>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/108-whiteboard-retest.png"><img src="artifacts/screenshots/108-whiteboard-retest.png" alt="共同ホワイトボードの修正後テスト" width="100%" /></a><br /><sub><b>Agent repair</b> — the storage issue was diagnosed and fixed; 22 checks passed.</sub></td>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/109-whiteboard-smoke-test.png"><img src="artifacts/screenshots/109-whiteboard-smoke-test.png" alt="共同ホワイトボードのUIスモークテスト" width="100%" /></a><br /><sub><b>Smoke test</b> — the Gadget UI shows the server test as PASSED.</sub></td>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/114-whiteboard-two-tabs-presence.png"><img src="artifacts/screenshots/114-whiteboard-two-tabs-presence.png" alt="共同ホワイトボードの2タブpresence" width="100%" /></a><br /><sub><b>Two tabs</b> — shared notes and drawing, with `users: 2`.</sub></td>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/115-whiteboard-realtime-tabB-to-tabA.png"><img src="artifacts/screenshots/115-whiteboard-realtime-tabB-to-tabA.png" alt="共同ホワイトボードのリアルタイム同期" width="100%" /></a><br /><sub><b>Realtime</b> — a note created in tab B appears in tab A.</sub></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/118-multiuser-owner-share-modal.png"><img src="artifacts/screenshots/118-multiuser-owner-share-modal.png" alt="Owner share modal with Gadget only" width="100%" /></a><br /><sub><b>Share link</b> — Owner creates a `Gadget only` link.</sub></td>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/119-multiuser-collaborator-joined.png"><img src="artifacts/screenshots/119-multiuser-collaborator-joined.png" alt="Collaborator joined whiteboard" width="100%" /></a><br /><sub><b>Joined</b> — a separate account enters the Gadget.</sub></td>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/120-multiuser-collaborator-realtime-note.png"><img src="artifacts/screenshots/120-multiuser-collaborator-realtime-note.png" alt="Collaborator adds a note" width="100%" /></a><br /><sub><b>Collaborator edit</b> — the second account adds a note.</sub></td>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/122-multiuser-owner-sync-final.png"><img src="artifacts/screenshots/122-multiuser-owner-sync-final.png" alt="Owner sees the collaborator note" width="100%" /></a><br /><sub><b>Owner sync</b> — the note and presence appear on the Owner side.</sub></td>
+  </tr>
+</table>
+
+#### HyperFrames walkthrough: what each screenshot proves
+
+The raw multi-user screenshots are now also packaged as a rendered 38-second HyperFrames walkthrough. Each scene explicitly labels the operation, participant, observed result, and the point to check, so the evidence is readable without guessing from the UI alone. Watch the [rendered walkthrough](artifacts/screenshots/hyperframe-multiuser-explainer.mp4), inspect the [source composition](artifacts/hyperframes/multiuser-explainer/index.html), or open the tailnet-only [evidence gallery](https://<tailnet-host>:8890/).
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/124-hyperframe-multiuser-title.png"><img src="artifacts/screenshots/124-hyperframe-multiuser-title.png" alt="HyperFrames multi-user evidence walkthrough title" width="100%" /></a><br /><sub><b>Flow</b> — Owner → Gadget only → Collaborator → Realtime sync.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/125-hyperframe-share-action.png"><img src="artifacts/screenshots/125-hyperframe-share-action.png" alt="HyperFrames share link explanation" width="100%" /></a><br /><sub><b>Share</b> — Share → Gadget only → Create link.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/126-hyperframe-collaborator-join.png"><img src="artifacts/screenshots/126-hyperframe-collaborator-join.png" alt="HyperFrames collaborator join explanation" width="100%" /></a><br /><sub><b>Join</b> — a separate account enters the same Gadget.</sub></td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/127-hyperframe-collaborator-note.png"><img src="artifacts/screenshots/127-hyperframe-collaborator-note.png" alt="HyperFrames collaborator note explanation" width="100%" /></a><br /><sub><b>Input</b> — the Collaborator adds a note; notes go from 6 to 7.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/128-hyperframe-owner-sync.png"><img src="artifacts/screenshots/128-hyperframe-owner-sync.png" alt="HyperFrames owner sync explanation" width="100%" /></a><br /><sub><b>Observe</b> — events 21 / notes 7 / strokes 3 / users 3 converge.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/129-hyperframe-cleanup-finding.png"><img src="artifacts/screenshots/129-hyperframe-cleanup-finding.png" alt="HyperFrames cleanup limitation explanation" width="100%" /></a><br /><sub><b>Limit</b> — access removal succeeded; share-link Revoke needs more testing.</sub></td>
+  </tr>
+</table>
+
+#### X-ready carousel: six 3:2 slide images
+
+The explanatory walkthrough above is useful for evidence review, but these six images are the actual post-ready carousel. They are 1920×1280 (3:2), with a result-first cover and one clear action/result per slide. The [carousel preview](artifacts/screenshots/cloudflare-os-multiuser-social-slides.mp4) is rendered from the [social-slide composition](artifacts/hyperframes/multiuser-social-slides/index.html); the PNGs can be attached directly to X.
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/130-cloudflare-os-multiuser-slide-1-title.png"><img src="artifacts/screenshots/130-cloudflare-os-multiuser-slide-1-title.png" alt="Cloudflare OS multi-user carousel title" width="100%" /></a><br /><sub><b>1 / 6</b> — Separate accounts can collaborate.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/131-cloudflare-os-multiuser-slide-2-share.png"><img src="artifacts/screenshots/131-cloudflare-os-multiuser-slide-2-share.png" alt="Cloudflare OS multi-user share link slide" width="100%" /></a><br /><sub><b>2 / 6</b> — Owner creates a Gadget-only entry point.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/132-cloudflare-os-multiuser-slide-3-join.png"><img src="artifacts/screenshots/132-cloudflare-os-multiuser-slide-3-join.png" alt="Cloudflare OS multi-user collaborator join slide" width="100%" /></a><br /><sub><b>3 / 6</b> — A separate account joins the Gadget.</sub></td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/133-cloudflare-os-multiuser-slide-4-note.png"><img src="artifacts/screenshots/133-cloudflare-os-multiuser-slide-4-note.png" alt="Cloudflare OS multi-user note slide" width="100%" /></a><br /><sub><b>4 / 6</b> — The Collaborator adds a note; notes 6 → 7.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/134-cloudflare-os-multiuser-slide-5-sync.png"><img src="artifacts/screenshots/134-cloudflare-os-multiuser-slide-5-sync.png" alt="Cloudflare OS multi-user realtime sync slide" width="100%" /></a><br /><sub><b>5 / 6</b> — The Owner observes the synchronized change.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/135-cloudflare-os-multiuser-slide-6-verdict.png"><img src="artifacts/screenshots/135-cloudflare-os-multiuser-slide-6-verdict.png" alt="Cloudflare OS multi-user verdict slide" width="100%" /></a><br /><sub><b>6 / 6</b> — Collaboration proven; Revoke needs follow-up.</sub></td>
+  </tr>
+</table>
+
+See the [full whiteboard experiment record](WHITEBOARD-EXPERIMENT.md) for the prompt, screenshots 98–123, implementation observations, cross-account share-link test, permission result, and cleanup limitation.
+
 ### Tailscale evidence gallery
 
 The slide run was repeated through the tailnet-only Cloudflare OS URL. The complete timeline is available from the local gallery at `https://<tailnet-host>:8890/` after starting the evidence server.
@@ -272,6 +331,7 @@ cloudflare-os-home/
 ├─ docs/                     # bilingual VitePress documentation
 ├─ docker-compose.yml
 ├─ GLM5.2-SLIDES-EXPERIMENT.md
+├─ WHITEBOARD-EXPERIMENT.md
 ├─ RESEARCH-LOG.md
 └─ SECURITY.md
 ```

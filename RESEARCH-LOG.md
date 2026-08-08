@@ -503,3 +503,122 @@ Build the deck, test that it works, and report the created files and test result
 - GitHub返信: [2086004347108999519](https://x.com/hAru_mAki_ch/status/2086004347108999519)（親: 5〜8枚目返信）
 
 Xへの送信後、ローカルのpost historyにも4件を保存し、本文長・添付数・親ポストIDを確認した。今後記事化する場合は、公開済みURLをこの節と[GLM5.2-SLIDES-EXPERIMENT.md](GLM5.2-SLIDES-EXPERIMENT.md)から再利用できる。
+
+## 17. 共同ホワイトボードGadget実験（2026-08-08）
+
+Cloudflare OSの上流READMEにある「Make a collaborative whiteboard app.」を、プロジェクト内LiteLLMの`glm-5.2`へ切り替えた環境で再現した。これは内蔵の固定Whiteboard機能を開く実験ではなく、エージェントに共同編集アプリを新規Gadgetとして生成させる実験である。
+
+### 実行結果
+
+- `共同ホワイトボード検証`というGadgetをゼロから作成。
+- `server.js`相当のDurable Objectに`notes` / `strokes`共有状態、イベント連番、イベントログ、presence、購読通知、永続化を実装。
+- `client.js`相当のUIにSelect / Draw / Erase、付箋、描画、Connected collaborators、Recent events、Smoke testを実装。
+- 生成途中に`writeFile`引数エラーとCloudflare Durable Object Storage APIの複数キー読み出し誤認が発生したが、エージェントがログを読み、コードを修正して再実行。
+- エージェント報告の22項目スモークテストが`passed=true`。UI上のSmoke testにも`PASSED`と各チェックが表示された。
+- 2つのブラウザタブを同じGadgetへ接続し、`users: 2`、`events: 19`、`notes: 6`、`strokes: 3`を確認。
+- タブBで追加した`共同編集テスト：タブB`がタブAへリアルタイム反映された。
+- 再読み込み後も付箋、描画、イベント数が復元された。
+- Share modalで`Gadget only`共有リンクを作成し、別アカウントの参加とGadget操作を確認した。Collaborator削除は成功したが、Revoke操作はUIエラーが出てリンク一覧から消えなかった（詳細は次節）。
+
+### スクショ
+
+- 生成前・依頼: [98](artifacts/screenshots/98-whiteboard-home.png), [99](artifacts/screenshots/99-whiteboard-prompt.png)
+- エージェント進行: [100](artifacts/screenshots/100-whiteboard-agent-start.png)〜[103](artifacts/screenshots/103-whiteboard-code-generated.png)
+- 失敗から修正: [104](artifacts/screenshots/104-whiteboard-agent-next-step.png)〜[108](artifacts/screenshots/108-whiteboard-retest.png)
+- UIスモークテスト・確定: [109](artifacts/screenshots/109-whiteboard-smoke-test.png), [110](artifacts/screenshots/110-whiteboard-accepted.png)
+- 付箋・描画: [111](artifacts/screenshots/111-whiteboard-note-edit.png)〜[113](artifacts/screenshots/113-whiteboard-drawing-persisted.png)
+- 共同編集: [114](artifacts/screenshots/114-whiteboard-two-tabs-presence.png), [115](artifacts/screenshots/115-whiteboard-realtime-tabB-to-tabA.png)
+- 永続性・最終状態: [116](artifacts/screenshots/116-whiteboard-reload-persistence.png), [117](artifacts/screenshots/117-whiteboard-final.png)
+
+詳細な依頼文、実装の観測内容、検証値、未確認範囲は[WHITEBOARD-EXPERIMENT.md](WHITEBOARD-EXPERIMENT.md)にまとめた。元スクショは加工せず`artifacts/screenshots/`に保存し、証跡ギャラリーをtailnet限定8890番で配信している。
+
+## 18. 別アカウント共有リンク実験（2026-08-08）
+
+前節の2タブ検証が同一アカウントだったため、今回は認証状態が分離された別オリジンのブラウザーセッションで、実験用Collaboratorアカウントを作成した。OwnerのWorkspaceから`Gadget only`の共有リンクを発行し、Collaboratorがそのリンクで同じGadgetへ参加した。
+
+### 観測結果
+
+- Collaborator側はOwnerのWorkspaceに`by cloudflareos`として入り、GadgetのUIを利用できた。
+- Collaborator側にはOwnerのチャット、Code、Connections、Share操作が表示されず、Gadget操作に限定された。
+- Collaboratorから付箋`別アカウントCollaborator：リアルタイム追加`を追加した。
+- 約2.3秒後、Owner側にも同じ付箋が現れ、両画面で`events: 21`、`notes: 7`、`strokes: 3`、`users: 3`を確認した。
+- `users: 3`は、Owner・Collaboratorに加えて前回検証のpresenceがheartbeat期限まで残った値であり、presenceの離脱表示には遅延がある。
+
+### 証跡スクショ
+
+- 共有設定: [118](artifacts/screenshots/118-multiuser-owner-share-modal.png)
+- Collaborator参加: [119](artifacts/screenshots/119-multiuser-collaborator-joined.png)
+- Collaboratorの付箋追加: [120](artifacts/screenshots/120-multiuser-collaborator-realtime-note.png)
+- Owner側の同期途中: [121](artifacts/screenshots/121-multiuser-owner-realtime-note.png)
+- Owner側の最終同期: [122](artifacts/screenshots/122-multiuser-owner-sync-final.png)
+- 共有管理エラー: [123](artifacts/screenshots/123-multiuser-revoke-error.png)
+
+### 権限と後片付け
+
+今回の`Gadget only`は「アプリを使う」権限として機能し、Gadget内の付箋追加は許可された。一方、Workspaceそのものを編集するUIはCollaborator側に表示されなかった。Ownerから実験用Collaboratorを削除すると`Collaborator removed.`が表示され、アクセス削除は成功した。
+
+share linkのRevoke操作では`The execution context which hosts this callback is no longer running.`と`Failed to load sharing info`が表示され、リンクが一覧から消えない挙動を観測した。したがって、今回の記録では「リンクを無効化した」とは断定せず、共有管理UIの未解決事象として残す。テスト用リンクはtailnet限定環境で作成し、トークン自体はMarkdown・README・公開ペイロードへ記録していない。
+
+詳細は[WHITEBOARD-EXPERIMENT.md](WHITEBOARD-EXPERIMENT.md)に統合した。
+
+## 19. HyperFramesで共同編集スクショを説明化（2026-08-08）
+
+別アカウント実験のスクショ118〜123は、UIの情報量が多く、画像単体では「誰が何をしたか」が読み取りにくかった。そこでHyperFramesで、元スクショを証拠カードとして残しつつ、操作・参加者・結果・確認ポイントを説明する38秒のwalkthroughを作成した。
+
+### 画面で説明した内容
+
+- 表紙: Owner → Gadget only → Collaborator → Realtime syncという実験の因果関係。
+- 共有: Ownerが`Gadget only`のshare linkを発行した。
+- 参加: 別アカウントがWorkspace編集権限ではなくGadget利用画面へ入った。
+- 入力: Collaboratorが付箋を追加し、`notes: 6 → 7`になった。
+- 確認: Owner側で同じ付箋、presence、Recent eventsが観測され、`events: 21 / notes: 7 / strokes: 3 / users: 3`に収束した。
+- 制限: Collaborator削除は成功した一方、share linkのRevokeはUIエラーになり、リンク一覧から消えなかった。
+
+### 成果物と検査
+
+- 構成ソース: [artifacts/hyperframes/multiuser-explainer/index.html](artifacts/hyperframes/multiuser-explainer/index.html)
+- デザイン定義: [artifacts/hyperframes/multiuser-explainer/DESIGN.md](artifacts/hyperframes/multiuser-explainer/DESIGN.md)
+- 38秒動画: [artifacts/screenshots/hyperframe-multiuser-explainer.mp4](artifacts/screenshots/hyperframe-multiuser-explainer.mp4)
+- 説明フレーム: [124](artifacts/screenshots/124-hyperframe-multiuser-title.png)〜[129](artifacts/screenshots/129-hyperframe-cleanup-finding.png)
+- `hyperframes check --json`: runtime/layoutエラー0、コントラスト69/69合格。
+- `hyperframes lint --json`: エラー0、警告0。
+
+元スクショは加工せず、HyperFrames側の説明パネルと対応番号で意味を補った。動画は証拠そのものを置き換えるものではなく、スクショを読む順番と観測結果を明示する補助証拠として扱う。
+
+## 20. 投稿用スライド画像へ再構成（2026-08-08）
+
+前節の説明フレームは、スクショを読むための証拠動画としては有効だったが、そのままXへ投稿するとメモ・ダッシュボードに見える問題があった。そこで、説明動画とは別に、結果ファーストの3:2カルーセルを作成した。
+
+- 表紙: 「別アカウントでも、共同編集できた。」
+- 2枚目: `Gadget only`共有リンクの発行。
+- 3枚目: Collaboratorの参加と権限範囲。
+- 4枚目: 付箋追加と`notes 6 → 7`。
+- 5枚目: Owner側へのリアルタイム同期と4つの観測値。
+- 6枚目: 共同編集の実証と、Revokeの未解決事項。
+
+成果物は[130](artifacts/screenshots/130-cloudflare-os-multiuser-slide-1-title.png)〜[135](artifacts/screenshots/135-cloudflare-os-multiuser-slide-6-verdict.png)。全画像1920×1280、3:2で、Xへ直接添付できる形式として保存した。プレビュー動画は[cloudflare-os-multiuser-social-slides.mp4](artifacts/screenshots/cloudflare-os-multiuser-social-slides.mp4)、構成ソースは[artifacts/hyperframes/multiuser-social-slides/index.html](artifacts/hyperframes/multiuser-social-slides/index.html)にある。
+
+## 21. 共同ホワイトボード続編X投稿シミュレーション（2026-08-08）
+
+前回のGLM 5.2 Slides投稿（[2086003612577300719](https://x.com/hAru_mAki_ch/status/2086003612577300719)）の続編として、別アカウント共有リンク実験を`Cloudflare OS × 共同ホワイトボード やってみた❸`にした。メイン投稿に添付4枚、前回投稿URLだけの添付なし返信、続編の添付2枚、GitHub URLの別返信に分離した。今回の確認ではXへ投稿していない。
+
+### 構成
+
+- メイン: `Gadget only`共有、別アカウント参加、付箋のリアルタイム同期、RevokeのUIエラーを説明。添付は130〜133。
+- 前回投稿参照返信: 前回のGLM 5.2スライド検証へのURLを1件だけ掲載。
+- 続編メディア返信: Owner → Collaborator → 付箋追加 → Owner同期の流れと、events: 21 / notes: 7 / strokes: 3 / users: 3を説明。添付は134〜135。
+- GitHub別返信: `cloudflare-os-home`のURLを1件だけ掲載。新しい検証記録の反映後に使用する想定。
+
+### 検証結果
+
+`C:\\Users\\makim\\.codex\\skills\\sunwood-build-in-public\\scripts\\preflight.ps1`に、実際の本文・返信文・添付6枚・TailscaleシミュレーターURLを渡し、`ok: true`を確認した。本文は191文字、返信は161 / 165 / 115文字、添付は全て1920×1280・3:2だった。メイン本文はURLなし、返信ごとのURLは1件以下、各投稿の添付は4件以下である。
+
+### Tailscaleシミュレーター証跡
+
+- シミュレーター: `https://<tailnet-host>:8891/`（tailnet限定）
+- ソース: [artifacts/x-post-simulator/index.html](artifacts/x-post-simulator/index.html)
+- [136-x-post-simulator-multiuser-top.png](artifacts/screenshots/136-x-post-simulator-multiuser-top.png): メイン4枚と公開前チェック
+- [137-x-post-simulator-multiuser-middle.png](artifacts/screenshots/137-x-post-simulator-multiuser-middle.png): 前回投稿参照返信までの直列表示
+- [138-x-post-simulator-multiuser-bottom.png](artifacts/screenshots/138-x-post-simulator-multiuser-bottom.png): 続編2枚とGitHub別返信
+
+画像130〜135は、実スクショ118〜123を元にHyperFramesで再構成した投稿用ビジュアルであり、実験の元スクショそのものではない。元スクショは加工せず、証拠ギャラリー8890番に保持している。

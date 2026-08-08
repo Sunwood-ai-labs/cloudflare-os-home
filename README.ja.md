@@ -40,6 +40,7 @@ Cloudflare OS Homeは、Cloudflare OSをエージェント中心のワークス�
 | ローカルワークスペースを起動する | [クイックスタート](#-クイックスタート) |
 | コンテナ構成を理解する | [アーキテクチャ](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/guide/architecture) |
 | エージェント実験を再現する | [エージェントスモークテスト](#-エージェントスモークテスト) |
+| 共同ホワイトボードを再現する | [共同ホワイトボード実験](WHITEBOARD-EXPERIMENT.md) |
 | 証跡を見る | [調査ログ](RESEARCH-LOG.md) |
 | 起動失敗を調べる | [トラブルシュート](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/guide/troubleshooting) |
 
@@ -223,6 +224,64 @@ node .\qa\agentic-gadget-smoke.mjs
 
 続編X投稿用に、tailnet限定の[4枚＋4枚シミュレーター](https://<tailnet-host>:8891/)を確認したうえで、実際に公開しました。メイン投稿に4枚、前回投稿URLだけを示す添付なし返信、次の直列返信に4枚、最後にGitHub URLだけの別返信を置く構成です。詳細な時系列、スクショ、公開ペイロード、X投稿URLは[GLM 5.2実験記録](GLM5.2-SLIDES-EXPERIMENT.md)にまとめています。元の実スクショはリポジトリに残し、非公開の接続先URLを含む2枚だけ公開用コピーでマスクしています。
 
+### 共同ホワイトボードGadget実験
+
+上流READMEの「Make a collaborative whiteboard app.」を、プロジェクト内の`LiteLLM · glm-5.2`経由で再現しました。これは固定のホワイトボード機能ではなく、エージェントが新規Gadgetとして作った共同編集アプリです。Durable Objectの共有状態、リアルタイム購読、presence、付箋、フリーハンド描画、UIスモークテストを生成し、途中のストレージAPIエラーも自動修正して22項目を`passed=true`にしました。2タブ間の同期・再読み込み後の保持に加え、別アカウントが`Gadget only`共有リンクから参加し、付箋をOwnerへ同期するところまで確認しています。
+
+<table>
+  <tr>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/108-whiteboard-retest.png"><img src="artifacts/screenshots/108-whiteboard-retest.png" alt="共同ホワイトボードの修正後テスト" width="100%" /></a><br /><sub><b>エージェント修正</b> — ストレージ問題を特定・修正し、22項目が通過。</sub></td>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/109-whiteboard-smoke-test.png"><img src="artifacts/screenshots/109-whiteboard-smoke-test.png" alt="共同ホワイトボードのUIスモークテスト" width="100%" /></a><br /><sub><b>スモークテスト</b> — Gadget内のテストパネルがPASSED。</sub></td>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/114-whiteboard-two-tabs-presence.png"><img src="artifacts/screenshots/114-whiteboard-two-tabs-presence.png" alt="共同ホワイトボードの2タブpresence" width="100%" /></a><br /><sub><b>2タブ接続</b> — 同じ付箋・描画と`users: 2`。</sub></td>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/115-whiteboard-realtime-tabB-to-tabA.png"><img src="artifacts/screenshots/115-whiteboard-realtime-tabB-to-tabA.png" alt="共同ホワイトボードのリアルタイム同期" width="100%" /></a><br /><sub><b>リアルタイム</b> — タブBで作った付箋がタブAへ反映。</sub></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/118-multiuser-owner-share-modal.png"><img src="artifacts/screenshots/118-multiuser-owner-share-modal.png" alt="OwnerのGadget only共有設定" width="100%" /></a><br /><sub><b>共有リンク</b> — Ownerが`Gadget only`を発行。</sub></td>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/119-multiuser-collaborator-joined.png"><img src="artifacts/screenshots/119-multiuser-collaborator-joined.png" alt="Collaboratorが共同ホワイトボードへ参加" width="100%" /></a><br /><sub><b>参加</b> — 別アカウントがGadgetへ参加。</sub></td>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/120-multiuser-collaborator-realtime-note.png"><img src="artifacts/screenshots/120-multiuser-collaborator-realtime-note.png" alt="Collaboratorが付箋を追加" width="100%" /></a><br /><sub><b>Collaborator操作</b> — 別ユーザーが付箋を追加。</sub></td>
+    <td width="25%" valign="top"><a href="artifacts/screenshots/122-multiuser-owner-sync-final.png"><img src="artifacts/screenshots/122-multiuser-owner-sync-final.png" alt="Owner側にCollaboratorの付箋が同期" width="100%" /></a><br /><sub><b>Owner同期</b> — 付箋とpresenceがOwner側にも表示。</sub></td>
+  </tr>
+</table>
+
+#### HyperFrames説明動画：スクショで何をしたのか
+
+生スクショだけでは操作の意味が分かりにくいため、38秒のHyperFrames説明動画にまとめました。各シーンに「操作・参加者・観測結果・確認ポイント」を表示し、画面を推測で読む必要がないようにしています。[完成動画](artifacts/screenshots/hyperframe-multiuser-explainer.mp4)、[元のHyperFrames構成](artifacts/hyperframes/multiuser-explainer/index.html)、[tailnet限定の証跡ギャラリー](https://<tailnet-host>:8890/)から確認できます。
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/124-hyperframe-multiuser-title.png"><img src="artifacts/screenshots/124-hyperframe-multiuser-title.png" alt="HyperFrames共同編集証跡のタイトル" width="100%" /></a><br /><sub><b>全体の流れ</b> — Owner → Gadget only → Collaborator → Realtime sync。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/125-hyperframe-share-action.png"><img src="artifacts/screenshots/125-hyperframe-share-action.png" alt="HyperFrames共有リンク発行の説明" width="100%" /></a><br /><sub><b>共有</b> — Share → Gadget only → Create link。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/126-hyperframe-collaborator-join.png"><img src="artifacts/screenshots/126-hyperframe-collaborator-join.png" alt="HyperFrames Collaborator参加の説明" width="100%" /></a><br /><sub><b>参加</b> — 別アカウントが同じGadgetへ入る。</sub></td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/127-hyperframe-collaborator-note.png"><img src="artifacts/screenshots/127-hyperframe-collaborator-note.png" alt="HyperFrames Collaboratorの付箋追加説明" width="100%" /></a><br /><sub><b>入力</b> — Collaboratorが付箋を追加し、notesが6から7へ。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/128-hyperframe-owner-sync.png"><img src="artifacts/screenshots/128-hyperframe-owner-sync.png" alt="HyperFrames Owner同期の説明" width="100%" /></a><br /><sub><b>確認</b> — events 21 / notes 7 / strokes 3 / users 3に収束。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/129-hyperframe-cleanup-finding.png"><img src="artifacts/screenshots/129-hyperframe-cleanup-finding.png" alt="HyperFrames後片付け制限の説明" width="100%" /></a><br /><sub><b>制限</b> — アクセス削除は成功、share linkのRevokeは追加検証。</sub></td>
+  </tr>
+</table>
+
+#### X投稿用カルーセル：3:2スライド画像
+
+上の説明動画とは別に、そのままXへ添付できる投稿用カルーセルを作りました。全6枚、1920×1280（3:2）。タイトルで結論を先に出し、共有・参加・入力・同期・結論を1枚ずつ整理しています。[カルーセルプレビュー](artifacts/screenshots/cloudflare-os-multiuser-social-slides.mp4)は[投稿用スライド構成](artifacts/hyperframes/multiuser-social-slides/index.html)からレンダリングしたもので、PNGはそのまま添付できます。
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/130-cloudflare-os-multiuser-slide-1-title.png"><img src="artifacts/screenshots/130-cloudflare-os-multiuser-slide-1-title.png" alt="共同編集できたことを伝えるタイトルスライド" width="100%" /></a><br /><sub><b>1 / 6</b> — 別アカウントでも、共同編集できた。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/131-cloudflare-os-multiuser-slide-2-share.png"><img src="artifacts/screenshots/131-cloudflare-os-multiuser-slide-2-share.png" alt="Gadget only共有リンクの投稿スライド" width="100%" /></a><br /><sub><b>2 / 6</b> — OwnerがGadget onlyの入口を作る。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/132-cloudflare-os-multiuser-slide-3-join.png"><img src="artifacts/screenshots/132-cloudflare-os-multiuser-slide-3-join.png" alt="Collaborator参加の投稿スライド" width="100%" /></a><br /><sub><b>3 / 6</b> — 別アカウントが同じGadgetへ入る。</sub></td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/133-cloudflare-os-multiuser-slide-4-note.png"><img src="artifacts/screenshots/133-cloudflare-os-multiuser-slide-4-note.png" alt="Collaboratorの付箋追加の投稿スライド" width="100%" /></a><br /><sub><b>4 / 6</b> — notesが6から7へ増える。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/134-cloudflare-os-multiuser-slide-5-sync.png"><img src="artifacts/screenshots/134-cloudflare-os-multiuser-slide-5-sync.png" alt="Ownerへのリアルタイム同期の投稿スライド" width="100%" /></a><br /><sub><b>5 / 6</b> — Owner側で変更を観測。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/screenshots/135-cloudflare-os-multiuser-slide-6-verdict.png"><img src="artifacts/screenshots/135-cloudflare-os-multiuser-slide-6-verdict.png" alt="共同編集の結論とRevoke制限の投稿スライド" width="100%" /></a><br /><sub><b>6 / 6</b> — 共同編集は実証、Revokeは追加検証。</sub></td>
+  </tr>
+</table>
+
+依頼文、スクショ98〜123、実装の観測内容、別アカウント共有リンク、権限結果、後片付け時のRevokeエラーは[共同ホワイトボード実験記録](WHITEBOARD-EXPERIMENT.md)にまとめています。
+
 ### Tailscale証跡ギャラリー
 
 tailnet限定のCloudflare OS URLからスライド生成を再実行しました。証跡全体は、証跡サーバー起動後に `https://<tailnet-host>:8890/` で確認できます。
@@ -272,6 +331,7 @@ cloudflare-os-home/
 ├─ docs/                     # 日英VitePressドキュメント
 ├─ docker-compose.yml
 ├─ GLM5.2-SLIDES-EXPERIMENT.md
+├─ WHITEBOARD-EXPERIMENT.md
 ├─ RESEARCH-LOG.md
 └─ SECURITY.md
 ```

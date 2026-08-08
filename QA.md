@@ -30,6 +30,15 @@ The runtime results below were captured during the initial integration pass. Rep
 - [x] A Slides Blueprint run through the Tailscale URL creates exactly six titled slides and persists them after `Accept changes`.
 - [x] The Tailscale screenshot gallery on port 8890 returns HTTP 200, including representative slide images.
 - [x] The GLM 5.2 content-focused Slides run creates exactly eight substantive slides, includes diagrams/table/verification cards, finds zero placeholder strings, has zero geometric overflows, and persists after `Accept changes`.
+- [x] The collaborative whiteboard prompt creates a new Gadget with server/client code, shared notes/strokes state, presence, and a UI smoke-test panel.
+- [x] The whiteboard agent recovers from a client write-tool error and a Durable Object Storage multi-key read bug, then reports 22 passing checks.
+- [x] The whiteboard UI creates and edits a sticky note and records a freehand stroke.
+- [x] Two whiteboard tabs show `users: 2`; a note created in tab B appears in tab A and both tabs converge on the same event/note/stroke counts.
+- [x] Whiteboard state survives a page reload.
+- [x] The Share modal creates a `Gadget only` link; a separate test account joins it and can use the Gadget.
+- [x] A Collaborator-created note synchronizes to the Owner, with `events: 21`, `notes: 7`, `strokes: 3`, and `users: 3` visible on both sides.
+- [x] Removing the test Collaborator succeeds and shows `Collaborator removed.`.
+- [ ] Share-link Revoke is cleanly reflected in the UI; the local test displayed `Failed to load sharing info` and kept the link in the list.
 - [ ] The baseline Slides Blueprint run produces exactly six fully populated slides without leftover placeholders.
 - [ ] The `Export to PDF` action produces a browser download in the local setup.
 
@@ -109,6 +118,20 @@ Screenshots are saved under `artifacts/screenshots/` at the following checkpoint
 - [x] 95-x-post-simulator-glm5.2-previous-post-reply.png
 - [x] 96-x-post-simulator-glm5.2-continuation-media-reply.png
 - [x] 97-x-post-simulator-glm5.2-github-reply.png
+- [x] 98-whiteboard-home.png and 99-whiteboard-prompt.png
+- [x] 100-whiteboard-agent-start.png through 103-whiteboard-code-generated.png
+- [x] 104-whiteboard-agent-next-step.png through 108-whiteboard-retest.png
+- [x] 109-whiteboard-smoke-test.png and 110-whiteboard-accepted.png
+- [x] 111-whiteboard-note-edit.png through 113-whiteboard-drawing-persisted.png
+- [x] 114-whiteboard-two-tabs-presence.png and 115-whiteboard-realtime-tabB-to-tabA.png
+- [x] 116-whiteboard-reload-persistence.png and 117-whiteboard-final.png
+- [x] 118-multiuser-owner-share-modal.png and 119-multiuser-collaborator-joined.png
+- [x] 120-multiuser-collaborator-realtime-note.png through 122-multiuser-owner-sync-final.png
+- [x] 123-multiuser-revoke-error.png
+- [x] HyperFrames multi-user walkthrough source passes lint/check; rendered MP4 is 38 seconds at 1920×1080 and 30fps.
+- [x] HyperFrames keyframes 124–129 explain the operation, participant, result, and limitation for screenshots 118–123.
+- [x] X-ready HyperFrames carousel renders six 1920×1280 (3:2) PNG slides; the result-first title and all five evidence slides were visually inspected.
+- [x] Carousel assets 130–135 and the preview MP4 are available through the tailnet evidence gallery.
 
 91〜93は初版レイアウト（前回投稿参照と5〜8枚目が同じ返信）、94〜97が分離後の最終証跡。
 
@@ -122,3 +145,5 @@ Screenshots are saved under `artifacts/screenshots/` at the following checkpoint
 - [x] Verify the six slide titles through the Tailscale URL after the agent initially lost its connection and reconnected.
 - [x] Serve the screenshot gallery through a separate tailnet-only Tailscale Serve port.
 - [x] Record any upstream/local limitations separately from setup failures.
+- [x] Record the distinction between same-account two-tab realtime collaboration and verified cross-account share-link access.
+- [x] Record the `Gadget only` use-only surface and the Share-link Revoke UI error observed during cleanup.
