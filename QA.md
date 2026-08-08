@@ -105,6 +105,12 @@ Screenshots are saved under `artifacts/screenshots/` at the following checkpoint
 - [x] 91-x-post-simulator-glm5.2-4plus4-top.png
 - [x] 92-x-post-simulator-glm5.2-4plus4-replies.png
 - [x] 93-x-post-simulator-glm5.2-github-reply.png
+- [x] 94-x-post-simulator-glm5.2-separated-main.png
+- [x] 95-x-post-simulator-glm5.2-previous-post-reply.png
+- [x] 96-x-post-simulator-glm5.2-continuation-media-reply.png
+- [x] 97-x-post-simulator-glm5.2-github-reply.png
+
+91〜93は初版レイアウト（前回投稿参照と5〜8枚目が同じ返信）、94〜97が分離後の最終証跡。
 
 ## Exploratory checks
 
