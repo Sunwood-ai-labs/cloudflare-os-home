@@ -100,6 +100,11 @@ Screenshots are saved under `artifacts/screenshots/` at the following checkpoint
 - [x] 69-glm5.2-slide-2-final.png
 - [x] 70-glm5.2-slide-7-final.png
 - [x] 71-glm5.2-slide-1-accepted.png through 78-glm5.2-slide-8-accepted.png
+- [x] 79-x-media-glm5.2-slide-1-original-frame.png through 86-x-media-glm5.2-slide-8-original-frame.png
+- [x] 87-x-media-glm5.2-slide-1-public-redacted.png and 89-x-media-glm5.2-slide-3-public-redacted.png
+- [x] 91-x-post-simulator-glm5.2-4plus4-top.png
+- [x] 92-x-post-simulator-glm5.2-4plus4-replies.png
+- [x] 93-x-post-simulator-glm5.2-github-reply.png
 
 ## Exploratory checks
 

@@ -468,3 +468,26 @@ Build the deck, test that it works, and report the created files and test result
 - [69-glm5.2-slide-2-final.png](artifacts/screenshots/69-glm5.2-slide-2-final.png): プレースホルダー修正後の合格条件
 - [70-glm5.2-slide-7-final.png](artifacts/screenshots/70-glm5.2-slide-7-final.png): プレースホルダー0件の検証カード
 - [71-glm5.2-slide-1-accepted.png](artifacts/screenshots/71-glm5.2-slide-1-accepted.png)〜[78-glm5.2-slide-8-accepted.png](artifacts/screenshots/78-glm5.2-slide-8-accepted.png): Accept changes後の確定版8枚
+
+## 16. GLM 5.2続編X投稿シミュレーション（2026-08-08）
+
+前回の`Cloudflare OS × Slides やってみた❶`（[2085986613587505630](https://x.com/hAru_mAki_ch/status/2085986613587505630)）の続編として、今回の8枚をXの添付上限に合わせて「メイン4枚＋直列返信4枚」に分割した未投稿シミュレーションを作成した。
+
+### シミュレーション構成
+
+- メイン投稿: GLM 5.2への切替、8枚生成、図表・検証カード、プレースホルダー0件、Accept後の保存を説明。添付は1〜4枚目。
+- 直前返信: 前回投稿URLを1件だけ記載し、本文・図表まで統合したことを説明。添付は5〜8枚目。
+- 直列の最後の別返信: GitHubリポジトリURLを1件だけ記載。
+- メイン本文はURLなし、各投稿の添付は4件以下、Xへの送信は未実施。
+- `preflight.ps1`は`ok: true`。メイン186文字、返信125/87文字、8画像すべて1920×1280（3:2）で確認した。
+
+実スクショの元データは`71〜78`番として保持し、公開用添付ではtailnet URLとDocker内部URLが見える1・3枚目だけURLをマスクした。マスク版は証拠を改変して成功状態を作るものではなく、公開先へ非公開の接続先を出さないための安全コピーである。
+
+### シミュレーター
+
+- Tailscale限定URL: `https://<tailnet-host>:8891/`
+- [91-x-post-simulator-glm5.2-4plus4-top.png](artifacts/screenshots/91-x-post-simulator-glm5.2-4plus4-top.png): メイン投稿と4枚
+- [92-x-post-simulator-glm5.2-4plus4-replies.png](artifacts/screenshots/92-x-post-simulator-glm5.2-4plus4-replies.png): 5〜8枚目の返信
+- [93-x-post-simulator-glm5.2-github-reply.png](artifacts/screenshots/93-x-post-simulator-glm5.2-github-reply.png): GitHub URLの別返信
+
+この段階は下書き確認のみで、投稿はしていない。投稿する場合は、シミュレーターに表示された本文・返信順・添付・公開用マスク版が承認後も変わらないことを再確認する。

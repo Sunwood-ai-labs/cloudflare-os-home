@@ -221,6 +221,8 @@ The latest run switched the Cloudflare OS model picker to `LiteLLM · glm-5.2` a
 
 The accepted final set is [71–78](artifacts/screenshots/71-glm5.2-slide-1-accepted.png) through the saved [8 / 8 conclusion](artifacts/screenshots/78-glm5.2-slide-8-accepted.png). The UI verification recorded exactly `1 / 8` through `8 / 8`, a placeholder scan of zero, and zero geometric overflows. PDF file download, Knowledge/RAG behavior, external integrations, and long-running reconnect stability remain explicitly unverified.
 
+The follow-up X payload is also staged in a tailnet-only [4 + 4 simulator](https://<tailnet-host>:8891/): four public-safe attachments on the main post, four on the linear continuation reply, and the GitHub URL in a separate final reply. The original captures remain in the repository; only the two images containing private connection URLs are masked in the simulated public payload.
+
 ### Tailscale evidence gallery
 
 The slide run was repeated through the tailnet-only Cloudflare OS URL. The complete timeline is available from the local gallery at `https://<tailnet-host>:8890/` after starting the evidence server.
