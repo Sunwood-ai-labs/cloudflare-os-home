@@ -221,7 +221,7 @@ node .\qa\agentic-gadget-smoke.mjs
 
 確定後の全スライドは[71–78](artifacts/screenshots/71-glm5.2-slide-1-accepted.png)から、最後の[8 / 8結論](artifacts/screenshots/78-glm5.2-slide-8-accepted.png)まで保存しています。UI上で`1 / 8`〜`8 / 8`、プレースホルダー検索0件、幾何オーバーフロー0件を確認しました。PDF実体のダウンロード、Knowledge/RAG、外部連携、長時間実行時の再接続安定性は、引き続き未確認です。
 
-続編X投稿用に、tailnet限定の[4枚＋4枚シミュレーター](https://<tailnet-host>:8891/)も用意しました。メイン投稿に4枚、前回投稿URLだけを示す添付なし返信、次の直列返信に4枚、最後にGitHub URLだけの別返信を置く構成です。元の実スクショはリポジトリに残し、非公開の接続先URLを含む2枚だけ公開用コピーでマスクしています。
+続編X投稿用に、tailnet限定の[4枚＋4枚シミュレーター](https://<tailnet-host>:8891/)を確認したうえで、実際に公開しました。メイン投稿に4枚、前回投稿URLだけを示す添付なし返信、次の直列返信に4枚、最後にGitHub URLだけの別返信を置く構成です。詳細な時系列、スクショ、公開ペイロード、X投稿URLは[GLM 5.2実験記録](GLM5.2-SLIDES-EXPERIMENT.md)にまとめています。元の実スクショはリポジトリに残し、非公開の接続先URLを含む2枚だけ公開用コピーでマスクしています。
 
 ### Tailscale証跡ギャラリー
 
@@ -271,6 +271,7 @@ cloudflare-os-home/
 ├─ artifacts/screenshots/    # 公開する検証スクショ
 ├─ docs/                     # 日英VitePressドキュメント
 ├─ docker-compose.yml
+├─ GLM5.2-SLIDES-EXPERIMENT.md
 ├─ RESEARCH-LOG.md
 └─ SECURITY.md
 ```

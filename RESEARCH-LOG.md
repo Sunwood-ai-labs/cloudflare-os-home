@@ -471,6 +471,8 @@ Build the deck, test that it works, and report the created files and test result
 
 ## 16. GLM 5.2続編X投稿シミュレーション（2026-08-08）
 
+> この節のシミュレーションは公開前に作成したもの。その後、承認済みの同一ペイロードをXへ公開し、公開URLを末尾に追記した。
+
 前回の`Cloudflare OS × Slides やってみた❶`（[2085986613587505630](https://x.com/hAru_mAki_ch/status/2085986613587505630)）の続編として、今回の8枚をXの添付上限に合わせて「メイン4枚＋前回投稿参照の添付なし返信＋続編4枚＋GitHub別返信」に分けた未投稿シミュレーションを作成した。初版では前回投稿URLと5〜8枚目を同じ返信に入れていたため、見やすさを優先して再配置した。
 
 ### シミュレーション構成
@@ -479,7 +481,7 @@ Build the deck, test that it works, and report the created files and test result
 - 前回投稿参照返信: 前回投稿URLを1件だけ持つ添付なし返信。6枚の生成結果と、再接続時に画面のDraftを確認した経緯を説明。
 - 続編メディア返信: URLなしで、本文・図表まで統合したことを説明。添付は5〜8枚目。
 - 直列の最後の別返信: GitHubリポジトリURLを1件だけ記載。
-- メイン本文はURLなし、各投稿の添付は4件以下、Xへの送信は未実施。
+- メイン本文はURLなし、各投稿の添付は4件以下、Xへの送信は実施済み。
 - `preflight.ps1`は`ok: true`。メイン186文字、返信104/54/87文字、8画像すべて1920×1280（3:2）で確認した。
 
 実スクショの元データは`71〜78`番として保持し、公開用添付ではtailnet URLとDocker内部URLが見える1・3枚目だけURLをマスクした。マスク版は証拠を改変して成功状態を作るものではなく、公開先へ非公開の接続先を出さないための安全コピーである。
@@ -493,4 +495,11 @@ Build the deck, test that it works, and report the created files and test result
 - [97-x-post-simulator-glm5.2-github-reply.png](artifacts/screenshots/97-x-post-simulator-glm5.2-github-reply.png): GitHub URLの最後の別返信
 - [91-x-post-simulator-glm5.2-4plus4-top.png](artifacts/screenshots/91-x-post-simulator-glm5.2-4plus4-top.png)〜[93-x-post-simulator-glm5.2-github-reply.png](artifacts/screenshots/93-x-post-simulator-glm5.2-github-reply.png): 初版レイアウトの証跡（前回投稿参照と5〜8枚目を同じ返信に入れていたため、修正版では使用しない）。
 
-この段階は下書き確認のみで、投稿はしていない。投稿する場合は、シミュレーターに表示された本文・返信順・添付・公開用マスク版が承認後も変わらないことを再確認する。
+### 公開後のURLと親子関係
+
+- メイン投稿: [2086003612577300719](https://x.com/hAru_mAki_ch/status/2086003612577300719)
+- 前回投稿参照返信: [2086004308009762957](https://x.com/hAru_mAki_ch/status/2086004308009762957)（親: メイン投稿）
+- 5〜8枚目返信: [2086004335071355100](https://x.com/hAru_mAki_ch/status/2086004335071355100)（親: 前回投稿参照返信）
+- GitHub返信: [2086004347108999519](https://x.com/hAru_mAki_ch/status/2086004347108999519)（親: 5〜8枚目返信）
+
+Xへの送信後、ローカルのpost historyにも4件を保存し、本文長・添付数・親ポストIDを確認した。今後記事化する場合は、公開済みURLをこの節と[GLM5.2-SLIDES-EXPERIMENT.md](GLM5.2-SLIDES-EXPERIMENT.md)から再利用できる。
