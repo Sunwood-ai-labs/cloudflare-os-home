@@ -41,6 +41,7 @@ The focus is practical: ask an agent to create a Gadget, write files, execute co
 | Understand the containers | [Architecture](https://sunwood-ai-labs.github.io/cloudflare-os-home/guide/architecture) |
 | Reproduce the agent test | [Agent smoke test](#-agent-smoke-test) |
 | Reproduce the collaborative whiteboard | [Whiteboard experiment](WHITEBOARD-EXPERIMENT.md) |
+| Review the eight Gadget experiments and screenshots | [Gadget Lab experiment record](GADGET-LAB-EXPERIMENTS.md) |
 | Compare the evidence | [Research log](RESEARCH-LOG.md) |
 | Diagnose a failed setup | [Troubleshooting](https://sunwood-ai-labs.github.io/cloudflare-os-home/guide/troubleshooting) |
 
@@ -281,6 +282,20 @@ The explanatory walkthrough above is useful for evidence review, but these six i
 </table>
 
 See the [full whiteboard experiment record](WHITEBOARD-EXPERIMENT.md) for the prompt, screenshots 98–123, publication assets 130–138, implementation observations, cross-account share-link test, permission result, cleanup limitation, and the published X thread. The thread is [the main post](https://x.com/hAru_mAki_ch/status/2086048448328204347), [the continuity reply](https://x.com/hAru_mAki_ch/status/2086048845205798939), [the evidence reply](https://x.com/hAru_mAki_ch/status/2086048941033009238), and [the repository reply](https://x.com/hAru_mAki_ch/status/2086049016979374574).
+
+#### Gadget Lab follow-up: eight evidence experiments
+
+The follow-up run tested the existing Gadget modification, intentional failure and self-repair, physical reload persistence, conflict editing, sharing and permissions, Blueprint reuse, external connection discovery, and safety boundaries in order. Thirty-one raw screenshots and nine HyperFrames slides explain what each screen is doing instead of leaving the UI to interpretation. See the [detailed Gadget Lab record](GADGET-LAB-EXPERIMENTS.md) for operations, observed values, unverified boundaries, and the recovery note from the accidental `clearAll` observed during the permission experiment.
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/hyperframes/gadget-lab-evidence/renders/slides/01-title.png"><img src="artifacts/hyperframes/gadget-lab-evidence/renders/slides/01-title.png" alt="Gadget Lab follow-up experiment title" width="100%" /></a><br /><sub><b>Overview</b> — eight experiments tied to raw screenshots.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/hyperframes/gadget-lab-evidence/renders/slides/05-conflict.png"><img src="artifacts/hyperframes/gadget-lab-evidence/renders/slides/05-conflict.png" alt="HyperFrames conflict experiment slide" width="100%" /></a><br /><sub><b>Conflict</b> — arrival-order last-write-wins.</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/hyperframes/gadget-lab-evidence/renders/slides/09-security.png"><img src="artifacts/hyperframes/gadget-lab-evidence/renders/slides/09-security.png" alt="HyperFrames safety boundary slide" width="100%" /></a><br /><sub><b>Safety</b> — rejection and state invariance.</sub></td>
+  </tr>
+</table>
+
+The [HyperFrames MP4](artifacts/hyperframes/gadget-lab-evidence/renders/gadget-lab-evidence.mp4) and [composition source](artifacts/hyperframes/gadget-lab-evidence/index.html) are included. `hyperframes check` passed with Runtime 0 errors, Layout 0 issues, and Contrast 77/77.
 
 ### Tailscale evidence gallery
 

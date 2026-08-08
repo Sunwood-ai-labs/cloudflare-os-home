@@ -41,6 +41,7 @@ Cloudflare OS Homeは、Cloudflare OSをエージェント中心のワークス�
 | コンテナ構成を理解する | [アーキテクチャ](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/guide/architecture) |
 | エージェント実験を再現する | [エージェントスモークテスト](#-エージェントスモークテスト) |
 | 共同ホワイトボードを再現する | [共同ホワイトボード実験](WHITEBOARD-EXPERIMENT.md) |
+| Gadgetの8段階実験とスクショを見る | [Gadget Lab実験記録](GADGET-LAB-EXPERIMENTS.md) |
 | 証跡を見る | [調査ログ](RESEARCH-LOG.md) |
 | 起動失敗を調べる | [トラブルシュート](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/guide/troubleshooting) |
 
@@ -281,6 +282,20 @@ node .\qa\agentic-gadget-smoke.mjs
 </table>
 
 依頼文、スクショ98〜123、投稿用画像130〜138、実装の観測内容、別アカウント共有リンク、権限結果、後片付け時のRevokeエラー、公開済みXスレッドは[共同ホワイトボード実験記録](WHITEBOARD-EXPERIMENT.md)にまとめています。公開スレッドは[メイン投稿](https://x.com/hAru_mAki_ch/status/2086048448328204347)、[前回投稿参照返信](https://x.com/hAru_mAki_ch/status/2086048845205798939)、[検証結果返信](https://x.com/hAru_mAki_ch/status/2086048941033009238)、[GitHub返信](https://x.com/hAru_mAki_ch/status/2086049016979374574)です。
+
+#### Gadget Lab追加実験：8段階の証拠記録
+
+続編として、既存Gadgetの改修、意図的なバグの自己修復、物理リロード、競合編集、共有・権限、Blueprint再利用、外部接続カタログ、安全境界を順番に検証しました。生スクショ31枚と、各画面の「何をしているか」を説明する9枚のHyperFramesスライドを保存しています。[詳細な実験記録](GADGET-LAB-EXPERIMENTS.md)に、操作・観測値・未確認範囲・途中の復旧内容までまとめています。
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><a href="artifacts/hyperframes/gadget-lab-evidence/renders/slides/01-title.png"><img src="artifacts/hyperframes/gadget-lab-evidence/renders/slides/01-title.png" alt="Gadget Lab追加実験のタイトルスライド" width="100%" /></a><br /><sub><b>全体像</b> — 8実験と生スクショの関係。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/hyperframes/gadget-lab-evidence/renders/slides/05-conflict.png"><img src="artifacts/hyperframes/gadget-lab-evidence/renders/slides/05-conflict.png" alt="競合編集を説明するHyperFramesスライド" width="100%" /></a><br /><sub><b>競合編集</b> — 到着順のlast-write-wins。</sub></td>
+    <td width="33%" valign="top"><a href="artifacts/hyperframes/gadget-lab-evidence/renders/slides/09-security.png"><img src="artifacts/hyperframes/gadget-lab-evidence/renders/slides/09-security.png" alt="安全境界を説明するHyperFramesスライド" width="100%" /></a><br /><sub><b>安全境界</b> — 拒否と不変性を確認。</sub></td>
+  </tr>
+</table>
+
+説明動画は[HyperFrames MP4](artifacts/hyperframes/gadget-lab-evidence/renders/gadget-lab-evidence.mp4)、ソースは[composition](artifacts/hyperframes/gadget-lab-evidence/index.html)から確認できます。`hyperframes check`はRuntime 0 errors、Layout 0 issues、Contrast 77/77でした。
 
 ### Tailscale証跡ギャラリー
 
