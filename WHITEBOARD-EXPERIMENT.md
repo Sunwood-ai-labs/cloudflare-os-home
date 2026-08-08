@@ -262,7 +262,7 @@ Cloudflare OS: https://<tailnet-host>:8877/
 
 ## X投稿シミュレーション：共同ホワイトボード続編（2026-08-08）
 
-前回のGLM 5.2 Slides投稿（[2086003612577300719](https://x.com/hAru_mAki_ch/status/2086003612577300719)）の続編として、別アカウント共有リンク実験を`Cloudflare OS × 共同ホワイトボード やってみた❸`にまとめた。Xの添付上限に合わせ、メイン4枚＋前回投稿参照の添付なし返信＋続編2枚＋GitHub別返信の直列構成にした。今回はシミュレーションのみで、Xへの送信は行っていない。
+前回のGLM 5.2 Slides投稿（[2086003612577300719](https://x.com/hAru_mAki_ch/status/2086003612577300719)）の続編として、別アカウント共有リンク実験を`Cloudflare OS × 共同ホワイトボード やってみた❸`にまとめた。Xの添付上限に合わせ、メイン4枚＋前回投稿参照の添付なし返信＋続編2枚＋GitHub別返信の直列構成にした。以下のペイロードは公開前シミュレーション時点の記録であり、承認後に同一内容で公開した。公開結果は「公開結果」節に追記している。
 
 ### 投稿ペイロード
 
@@ -320,7 +320,7 @@ https://github.com/Sunwood-ai-labs/cloudflare-os-home
 
 - `scripts/preflight.ps1`: `ok: true`
 - 本文長: 191文字
-- 返信長: 161 / 165 / 115文字
+- 返信長: 161 / 161 / 115文字
 - 添付: 130〜135の6枚、全て1920×1280・3:2
 - URL: 前回投稿URLとGitHub URLを別返信に分離
 - シミュレーター: `https://<tailnet-host>:8891/`（tailnet限定）
@@ -332,4 +332,27 @@ https://github.com/Sunwood-ai-labs/cloudflare-os-home
 - [137-x-post-simulator-multiuser-middle.png](artifacts/screenshots/137-x-post-simulator-multiuser-middle.png): 1〜4枚目と前回投稿URLを分離した返信
 - [138-x-post-simulator-multiuser-bottom.png](artifacts/screenshots/138-x-post-simulator-multiuser-bottom.png): 5〜6枚目とGitHub別返信
 
-投稿用画像130〜135は、実験スクショ118〜123を元にしたevidence-derived visualである。元の実スクショは加工せず、投稿用カルーセルとは別に保持している。GitHub返信は、新しい検証記録と画像を公開リポジトリへ反映した後に使用する想定である。
+投稿用画像130〜135は、実験スクショ118〜123を元にしたevidence-derived visualである。元の実スクショは加工せず、投稿用カルーセルとは別に保持している。シミュレーション時点ではGitHub返信を公開前提としていたが、実際には新しい検証記録と画像をコミット`462f079`へ反映した後、以下のスレッドとして公開した。
+
+### 公開結果（2026-08-08）
+
+`@hAru_mAki_ch`へ、メイン1件と自己返信3件を直列で公開した。各返信は直前の投稿を親にしており、Xの添付上限に合わせて、メインに4枚、2つ目の返信に2枚を添付した。投稿ID・本文・親子関係は、公開直後にX上とローカルのpost historyで確認した。
+
+| 順序 | 役割 | 公開URL | 添付・リンク |
+| --- | --- | --- | --- |
+| 1 | メイン投稿 | [2086048448328204347](https://x.com/hAru_mAki_ch/status/2086048448328204347) | 130〜133を添付。URLなし。 |
+| 2 | 前回投稿参照返信 | [2086048845205798939](https://x.com/hAru_mAki_ch/status/2086048845205798939) | 添付なし。前回の[GLM 5.2スライド投稿](https://x.com/hAru_mAki_ch/status/2086003612577300719)を掲載。親はメイン`2086048448328204347`。 |
+| 3 | 検証結果返信 | [2086048941033009238](https://x.com/hAru_mAki_ch/status/2086048941033009238) | 134〜135を添付。親は返信1`2086048845205798939`。 |
+| 4 | 詳細記録・GitHub返信 | [2086049016979374574](https://x.com/hAru_mAki_ch/status/2086049016979374574) | 添付なし。[cloudflare-os-home](https://github.com/Sunwood-ai-labs/cloudflare-os-home)を掲載。親は返信2`2086048941033009238`。 |
+
+### 公開時の検証記録
+
+- 対象アカウント: `@hAru_mAki_ch`
+- 公開対象: メイン本文191文字、返信161 / 161 / 115文字。承認時の本文から変更なし。
+- 添付: 130〜135の6枚。全て1920×1280、3:2。メイン4枚、検証結果返信2枚。
+- 公開前検査: `preflight.ps1`で`ok: true`。本文・返信のURL分離、各投稿4枚以下、ローカル履歴重複なしを確認。
+- リポジトリ: [462f079](https://github.com/Sunwood-ai-labs/cloudflare-os-home/commit/462f079c0bc659accb0cd00aae5ba58f715ec231)を`main`へpush済み。
+- 証跡: 元スクショ118〜123、HyperFrames説明フレーム124〜129、X投稿用画像130〜135、シミュレーター証跡136〜138を対応付けて保存。
+- 非公開情報: Collaboratorの認証情報、共有リンクのトークン、ローカルの認証情報は記録・公開していない。
+
+Xの公開URLは、この実験の結論だけでなく、どの画像がどの操作・観測値に対応するかを追跡する入口として使える。再現手順、元スクショ、投稿用ビジュアルの違いは本ファイルの各節と[RESEARCH-LOG.md](RESEARCH-LOG.md)を参照する。

@@ -280,7 +280,7 @@ node .\qa\agentic-gadget-smoke.mjs
   </tr>
 </table>
 
-依頼文、スクショ98〜123、実装の観測内容、別アカウント共有リンク、権限結果、後片付け時のRevokeエラーは[共同ホワイトボード実験記録](WHITEBOARD-EXPERIMENT.md)にまとめています。
+依頼文、スクショ98〜123、投稿用画像130〜138、実装の観測内容、別アカウント共有リンク、権限結果、後片付け時のRevokeエラー、公開済みXスレッドは[共同ホワイトボード実験記録](WHITEBOARD-EXPERIMENT.md)にまとめています。公開スレッドは[メイン投稿](https://x.com/hAru_mAki_ch/status/2086048448328204347)、[前回投稿参照返信](https://x.com/hAru_mAki_ch/status/2086048845205798939)、[検証結果返信](https://x.com/hAru_mAki_ch/status/2086048941033009238)、[GitHub返信](https://x.com/hAru_mAki_ch/status/2086049016979374574)です。
 
 ### Tailscale証跡ギャラリー
 

@@ -45,6 +45,8 @@
 
 投稿用には、別途[6枚の3:2カルーセル](https://github.com/Sunwood-ai-labs/cloudflare-os-home/blob/main/artifacts/screenshots/130-cloudflare-os-multiuser-slide-1-title.png)を用意しました。結果を先に出す表紙と、操作・結果を短くまとめたスライドです。[130〜135](https://github.com/Sunwood-ai-labs/cloudflare-os-home/tree/main/artifacts/screenshots)から全画像を確認できます。
 
+この続編は4件のXスレッドとして公開しました。[メイン投稿](https://x.com/hAru_mAki_ch/status/2086048448328204347)、[前回投稿参照返信](https://x.com/hAru_mAki_ch/status/2086048845205798939)、[検証結果返信](https://x.com/hAru_mAki_ch/status/2086048941033009238)、[GitHub返信](https://x.com/hAru_mAki_ch/status/2086049016979374574)の順です。ペイロード、親投稿ID、公開前後の確認は[WHITEBOARD-EXPERIMENT.md](https://github.com/Sunwood-ai-labs/cloudflare-os-home/blob/main/WHITEBOARD-EXPERIMENT.md)に記録しています。
+
 ## 重要な制約
 
 最初の通常チャットではCloudflare OSについて誤った説明も返りました。これは有用な証拠として残しています。チャット文章だけでは、根拠のある製品知識やエージェント実行と同じではありません。

@@ -45,6 +45,8 @@ The six raw multi-user screenshots are also explained in a rendered [38-second H
 
 For publishing, a separate [six-slide 3:2 carousel](https://github.com/Sunwood-ai-labs/cloudflare-os-home/blob/main/artifacts/screenshots/130-cloudflare-os-multiuser-slide-1-title.png) is available. It uses a result-first cover and short action/result slides; see [130–135](https://github.com/Sunwood-ai-labs/cloudflare-os-home/tree/main/artifacts/screenshots) for the full set.
 
+The continuation was published as a four-post X thread: [main post](https://x.com/hAru_mAki_ch/status/2086048448328204347), [continuity reply](https://x.com/hAru_mAki_ch/status/2086048845205798939), [evidence reply](https://x.com/hAru_mAki_ch/status/2086048941033009238), and [repository reply](https://x.com/hAru_mAki_ch/status/2086049016979374574). The complete payload, parent IDs, and publication checks are recorded in [WHITEBOARD-EXPERIMENT.md](https://github.com/Sunwood-ai-labs/cloudflare-os-home/blob/main/WHITEBOARD-EXPERIMENT.md).
+
 ## Important limitation
 
 The first ordinary chat also produced an incorrect explanation of Cloudflare OS. That is retained as useful evidence: a chat response alone is not the same as grounded product knowledge or an agentic execution.

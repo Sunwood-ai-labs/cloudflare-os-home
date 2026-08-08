@@ -600,7 +600,7 @@ share linkのRevoke操作では`The execution context which hosts this callback 
 
 ## 21. 共同ホワイトボード続編X投稿シミュレーション（2026-08-08）
 
-前回のGLM 5.2 Slides投稿（[2086003612577300719](https://x.com/hAru_mAki_ch/status/2086003612577300719)）の続編として、別アカウント共有リンク実験を`Cloudflare OS × 共同ホワイトボード やってみた❸`にした。メイン投稿に添付4枚、前回投稿URLだけの添付なし返信、続編の添付2枚、GitHub URLの別返信に分離した。今回の確認ではXへ投稿していない。
+前回のGLM 5.2 Slides投稿（[2086003612577300719](https://x.com/hAru_mAki_ch/status/2086003612577300719)）の続編として、別アカウント共有リンク実験を`Cloudflare OS × 共同ホワイトボード やってみた❸`にした。メイン投稿に添付4枚、前回投稿URLだけの添付なし返信、続編の添付2枚、GitHub URLの別返信に分離した。この節は公開前シミュレーション時点の記録であり、承認後の実際の公開結果は次節に追記した。
 
 ### 構成
 
@@ -611,7 +611,7 @@ share linkのRevoke操作では`The execution context which hosts this callback 
 
 ### 検証結果
 
-`C:\\Users\\makim\\.codex\\skills\\sunwood-build-in-public\\scripts\\preflight.ps1`に、実際の本文・返信文・添付6枚・TailscaleシミュレーターURLを渡し、`ok: true`を確認した。本文は191文字、返信は161 / 165 / 115文字、添付は全て1920×1280・3:2だった。メイン本文はURLなし、返信ごとのURLは1件以下、各投稿の添付は4件以下である。
+`C:\\Users\\makim\\.codex\\skills\\sunwood-build-in-public\\scripts\\preflight.ps1`に、実際の本文・返信文・添付6枚・TailscaleシミュレーターURLを渡し、`ok: true`を確認した。本文は191文字、返信は161 / 161 / 115文字、添付は全て1920×1280・3:2だった。メイン本文はURLなし、返信ごとのURLは1件以下、各投稿の添付は4件以下である。
 
 ### Tailscaleシミュレーター証跡
 
@@ -622,3 +622,26 @@ share linkのRevoke操作では`The execution context which hosts this callback 
 - [138-x-post-simulator-multiuser-bottom.png](artifacts/screenshots/138-x-post-simulator-multiuser-bottom.png): 続編2枚とGitHub別返信
 
 画像130〜135は、実スクショ118〜123を元にHyperFramesで再構成した投稿用ビジュアルであり、実験の元スクショそのものではない。元スクショは加工せず、証拠ギャラリー8890番に保持している。
+
+## 22. 共同ホワイトボード続編Xスレッドの公開結果（2026-08-08）
+
+公開前シミュレーターで確認したペイロードについて、ユーザー承認後に内容を変更せず、`@hAru_mAki_ch`へメイン1件＋自己返信3件の直列スレッドとして公開した。公開時の実験成果物は、コミット[462f079](https://github.com/Sunwood-ai-labs/cloudflare-os-home/commit/462f079c0bc659accb0cd00aae5ba58f715ec231)で`main`へ反映済みだった。
+
+### 公開された投稿チェーン
+
+| 順序 | 投稿 | 親投稿 | 添付・本文内リンク |
+| --- | --- | --- | --- |
+| 1 | [メイン: 2086048448328204347](https://x.com/hAru_mAki_ch/status/2086048448328204347) | なし | 画像130〜133、URLなし |
+| 2 | [返信: 2086048845205798939](https://x.com/hAru_mAki_ch/status/2086048845205798939) | メイン`2086048448328204347` | 添付なし、前回投稿URL |
+| 3 | [返信: 2086048941033009238](https://x.com/hAru_mAki_ch/status/2086048941033009238) | 返信1`2086048845205798939` | 画像134〜135、観測値とRevokeエラー |
+| 4 | [返信: 2086049016979374574](https://x.com/hAru_mAki_ch/status/2086049016979374574) | 返信2`2086048941033009238` | 添付なし、GitHub URL |
+
+### 公開後に確認したこと
+
+- X上のrecent取得で4件すべての投稿ID、作成時刻、本文を確認した。
+- メイン投稿の本文は191文字、返信は161 / 161 / 115文字で、承認済みペイロードと一致した。
+- Xの添付数はメイン4枚、検証結果返信2枚で、各投稿の上限内だった。
+- 前回投稿URLとGitHub URLは同じ返信へ混在させず、それぞれ別返信に分離した。
+- ローカルpost historyへ4件を個別保存し、メイン・各返信の親投稿ID、添付ファイル、SHA-256、コミット、検証証拠を記録した。
+
+この公開は、実験結果を「シミュレーター上の案」から「公開済みの再現可能な記録」へ移したものとして扱う。ただし、X投稿の反応数は機能の正しさを示す検証値ではなく、機能の判定根拠は元スクショ118〜123と[WHITEBOARD-EXPERIMENT.md](WHITEBOARD-EXPERIMENT.md)の実験ログである。

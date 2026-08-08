@@ -280,7 +280,7 @@ The explanatory walkthrough above is useful for evidence review, but these six i
   </tr>
 </table>
 
-See the [full whiteboard experiment record](WHITEBOARD-EXPERIMENT.md) for the prompt, screenshots 98–123, implementation observations, cross-account share-link test, permission result, and cleanup limitation.
+See the [full whiteboard experiment record](WHITEBOARD-EXPERIMENT.md) for the prompt, screenshots 98–123, publication assets 130–138, implementation observations, cross-account share-link test, permission result, cleanup limitation, and the published X thread. The thread is [the main post](https://x.com/hAru_mAki_ch/status/2086048448328204347), [the continuity reply](https://x.com/hAru_mAki_ch/status/2086048845205798939), [the evidence reply](https://x.com/hAru_mAki_ch/status/2086048941033009238), and [the repository reply](https://x.com/hAru_mAki_ch/status/2086049016979374574).
 
 ### Tailscale evidence gallery
 
