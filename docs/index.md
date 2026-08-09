@@ -16,6 +16,9 @@ hero:
       text: 日本語
       link: /ja/
     - theme: alt
+      text: Research Lab
+      link: https://github.com/Sunwood-ai-labs/cloudflare-os-home-lab
+    - theme: alt
       text: View on GitHub
       link: https://github.com/Sunwood-ai-labs/cloudflare-os-home
 
@@ -30,8 +33,8 @@ features:
     title: Private by default
     details: Keep the lab local or expose it only to your tailnet through Tailscale Serve.
   - icon: 📸
-    title: Evidence included
-    details: Read the research log and inspect the screenshots behind the conclusions.
+    title: Research companion
+    details: Follow the separate public lab for experiment records, screenshots, and evidence.
 ---
 
 # Cloudflare OS Home
@@ -45,7 +48,8 @@ This repository keeps the runtime practical: the upstream source is included, Li
 - [Get started](guide/getting-started) — bring the stack up from a clean checkout.
 - [Usage](guide/usage) — register a model, chat, and ask for agentic work.
 - [Architecture](guide/architecture) — understand which container owns what.
-- [Evidence](guide/evidence) — see the exact screenshots and verified claims.
+- [Evidence](guide/evidence) — understand the split between runtime QA and the research lab.
+- [Research Lab](https://github.com/Sunwood-ai-labs/cloudflare-os-home-lab) — read experiment records and inspect screenshots.
 - [Troubleshooting](guide/troubleshooting) — recover from the common local failures.
 
 ## The short version

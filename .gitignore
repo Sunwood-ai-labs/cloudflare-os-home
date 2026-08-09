@@ -10,3 +10,10 @@ docs/node_modules/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
 docs/.vitepress/.temp/
+
+# Experiment evidence belongs in cloudflare-os-home-lab, not the runtime repo.
+artifacts/
+QA.md
+*EXPERIMENT*.md
+RESEARCH-LOG.md
+X-POSTING-WORKFLOW-LESSONS.md

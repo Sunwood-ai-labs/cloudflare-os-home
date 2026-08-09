@@ -10,7 +10,7 @@ In the onboarding or provider screen, choose the OpenAI-compatible provider type
 - API URL: `http://litellm:4000/v1` from inside the Compose network.
 - API token: the project-local LITELLM_MASTER_KEY.
 
-The UI confirms a model registration, and the project evidence includes the configured provider screen.
+The UI confirms a model registration. Detailed screenshots and experiment interpretation are maintained in the [Research Lab](https://github.com/Sunwood-ai-labs/cloudflare-os-home-lab).
 
 ## Ordinary chat
 

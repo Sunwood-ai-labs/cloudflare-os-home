@@ -10,7 +10,7 @@ Cloudflare OS Homeには、通常のモデルチャットとエージェント�
 - API URL: Composeネットワーク内から見た`http://litellm:4000/v1`
 - API token: プロジェクト内LiteLLMのLITELLM_MASTER_KEY
 
-UIにモデル登録完了が表示されます。証跡には設定済みProvider画面も含まれています。
+UIにモデル登録完了が表示されます。詳細なスクショと実験の解釈は[検証Lab](https://github.com/Sunwood-ai-labs/cloudflare-os-home-lab)で管理しています。
 
 ## 通常チャット
 

@@ -16,6 +16,9 @@ hero:
       text: English
       link: /
     - theme: alt
+      text: 検証Lab
+      link: https://github.com/Sunwood-ai-labs/cloudflare-os-home-lab
+    - theme: alt
       text: GitHubを見る
       link: https://github.com/Sunwood-ai-labs/cloudflare-os-home
 
@@ -30,8 +33,8 @@ features:
     title: 最初からプライベート
     details: ローカル実行、またはTailscale Serveによるtailnet限定公開ができます。
   - icon: 📸
-    title: 証跡付き
-    details: 調査ログとスクリーンショットで、結論の根拠を確認できます。
+    title: 検証Labと分離
+    details: 詳細な実験記録、スクショ、証拠は公開Labで管理しています。
 ---
 
 # Cloudflare OS Home
@@ -45,7 +48,8 @@ Cloudflare OSを、エージェントが小さなアプリを作って実行で�
 - [はじめに](guide/getting-started) — クリーンなcloneから起動する。
 - [使い方](guide/usage) — モデル登録、チャット、エージェント依頼を試す。
 - [アーキテクチャ](guide/architecture) — 各コンテナの責務を理解する。
-- [証跡](guide/evidence) — スクリーンショットと確認済みの主張を見る。
+- [証跡](guide/evidence) — ランタイムQAと検証Labの役割分担を見る。
+- [検証Lab](https://github.com/Sunwood-ai-labs/cloudflare-os-home-lab) — 実験記録とスクショを見る。
 - [トラブルシュート](guide/troubleshooting) — よくあるローカル障害から復旧する。
 
 ## 要約
