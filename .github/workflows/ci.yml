@@ -53,6 +53,8 @@ jobs:
         run: |
           set -euo pipefail
           tracked="$(git ls-files)"
-          ! grep -E '(^|/)(\.env|secrets|qa/node_modules|artifacts/source)(/|$)' <<< "$tracked"
+          ! grep -E '(^|/)(\.env|secrets|qa/node_modules|artifacts|QA\.md|RESEARCH-LOG\.md|.*EXPERIMENT.*\.md|X-POSTING-WORKFLOW-LESSONS\.md)(/|$)' <<< "$tracked"
+          test -f README.md
+          grep -q 'cloudflare-os-home-lab' README.md
       - name: Check whitespace
         run: git diff --check

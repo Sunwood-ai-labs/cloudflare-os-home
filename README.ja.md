@@ -1,7 +1,7 @@
 <div align="center">
   <img src="docs/public/logo.svg" alt="Cloudflare OS Home ロゴ" width="96" />
   <h1>Cloudflare OS Home</h1>
-  <p>Cloudflare OSを中心にした、個人用・セルフホスト型のエージェントワークスペース。</p>
+  <p>Cloudflare OS + プロジェクト内LiteLLM + Docker Compose + Tailscaleのセルフホスト構成。</p>
   <p>
     <a href="https://github.com/Sunwood-ai-labs/cloudflare-os-home/actions/workflows/ci.yml"><img src="https://github.com/Sunwood-ai-labs/cloudflare-os-home/actions/workflows/ci.yml/badge.svg" alt="Repository QA" /></a>
     <a href="https://github.com/Sunwood-ai-labs/cloudflare-os-home/actions/workflows/pages.yml"><img src="https://github.com/Sunwood-ai-labs/cloudflare-os-home/actions/workflows/pages.yml/badge.svg" alt="Docs deployment" /></a>
@@ -13,25 +13,27 @@
     ·
     <a href="https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/">ドキュメント</a>
     ·
+    <a href="https://github.com/Sunwood-ai-labs/cloudflare-os-home-lab">検証Lab</a>
+    ·
     <a href="https://github.com/Sunwood-ai-labs/cloudflare-os-home/issues">Issues</a>
   </p>
 </div>
 
 ## ✨ これは何か
 
-Cloudflare OS Homeは、Cloudflare OSをエージェント中心のワークスペースとして試すための、再現可能なローカルラボです。上流Cloudflare OS、プロジェクト内LiteLLM、Docker Composeネットワーク、Tailscale Serve手順、スクリーンショット付きの検証結果を一つにまとめています。
+Cloudflare OS Homeは、Cloudflare OSをエージェント中心のワークスペースとして試すための、再現可能なローカル実行環境です。上流ソース、プロジェクト内LiteLLM、Docker Composeネットワーク、Tailscale Serve手順、ブラウザーQAを一つの運用リポジトリにまとめています。
 
-目的は実用的な検証です。エージェントにGadgetを作らせ、ファイルを書かせ、コードを実行し、レビュー可能なDraftとして残す流れを確認できます。Cloudflare公式製品や公式ディストリビューションではありません。
+非公式のローカル統合であり、Cloudflareがホストする製品や公式ディストリビューションではありません。詳細な実験、スクショ、HyperFrames、機能の結論は分離した[Cloudflare OS Home Lab](https://github.com/Sunwood-ai-labs/cloudflare-os-home-lab)に保存しています。
 
 ## 🚀 含まれるもの
 
 - 既知の上流リビジョンに固定したCloudflare OSソース
-- `http://litellm:4000/v1` のOpenAI互換エンドポイントを持つプロジェクト内LiteLLM
-- プロバイダー認証情報を`.env`から読む26モデル構成テンプレート
+- `http://litellm:4000/v1`のOpenAI互換プロジェクト内LiteLLM
+- `.env`から認証情報を読む26モデル構成テンプレート
 - 外部のOpen WebUIネットワークに依存しないDocker Compose構成
-- Tailscale Serveによるtailnet限定HTTPSアクセス（任意）
-- モデル登録、チャット永続化、レスポンシブ表示、Gadget作成を確認するブラウザQA
-- 実際に確認した内容を残す調査ログとスクリーンショット
+- 任意のTailscale Serveによるtailnet限定HTTPS
+- モデル登録、チャット永続化、レスポンシブ表示、Agentic Gadget作成のブラウザーQA
+- 詳細な検証を別管理するLabリポジトリへの導線
 
 ## 🧭 目的別の入口
 
@@ -39,10 +41,9 @@ Cloudflare OS Homeは、Cloudflare OSをエージェント中心のワークス�
 | --- | --- |
 | ローカルワークスペースを起動する | [クイックスタート](#-クイックスタート) |
 | コンテナ構成を理解する | [アーキテクチャ](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/guide/architecture) |
-| エージェント実験を再現する | [エージェントスモークテスト](#-エージェントスモークテスト) |
-| 共同ホワイトボードを再現する | [共同ホワイトボード実験](WHITEBOARD-EXPERIMENT.md) |
-| Gadgetの8段階実験とスクショを見る | [Gadget Lab実験記録](GADGET-LAB-EXPERIMENTS.md) |
-| 証跡を見る | [調査ログ](RESEARCH-LOG.md) |
+| Agentの動作を再現する | [Agentスモークテスト](#-エージェントスモークテスト) |
+| tailnet限定アクセスを設定する | [Tailscaleアクセス](#-tailscaleアクセス) |
+| 実験結果とスクショを見る | [Cloudflare OS Home Lab](https://github.com/Sunwood-ai-labs/cloudflare-os-home-lab) |
 | 起動失敗を調べる | [トラブルシュート](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/guide/troubleshooting) |
 
 ## ⚡ クイックスタート
@@ -71,9 +72,9 @@ docker compose down
 
 `.env.example`はコピーできますが、意図的に未完成です。実値は`.env`に置きます。
 
-- プロジェクト内LiteLLM API用の`LITELLM_MASTER_KEY`
+- `LITELLM_MASTER_KEY` — プロジェクト内LiteLLM API用
 - 必要に応じた`ZAI_API_KEY`、`NVIDIA_API_KEY`、`GEMINI_API_KEY`
-- ローカル以外のブラウザー接続で使う`CFOS_PUBLIC_BASE_URL`と`CFOS_BACKEND_HOST`
+- 外部ブラウザー接続で使う`CFOS_PUBLIC_BASE_URL`と`CFOS_BACKEND_HOST`
 - 任意のBedrock Mantle経路で使うAWSプロファイル
 
 `.env`、`secrets/`、AWSプロファイル、ブラウザー認証情報は絶対にコミットしないでください。[SECURITY.md](SECURITY.md)も確認してください。
@@ -93,7 +94,7 @@ Cloudflare OSコンテナ
 設定済みモデルプロバイダー
 ```
 
-Cloudflare OSはワークスペース、エージェントループ、Gadgetツール、レビュー可能な変更を担当します。LiteLLMはOpenAI互換のモデルルーティングを担当します。モデルは交換可能で、最初の統合証跡では`glm-4.7`、最新の内容重視Slides再検証では同じプロジェクト内LiteLLM経由で`glm-5.2`を使いました。
+Cloudflare OSはワークスペース、エージェントループ、Gadgetツール、レビュー可能な変更を担当します。LiteLLMはOpenAI互換のモデルルーティングを担当します。モデルは交換可能で、`glm-4.7`と`glm-5.2`で実行を確認しています。
 
 ## 🌐 Tailscaleアクセス
 
@@ -119,246 +120,20 @@ $env:BASE_URL = 'http://localhost:8877'
 node .\qa\agentic-gadget-smoke.mjs
 ```
 
-成功すると、`Pending changes`、`Accept changes`、`Discard`を持つGadget Draftが作られます。チャット文章だけでなく、実際にツール・ファイル・コード実行が動いたことを示す、このリポジトリの主要な証跡です。
+成功すると、`Pending changes`、`Accept changes`、`Discard`を持つGadget Draftが作られます。詳細な解釈とスクショは[Cloudflare OS Home Lab](https://github.com/Sunwood-ai-labs/cloudflare-os-home-lab)に分離しています。
 
-## 📸 検証スクショ
+## 🧪 ランタイムQA
 
-代表的な4つのチェックポイントを、まず見た目で確認できます。画像をクリックすると元のPNGを開けます。[QA inventory](QA.md)には全チェックポイントを記録しています。
-
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <a href="artifacts/screenshots/11-network-model-configured.png"><img src="artifacts/screenshots/11-network-model-configured.png" alt="LiteLLMモデルをCloudflare OSに登録" width="100%" /></a>
-      <br /><sub><b>1. モデル接続</b> — プロジェクト内LiteLLMのモデルを登録。</sub>
-    </td>
-    <td width="50%" valign="top">
-      <a href="artifacts/screenshots/12-tailscale-chat-response.png"><img src="artifacts/screenshots/12-tailscale-chat-response.png" alt="Tailscale経由のCloudflare OSチャット" width="100%" /></a>
-      <br /><sub><b>2. Tailscale経路</b> — ワークスペース接続とモデル応答を確認（回答品質の制約は調査ログに記載）。</sub>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <a href="artifacts/screenshots/15-agent-request-sent.png"><img src="artifacts/screenshots/15-agent-request-sent.png" alt="Gadget作成を依頼するエージェントプロンプト" width="100%" /></a>
-      <br /><sub><b>3. エージェント依頼</b> — ファイル作成・実行・テストを明示的に要求。</sub>
-    </td>
-    <td width="50%" valign="top">
-      <a href="artifacts/screenshots/17-agent-gadget-complete.png"><img src="artifacts/screenshots/17-agent-gadget-complete.png" alt="変更レビュー可能なGadget Draft" width="100%" /></a>
-      <br /><sub><b>4. Gadget Draft完成</b> — ファイル作成、コード実行、変更レビューまで確認。</sub>
-    </td>
-  </tr>
-</table>
-
-画像の意味や制約は[証跡ガイド](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/guide/evidence)と[調査ログ](RESEARCH-LOG.md)にまとめています。
-
-## 🔬 調査トレイル
-
-上のギャラリーは要点版です。以下のセクションで、セットアップ、モデル設定、チャット永続化、ネットワーク経路、Tailscale、エージェント実行まで、結論の背景になった画面を常に確認できます。
-
-### セットアップと機能の入口
-
-<table>
-  <tr>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/01-login.png"><img src="artifacts/screenshots/01-login.png" alt="Cloudflare OS初回ログイン" width="100%" /></a><br /><sub><b>初回ログイン</b> — ローカルアカウント設定。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/03-model-modal.png"><img src="artifacts/screenshots/03-model-modal.png" alt="Cloudflare OSモデル選択" width="100%" /></a><br /><sub><b>モデル選択</b> — AIプロバイダーを追加。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/04-model-form.png"><img src="artifacts/screenshots/04-model-form.png" alt="Cloudflare OSモデル登録フォーム" width="100%" /></a><br /><sub><b>モデル登録フォーム</b> — OpenAI互換の入力欄。</sub></td>
-  </tr>
-  <tr>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/05-model-configured.png"><img src="artifacts/screenshots/05-model-configured.png" alt="オンボーディングで設定済みのLiteLLMモデル" width="100%" /></a><br /><sub><b>モデル選択完了</b> — LiteLLM · glm-4.7を利用可能に。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/06-home.png"><img src="artifacts/screenshots/06-home.png" alt="Cloudflare OSホームワークスペース" width="100%" /></a><br /><sub><b>ワークスペースホーム</b> — 作業はWorkspaceから始まる。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/09-mobile-home.png"><img src="artifacts/screenshots/09-mobile-home.png" alt="Cloudflare OSモバイル幅ホーム" width="100%" /></a><br /><sub><b>レスポンシブ表示</b> — モバイル幅のホーム画面。</sub></td>
-  </tr>
-</table>
-
-### チャット、永続化、ナレッジの注意点
-
-<table>
-  <tr>
-    <td width="50%" valign="top"><a href="artifacts/screenshots/07-chat-response-final.png"><img src="artifacts/screenshots/07-chat-response-final.png" alt="Cloudflare OS通常チャットの回答" width="100%" /></a><br /><sub><b>通常チャット</b> — ツールや外部知識を使わずにモデルが回答。</sub></td>
-    <td width="50%" valign="top"><a href="artifacts/screenshots/08-reload.png"><img src="artifacts/screenshots/08-reload.png" alt="リロード後のCloudflare OS会話" width="100%" /></a><br /><sub><b>永続化</b> — リロード後も会話が残ることを確認。</sub></td>
-  </tr>
-</table>
-
-> **ナレッジ/RAGの状態:** ローカル実験では、Open WebUIのKnowledge collectionやRAG検索画面と同等のものは確認できませんでした。この通常チャット画像は、その制約と、根拠付きナレッジを自動で期待できないことの証跡です。
-
-### LiteLLM経路とTailscale
-
-<table>
-  <tr>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/10-network-model-form.png"><img src="artifacts/screenshots/10-network-model-form.png" alt="Cloudflare OSのLiteLLMネットワークモデル登録" width="100%" /></a><br /><sub><b>ネットワーク内URL</b> — http://litellm:4000/v1。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/13-tailscale-reload.png"><img src="artifacts/screenshots/13-tailscale-reload.png" alt="Tailscale経由のCloudflare OSリロード" width="100%" /></a><br /><sub><b>Tailscaleリロード</b> — tailnet経路でも同じWorkspaceを確認。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/14-tailscale-mobile-home.png"><img src="artifacts/screenshots/14-tailscale-mobile-home.png" alt="Tailscale経由のCloudflare OSモバイル画面" width="100%" /></a><br /><sub><b>Tailscaleモバイル</b> — tailnet限定HTTPSでレスポンシブ表示。</sub></td>
-  </tr>
-</table>
-
-### エージェント実行の経過
-
-<table>
-  <tr>
-    <td width="100%" valign="top"><a href="artifacts/screenshots/16-agent-gadget-result.png"><img src="artifacts/screenshots/16-agent-gadget-result.png" alt="Cloudflare OSエージェントのGadget実行結果" width="100%" /></a><br /><sub><b>ツール実行</b> — 最終的なレビュー可能Draftの前にGadgetの実行結果を確認。</sub></td>
-  </tr>
-</table>
-
-### Slides Blueprint実験
-
-<table>
-  <tr>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/20-slides-deck-title.png"><img src="artifacts/screenshots/20-slides-deck-title.png" alt="Cloudflare OS日本語スライドのタイトル" width="100%" /></a><br /><sub><b>スライドタイトル</b> — 生成されたSlides Gadgetを確認。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/19-slides-deck-summary.png"><img src="artifacts/screenshots/19-slides-deck-summary.png" alt="Cloudflare OSスライドのまとめ" width="100%" /></a><br /><sub><b>生成内容</b> — Open WebUI比較と制約を日本語で生成。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/18-slides-deck-placeholder.png"><img src="artifacts/screenshots/18-slides-deck-placeholder.png" alt="Cloudflare OSスライドのプレースホルダー" width="100%" /></a><br /><sub><b>既知の制約</b> — 7枚目にテンプレートの未置換文字列が残った。</sub></td>
-  </tr>
-</table>
-
-### GLM 5.2 内容重視の再検証
-
-最新の実験ではCloudflare OSのモデル選択を`LiteLLM · glm-5.2`へ切り替え、内蔵Slides Blueprintに、正確に8枚・日本語・内容重視の検証資料を作らせました。各スライドにタイトル、リード文、具体的な本文を入れ、構成図・実行フロー・比較表・検証カードも使う条件にしています。初回の目視で見つかった表紙タイトルの低コントラストと、本文中のプレースホルダー例は、`Accept changes`前に修正しました。
-
-<table>
-  <tr>
-    <td width="25%" valign="top"><a href="artifacts/screenshots/58-glm-5.2-model-configured.png"><img src="artifacts/screenshots/58-glm-5.2-model-configured.png" alt="Cloudflare OSに登録したGLM 5.2" width="100%" /></a><br /><sub><b>モデル選択</b> — プロジェクト内LiteLLMの`glm-5.2`。</sub></td>
-    <td width="25%" valign="top"><a href="artifacts/screenshots/68-glm5.2-slide-1-final.png"><img src="artifacts/screenshots/68-glm5.2-slide-1-final.png" alt="GLM 5.2スライド表紙" width="100%" /></a><br /><sub><b>表紙</b> — コントラスト修正後。</sub></td>
-    <td width="25%" valign="top"><a href="artifacts/screenshots/69-glm5.2-slide-2-final.png"><img src="artifacts/screenshots/69-glm5.2-slide-2-final.png" alt="GLM 5.2スライドの合格条件" width="100%" /></a><br /><sub><b>合格条件</b> — プレースホルダーなし、本文あり。</sub></td>
-    <td width="25%" valign="top"><a href="artifacts/screenshots/70-glm5.2-slide-7-final.png"><img src="artifacts/screenshots/70-glm5.2-slide-7-final.png" alt="GLM 5.2スライドの検証カード" width="100%" /></a><br /><sub><b>検証カード</b> — 8/8、プレースホルダー0件、本文あり、保存確認。</sub></td>
-  </tr>
-</table>
-
-確定後の全スライドは[71–78](artifacts/screenshots/71-glm5.2-slide-1-accepted.png)から、最後の[8 / 8結論](artifacts/screenshots/78-glm5.2-slide-8-accepted.png)まで保存しています。UI上で`1 / 8`〜`8 / 8`、プレースホルダー検索0件、幾何オーバーフロー0件を確認しました。PDF実体のダウンロード、Knowledge/RAG、外部連携、長時間実行時の再接続安定性は、引き続き未確認です。
-
-続編X投稿用に、tailnet限定の[4枚＋4枚シミュレーター](https://<tailnet-host>:8891/)を確認したうえで、実際に公開しました。メイン投稿に4枚、前回投稿URLだけを示す添付なし返信、次の直列返信に4枚、最後にGitHub URLだけの別返信を置く構成です。詳細な時系列、スクショ、公開ペイロード、X投稿URLは[GLM 5.2実験記録](GLM5.2-SLIDES-EXPERIMENT.md)にまとめています。元の実スクショはリポジトリに残し、非公開の接続先URLを含む2枚だけ公開用コピーでマスクしています。
-
-### 共同ホワイトボードGadget実験
-
-上流READMEの「Make a collaborative whiteboard app.」を、プロジェクト内の`LiteLLM · glm-5.2`経由で再現しました。これは固定のホワイトボード機能ではなく、エージェントが新規Gadgetとして作った共同編集アプリです。Durable Objectの共有状態、リアルタイム購読、presence、付箋、フリーハンド描画、UIスモークテストを生成し、途中のストレージAPIエラーも自動修正して22項目を`passed=true`にしました。2タブ間の同期・再読み込み後の保持に加え、別アカウントが`Gadget only`共有リンクから参加し、付箋をOwnerへ同期するところまで確認しています。
-
-<table>
-  <tr>
-    <td width="25%" valign="top"><a href="artifacts/screenshots/108-whiteboard-retest.png"><img src="artifacts/screenshots/108-whiteboard-retest.png" alt="共同ホワイトボードの修正後テスト" width="100%" /></a><br /><sub><b>エージェント修正</b> — ストレージ問題を特定・修正し、22項目が通過。</sub></td>
-    <td width="25%" valign="top"><a href="artifacts/screenshots/109-whiteboard-smoke-test.png"><img src="artifacts/screenshots/109-whiteboard-smoke-test.png" alt="共同ホワイトボードのUIスモークテスト" width="100%" /></a><br /><sub><b>スモークテスト</b> — Gadget内のテストパネルがPASSED。</sub></td>
-    <td width="25%" valign="top"><a href="artifacts/screenshots/114-whiteboard-two-tabs-presence.png"><img src="artifacts/screenshots/114-whiteboard-two-tabs-presence.png" alt="共同ホワイトボードの2タブpresence" width="100%" /></a><br /><sub><b>2タブ接続</b> — 同じ付箋・描画と`users: 2`。</sub></td>
-    <td width="25%" valign="top"><a href="artifacts/screenshots/115-whiteboard-realtime-tabB-to-tabA.png"><img src="artifacts/screenshots/115-whiteboard-realtime-tabB-to-tabA.png" alt="共同ホワイトボードのリアルタイム同期" width="100%" /></a><br /><sub><b>リアルタイム</b> — タブBで作った付箋がタブAへ反映。</sub></td>
-  </tr>
-</table>
-
-<table>
-  <tr>
-    <td width="25%" valign="top"><a href="artifacts/screenshots/118-multiuser-owner-share-modal.png"><img src="artifacts/screenshots/118-multiuser-owner-share-modal.png" alt="OwnerのGadget only共有設定" width="100%" /></a><br /><sub><b>共有リンク</b> — Ownerが`Gadget only`を発行。</sub></td>
-    <td width="25%" valign="top"><a href="artifacts/screenshots/119-multiuser-collaborator-joined.png"><img src="artifacts/screenshots/119-multiuser-collaborator-joined.png" alt="Collaboratorが共同ホワイトボードへ参加" width="100%" /></a><br /><sub><b>参加</b> — 別アカウントがGadgetへ参加。</sub></td>
-    <td width="25%" valign="top"><a href="artifacts/screenshots/120-multiuser-collaborator-realtime-note.png"><img src="artifacts/screenshots/120-multiuser-collaborator-realtime-note.png" alt="Collaboratorが付箋を追加" width="100%" /></a><br /><sub><b>Collaborator操作</b> — 別ユーザーが付箋を追加。</sub></td>
-    <td width="25%" valign="top"><a href="artifacts/screenshots/122-multiuser-owner-sync-final.png"><img src="artifacts/screenshots/122-multiuser-owner-sync-final.png" alt="Owner側にCollaboratorの付箋が同期" width="100%" /></a><br /><sub><b>Owner同期</b> — 付箋とpresenceがOwner側にも表示。</sub></td>
-  </tr>
-</table>
-
-#### HyperFrames説明動画：スクショで何をしたのか
-
-生スクショだけでは操作の意味が分かりにくいため、38秒のHyperFrames説明動画にまとめました。各シーンに「操作・参加者・観測結果・確認ポイント」を表示し、画面を推測で読む必要がないようにしています。[完成動画](artifacts/screenshots/hyperframe-multiuser-explainer.mp4)、[元のHyperFrames構成](artifacts/hyperframes/multiuser-explainer/index.html)、[tailnet限定の証跡ギャラリー](https://<tailnet-host>:8890/)から確認できます。
-
-<table>
-  <tr>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/124-hyperframe-multiuser-title.png"><img src="artifacts/screenshots/124-hyperframe-multiuser-title.png" alt="HyperFrames共同編集証跡のタイトル" width="100%" /></a><br /><sub><b>全体の流れ</b> — Owner → Gadget only → Collaborator → Realtime sync。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/125-hyperframe-share-action.png"><img src="artifacts/screenshots/125-hyperframe-share-action.png" alt="HyperFrames共有リンク発行の説明" width="100%" /></a><br /><sub><b>共有</b> — Share → Gadget only → Create link。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/126-hyperframe-collaborator-join.png"><img src="artifacts/screenshots/126-hyperframe-collaborator-join.png" alt="HyperFrames Collaborator参加の説明" width="100%" /></a><br /><sub><b>参加</b> — 別アカウントが同じGadgetへ入る。</sub></td>
-  </tr>
-  <tr>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/127-hyperframe-collaborator-note.png"><img src="artifacts/screenshots/127-hyperframe-collaborator-note.png" alt="HyperFrames Collaboratorの付箋追加説明" width="100%" /></a><br /><sub><b>入力</b> — Collaboratorが付箋を追加し、notesが6から7へ。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/128-hyperframe-owner-sync.png"><img src="artifacts/screenshots/128-hyperframe-owner-sync.png" alt="HyperFrames Owner同期の説明" width="100%" /></a><br /><sub><b>確認</b> — events 21 / notes 7 / strokes 3 / users 3に収束。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/129-hyperframe-cleanup-finding.png"><img src="artifacts/screenshots/129-hyperframe-cleanup-finding.png" alt="HyperFrames後片付け制限の説明" width="100%" /></a><br /><sub><b>制限</b> — アクセス削除は成功、share linkのRevokeは追加検証。</sub></td>
-  </tr>
-</table>
-
-#### X投稿用カルーセル：3:2スライド画像
-
-上の説明動画とは別に、そのままXへ添付できる投稿用カルーセルを作りました。全6枚、1920×1280（3:2）。タイトルで結論を先に出し、共有・参加・入力・同期・結論を1枚ずつ整理しています。[カルーセルプレビュー](artifacts/screenshots/cloudflare-os-multiuser-social-slides.mp4)は[投稿用スライド構成](artifacts/hyperframes/multiuser-social-slides/index.html)からレンダリングしたもので、PNGはそのまま添付できます。
-
-<table>
-  <tr>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/130-cloudflare-os-multiuser-slide-1-title.png"><img src="artifacts/screenshots/130-cloudflare-os-multiuser-slide-1-title.png" alt="共同編集できたことを伝えるタイトルスライド" width="100%" /></a><br /><sub><b>1 / 6</b> — 別アカウントでも、共同編集できた。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/131-cloudflare-os-multiuser-slide-2-share.png"><img src="artifacts/screenshots/131-cloudflare-os-multiuser-slide-2-share.png" alt="Gadget only共有リンクの投稿スライド" width="100%" /></a><br /><sub><b>2 / 6</b> — OwnerがGadget onlyの入口を作る。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/132-cloudflare-os-multiuser-slide-3-join.png"><img src="artifacts/screenshots/132-cloudflare-os-multiuser-slide-3-join.png" alt="Collaborator参加の投稿スライド" width="100%" /></a><br /><sub><b>3 / 6</b> — 別アカウントが同じGadgetへ入る。</sub></td>
-  </tr>
-  <tr>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/133-cloudflare-os-multiuser-slide-4-note.png"><img src="artifacts/screenshots/133-cloudflare-os-multiuser-slide-4-note.png" alt="Collaboratorの付箋追加の投稿スライド" width="100%" /></a><br /><sub><b>4 / 6</b> — notesが6から7へ増える。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/134-cloudflare-os-multiuser-slide-5-sync.png"><img src="artifacts/screenshots/134-cloudflare-os-multiuser-slide-5-sync.png" alt="Ownerへのリアルタイム同期の投稿スライド" width="100%" /></a><br /><sub><b>5 / 6</b> — Owner側で変更を観測。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/135-cloudflare-os-multiuser-slide-6-verdict.png"><img src="artifacts/screenshots/135-cloudflare-os-multiuser-slide-6-verdict.png" alt="共同編集の結論とRevoke制限の投稿スライド" width="100%" /></a><br /><sub><b>6 / 6</b> — 共同編集は実証、Revokeは追加検証。</sub></td>
-  </tr>
-</table>
-
-依頼文、スクショ98〜123、投稿用画像130〜138、実装の観測内容、別アカウント共有リンク、権限結果、後片付け時のRevokeエラー、公開済みXスレッドは[共同ホワイトボード実験記録](WHITEBOARD-EXPERIMENT.md)にまとめています。公開スレッドは[メイン投稿](https://x.com/hAru_mAki_ch/status/2086048448328204347)、[前回投稿参照返信](https://x.com/hAru_mAki_ch/status/2086048845205798939)、[検証結果返信](https://x.com/hAru_mAki_ch/status/2086048941033009238)、[GitHub返信](https://x.com/hAru_mAki_ch/status/2086049016979374574)です。
-
-#### Gadget Lab追加実験：8段階の証拠記録
-
-続編として、既存Gadgetの改修、意図的なバグの自己修復、物理リロード、競合編集、共有・権限、Blueprint再利用、外部接続カタログ、安全境界を順番に検証しました。生スクショ31枚と、各画面の「何をしているか」を説明する9枚のHyperFramesスライドを保存しています。[詳細な実験記録](GADGET-LAB-EXPERIMENTS.md)に、操作・観測値・未確認範囲・途中の復旧内容までまとめています。
-
-<table>
-  <tr>
-    <td width="33%" valign="top"><a href="artifacts/hyperframes/gadget-lab-evidence/renders/slides/01-title.png"><img src="artifacts/hyperframes/gadget-lab-evidence/renders/slides/01-title.png" alt="Gadget Lab追加実験のタイトルスライド" width="100%" /></a><br /><sub><b>全体像</b> — 8実験と生スクショの関係。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/hyperframes/gadget-lab-evidence/renders/slides/05-conflict.png"><img src="artifacts/hyperframes/gadget-lab-evidence/renders/slides/05-conflict.png" alt="競合編集を説明するHyperFramesスライド" width="100%" /></a><br /><sub><b>競合編集</b> — 到着順のlast-write-wins。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/hyperframes/gadget-lab-evidence/renders/slides/09-security.png"><img src="artifacts/hyperframes/gadget-lab-evidence/renders/slides/09-security.png" alt="安全境界を説明するHyperFramesスライド" width="100%" /></a><br /><sub><b>安全境界</b> — 拒否と不変性を確認。</sub></td>
-  </tr>
-</table>
-
-説明動画は[HyperFrames MP4](artifacts/hyperframes/gadget-lab-evidence/renders/gadget-lab-evidence.mp4)、ソースは[composition](artifacts/hyperframes/gadget-lab-evidence/index.html)から確認できます。`hyperframes check`はRuntime 0 errors、Layout 0 issues、Contrast 77/77でした。
-
-### Tailscale証跡ギャラリー
-
-tailnet限定のCloudflare OS URLからスライド生成を再実行しました。証跡全体は、証跡サーバー起動後に `https://<tailnet-host>:8890/` で確認できます。
-
-<table>
-  <tr>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/30-tailscale-slide-1.png"><img src="artifacts/screenshots/30-tailscale-slide-1.png" alt="Tailscale経由のスライド1" width="100%" /></a><br /><sub><b>1 / 6</b> — Tailscale経由で表紙を表示。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/35-tailscale-slide-6.png"><img src="artifacts/screenshots/35-tailscale-slide-6.png" alt="Tailscale経由のスライド6" width="100%" /></a><br /><sub><b>6 / 6</b> — 同じ経路で最終スライドを表示。</sub></td>
-    <td width="33%" valign="top"><a href="artifacts/screenshots/38-tailscale-gallery.png"><img src="artifacts/screenshots/38-tailscale-gallery.png" alt="Tailscaleスクリーンショットギャラリー" width="100%" /></a><br /><sub><b>証跡ギャラリー</b> — 画像ページ自体もtailnet限定。</sub></td>
-  </tr>
-</table>
-
-[調査ログ](RESEARCH-LOG.md)には、Open WebUI比較、費用、ソースコード調査、ローカルで観測した内容と未検証事項の区別を記録しています。今回の実験ではOpen WebUIのUIスクショ自体は撮影していないため、比較を画像証拠としては扱っていません。
-
-## 🧪 検証
-
-```powershell
-docker compose config --quiet
-.\scripts\verify-project-litellm.ps1
-```
-
-[QA inventory](QA.md)に機能確認とスクリーンショットのチェックポイントを記録しています。[調査ログ](RESEARCH-LOG.md)には、結論、制約、Open WebUIとの比較、エージェント実験の詳細があります。
+CIではComposeファイル、QAスクリプトの構文、公開payload除外、空白を確認し、同じワークフローでVitePressドキュメントもビルドします。実験機能の主張は[LabのQAチェック](https://github.com/Sunwood-ai-labs/cloudflare-os-home-lab/blob/main/QA.md)を参照してください。
 
 ## 📚 ドキュメント
 
-ブラウザーで読めるドキュメントは [sunwood-ai-labs.github.io/cloudflare-os-home](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/) で公開します。
-
-ローカルで起動:
-
-```powershell
-Set-Location docs
-npm ci
-npm run docs:dev
-```
-
-英語と日本語のナビゲーションを用意しています。まずは[はじめに](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/guide/getting-started)または[Getting started](https://sunwood-ai-labs.github.io/cloudflare-os-home/guide/getting-started)から始めてください。
-
-## 🗂️ リポジトリ構成
-
-```text
-cloudflare-os-home/
-├─ upstream/cloudflare-os/   # 固定した上流ソース
-├─ litellm/                  # プロジェクト内ゲートウェイのイメージと設定
-├─ qa/                       # Playwrightスモークテストと証跡スクリプト
-├─ scripts/                  # PowerShellヘルパー
-├─ artifacts/screenshots/    # 公開する検証スクショ
-├─ docs/                     # 日英VitePressドキュメント
-├─ docker-compose.yml
-├─ GLM5.2-SLIDES-EXPERIMENT.md
-├─ WHITEBOARD-EXPERIMENT.md
-├─ RESEARCH-LOG.md
-└─ SECURITY.md
-```
-
-## ⚠️ 範囲と制約
-
-- 本リポジトリはローカル開発・調査用であり、本番向け`workerd`セルフホスト構成ではありません。
-- Cloudflare OS Cloud版の機能、料金、提供状況は、このローカルソースとは異なる場合があります。
-- エージェントの挙動は選択したモデルに依存し、実行ごとに変わる可能性があります。
-- 外部接続や実世界の操作には、Gatekeeperと認証情報の慎重な設定が必要です。
-- 上流ソースは独自のApache-2.0条件に従います。[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)を確認してください。
+- [はじめに](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/guide/getting-started)
+- [使い方](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/guide/usage)
+- [アーキテクチャ](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/guide/architecture)
+- [トラブルシュート](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/guide/troubleshooting)
+- [実験記録と証拠](https://github.com/Sunwood-ai-labs/cloudflare-os-home-lab)
 
 ## 📜 ライセンス
 
-リポジトリのラッパーと同梱された上流ソースはApache-2.0条件で配布します。[LICENSE](LICENSE)とupstream/cloudflare-os/LICENSEを参照してください。
+本リポジトリはApache-2.0です。上流および第三者の注意事項は[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)を確認してください。
