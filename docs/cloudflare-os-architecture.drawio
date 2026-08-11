@@ -8,7 +8,7 @@
         <mxCell id="sys-title" value="Cloudflare OS Home — システム構成" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=26;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;" vertex="1" parent="sys-1">
           <mxGeometry x="60" y="35" width="1900" height="48" as="geometry"/>
         </mxCell>
-        <mxCell id="sys-subtitle" value="cloudflare-os-local / Docker Compose + upstream/cloudflare-os / 主要なリクエスト・サービス境界" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=14;fontFamily=Noto Sans JP;fontColor=#486581;" vertex="1" parent="sys-1">
+        <mxCell id="sys-subtitle" value="cloudflare-os-home / Docker Compose + upstream/cloudflare-os / 主要なリクエスト・サービス境界" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=14;fontFamily=Noto Sans JP;fontColor=#486581;" vertex="1" parent="sys-1">
           <mxGeometry x="60" y="82" width="1900" height="30" as="geometry"/>
         </mxCell>
 
@@ -21,7 +21,7 @@
         <mxCell id="sys-qa" value="QAスクリプト&lt;br&gt;&lt;font style=&quot;font-size:12px&quot;&gt;qa/*.mjs / browser flow&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#D97706;strokeWidth=2;fontSize=16;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#7C2D12;align=center;verticalAlign=middle;" vertex="1" parent="sys-1">
           <mxGeometry x="620" y="150" width="260" height="68" as="geometry"/>
         </mxCell>
-        <mxCell id="sys-compose-frame" value="Docker Compose ネットワーク / cloudflare-os-local" style="swimlane;html=1;rounded=1;startSize=40;fillColor=#FFFFFF;swimlaneFillColor=#E6F0F7;strokeColor=#829AB1;strokeWidth=2;fontSize=18;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;whiteSpace=wrap;" vertex="1" parent="sys-1">
+        <mxCell id="sys-compose-frame" value="Docker Compose ネットワーク / cloudflare-os-home" style="swimlane;html=1;rounded=1;startSize=40;fillColor=#FFFFFF;swimlaneFillColor=#E6F0F7;strokeColor=#829AB1;strokeWidth=2;fontSize=18;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;whiteSpace=wrap;" vertex="1" parent="sys-1">
           <mxGeometry x="50" y="300" width="1220" height="900" as="geometry"/>
         </mxCell>
 
@@ -163,14 +163,14 @@
         <mxCell id="repo-0"/>
         <mxCell id="repo-1" parent="repo-0"/>
 
-        <mxCell id="repo-title" value="cloudflare-os-local — リポジトリ構造" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=26;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;" vertex="1" parent="repo-1">
+        <mxCell id="repo-title" value="cloudflare-os-home — リポジトリ構造" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=26;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;" vertex="1" parent="repo-1">
           <mxGeometry x="50" y="35" width="1900" height="48" as="geometry"/>
         </mxCell>
         <mxCell id="repo-subtitle" value="Wrapper / 運用資材と、固定した upstream/cloudflare-os の pnpm workspace を対応づけた構成" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=14;fontFamily=Noto Sans JP;fontColor=#486581;" vertex="1" parent="repo-1">
           <mxGeometry x="50" y="82" width="1900" height="30" as="geometry"/>
         </mxCell>
 
-        <mxCell id="repo-frame" value="cloudflare-os-local" style="swimlane;html=1;rounded=1;startSize=40;fillColor=#FFFFFF;swimlaneFillColor=#E6F0F7;strokeColor=#829AB1;strokeWidth=2;fontSize=18;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;whiteSpace=wrap;" vertex="1" parent="repo-1">
+        <mxCell id="repo-frame" value="cloudflare-os-home" style="swimlane;html=1;rounded=1;startSize=40;fillColor=#FFFFFF;swimlaneFillColor=#E6F0F7;strokeColor=#829AB1;strokeWidth=2;fontSize=18;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;whiteSpace=wrap;" vertex="1" parent="repo-1">
           <mxGeometry x="40" y="145" width="1930" height="1075" as="geometry"/>
         </mxCell>
 
