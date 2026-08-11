@@ -96,6 +96,22 @@ Configured model providers
 
 Cloudflare OS owns the workspace, agent loop, Gadget tools, and reviewable changes. LiteLLM owns OpenAI-compatible model routing. The model itself is interchangeable; the runtime was exercised with `glm-4.7` and `glm-5.2`.
 
+### Architecture diagrams
+
+The editable draw.io source is [`docs/cloudflare-os-architecture.drawio`](docs/cloudflare-os-architecture.drawio). The exported SVGs are shown below so the architecture is visible directly from the repository README.
+
+<p align="center">
+  <img src="docs/cloudflare-os-architecture.drawio.svg" alt="Cloudflare OS Home system architecture" width="100%" />
+</p>
+
+<p align="center"><em>Runtime architecture: Docker Compose, Cloudflare OS, Gatekeepers, LiteLLM, and external providers.</em></p>
+
+<p align="center">
+  <img src="docs/cloudflare-os-repository-structure.drawio.svg" alt="Cloudflare OS Home repository structure" width="100%" />
+</p>
+
+<p align="center"><em>Repository structure: the local integration wrapper and the pinned upstream monorepo.</em></p>
+
 ## 🌐 Tailscale access
 
 Tailscale Serve can provide tailnet-only HTTPS without opening a public Funnel endpoint:

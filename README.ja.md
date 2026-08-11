@@ -96,6 +96,22 @@ Cloudflare OSコンテナ
 
 Cloudflare OSはワークスペース、エージェントループ、Gadgetツール、レビュー可能な変更を担当します。LiteLLMはOpenAI互換のモデルルーティングを担当します。モデルは交換可能で、`glm-4.7`と`glm-5.2`で実行を確認しています。
 
+### 構成図
+
+編集可能なdraw.ioのソースは[`docs/cloudflare-os-architecture.drawio`](docs/cloudflare-os-architecture.drawio)です。リポジトリのREADMEから確認できるように、エクスポートしたSVGも掲載しています。
+
+<p align="center">
+  <img src="docs/cloudflare-os-architecture.drawio.svg" alt="Cloudflare OS Homeのシステム構成" width="100%" />
+</p>
+
+<p align="center"><em>実行アーキテクチャ：Docker Compose、Cloudflare OS、Gatekeeper、LiteLLM、外部プロバイダー。</em></p>
+
+<p align="center">
+  <img src="docs/cloudflare-os-repository-structure.drawio.svg" alt="Cloudflare OS Homeのリポジトリ構造" width="100%" />
+</p>
+
+<p align="center"><em>リポジトリ構造：ローカル統合ラッパーと固定した上流モノレポ。</em></p>
+
 ## 🌐 Tailscaleアクセス
 
 Tailscale Serveを使うと、一般公開のFunnelを使わずtailnet限定HTTPSにできます。

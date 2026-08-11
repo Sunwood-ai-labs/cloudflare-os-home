@@ -1,0 +1,271 @@
+<mxfile host="app.diagrams.net" modified="2026-08-11T00:00:00.000Z" agent="Codex" version="24.7.17" type="device">
+  <diagram id="system-architecture" name="システム構成">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1500" math="0" shadow="0" defaultFontFamily="Noto Sans JP" background="#F7FAFC">
+      <root>
+        <mxCell id="sys-0"/>
+        <mxCell id="sys-1" parent="sys-0"/>
+
+        <mxCell id="sys-title" value="Cloudflare OS Home — システム構成" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=26;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;" vertex="1" parent="sys-1">
+          <mxGeometry x="60" y="35" width="1900" height="48" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-subtitle" value="cloudflare-os-local / Docker Compose + upstream/cloudflare-os / 主要なリクエスト・サービス境界" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=14;fontFamily=Noto Sans JP;fontColor=#486581;" vertex="1" parent="sys-1">
+          <mxGeometry x="60" y="82" width="1900" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sys-browser" value="ブラウザー&lt;br&gt;&lt;font style=&quot;font-size:12px&quot;&gt;localhost:8877&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#2F80ED;strokeWidth=2;fontSize=16;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;align=center;verticalAlign=middle;" vertex="1" parent="sys-1">
+          <mxGeometry x="80" y="150" width="220" height="68" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-tailscale" value="Tailscale Serve&lt;br&gt;&lt;font style=&quot;font-size:12px&quot;&gt;任意：tailnet限定HTTPS&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0E7FF;strokeColor=#805AD5;strokeWidth=2;fontSize=16;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#322659;align=center;verticalAlign=middle;" vertex="1" parent="sys-1">
+          <mxGeometry x="340" y="150" width="240" height="68" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-qa" value="QAスクリプト&lt;br&gt;&lt;font style=&quot;font-size:12px&quot;&gt;qa/*.mjs / browser flow&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#D97706;strokeWidth=2;fontSize=16;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#7C2D12;align=center;verticalAlign=middle;" vertex="1" parent="sys-1">
+          <mxGeometry x="620" y="150" width="260" height="68" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-compose-frame" value="Docker Compose ネットワーク / cloudflare-os-local" style="swimlane;html=1;rounded=1;startSize=40;fillColor=#FFFFFF;swimlaneFillColor=#E6F0F7;strokeColor=#829AB1;strokeWidth=2;fontSize=18;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;whiteSpace=wrap;" vertex="1" parent="sys-1">
+          <mxGeometry x="50" y="300" width="1220" height="900" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sys-os-container" value="Cloudflare OS コンテナ&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;Dockerfile → upstream/cloudflare-os&lt;/font&gt;" style="swimlane;html=1;rounded=1;startSize=42;fillColor=#F8FBFD;swimlaneFillColor=#D9EAF7;strokeColor=#5B8DB8;strokeWidth=2;fontSize=16;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;whiteSpace=wrap;" vertex="1" parent="sys-compose-frame">
+          <mxGeometry x="30" y="70" width="580" height="700" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-router" value="Router Worker&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;packages/router&lt;br&gt;GATEKEEPER_* / WORKSHOP_BACKEND&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#2F80ED;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;align=center;verticalAlign=middle;" vertex="1" parent="sys-os-container">
+          <mxGeometry x="30" y="65" width="240" height="82" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-frontend" value="Workshop Frontend&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;React / Vite / Monaco&lt;br&gt;packages/workshop-frontend&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E8B57;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#164A2B;align=center;verticalAlign=middle;" vertex="1" parent="sys-os-container">
+          <mxGeometry x="300" y="65" width="240" height="82" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-backend" value="Workshop Backend Worker&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;Agent loop / workspace / auth&lt;br&gt;Gadget・Blueprint・共有・レビュー可能な変更&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDF4FF;strokeColor=#147D92;strokeWidth=2;fontSize=16;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#0B4F5C;align=center;verticalAlign=middle;" vertex="1" parent="sys-os-container">
+          <mxGeometry x="30" y="175" width="510" height="125" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-agent" value="AIエージェント&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;Code Mode / tool execution&lt;br&gt;ファイル編集・コード実行・承認待ち&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF7D6;strokeColor=#B7791F;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#744210;align=center;verticalAlign=middle;" vertex="1" parent="sys-os-container">
+          <mxGeometry x="30" y="325" width="240" height="105" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-gadgets" value="Gadgets&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;Dynamic Worker Facet&lt;br&gt;+ sandboxed iframe&lt;br&gt;Cap'n Web RPC&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE8E6;strokeColor=#C05640;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#742A1A;align=center;verticalAlign=middle;" vertex="1" parent="sys-os-container">
+          <mxGeometry x="300" y="325" width="240" height="105" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-storage" value="Cloudflare バインディング / 状態&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;Durable Objects：User / Overseer / Admin / PendingLogin&lt;br&gt;KV：Blueprints・Avatars　R2：Blueprint content　Worker Loader / Browser&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F4F8;strokeColor=#627D98;strokeWidth=2;fontSize=14;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#243B53;align=center;verticalAlign=middle;" vertex="1" parent="sys-os-container">
+          <mxGeometry x="30" y="455" width="510" height="88" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-shared" value="共有ライブラリ&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;workshop-shared / mcp-shared / backend-utils&lt;br&gt;typed-storage / error-reporting / configurator-ui&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#7C6FC2;strokeWidth=2;fontSize=14;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#3C366B;align=center;verticalAlign=middle;" vertex="1" parent="sys-os-container">
+          <mxGeometry x="30" y="570" width="510" height="88" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sys-gk-container" value="Gatekeeper Workers&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;run-dev-server.js が自動検出・service binding生成&lt;/font&gt;" style="swimlane;html=1;rounded=1;startSize=42;fillColor=#FFFBF5;swimlaneFillColor=#FCE8D6;strokeColor=#C9832B;strokeWidth=2;fontSize=16;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#7C2D12;whiteSpace=wrap;" vertex="1" parent="sys-compose-frame">
+          <mxGeometry x="640" y="70" width="260" height="700" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-gk-binding" value="Workshop Backend&lt;br&gt;⇄ GATEKEEPER_*&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;Cap'n Web / service binding&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#D97706;strokeWidth=2;fontSize=14;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#7C2D12;align=center;verticalAlign=middle;" vertex="1" parent="sys-gk-container">
+          <mxGeometry x="20" y="65" width="220" height="82" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-gk-list" value="&lt;b&gt;Gatekeeper packages&lt;/b&gt;&lt;br&gt;cloudflare / confluence / context&lt;br&gt;email / github / google&lt;br&gt;homeassistant / linear / mcp&lt;br&gt;mcp-portal / notion / scheduler&lt;br&gt;slack / spotify / supabase&lt;br&gt;zoominfo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFDF8;strokeColor=#D69E2E;strokeWidth=2;fontSize=14;fontFamily=Noto Sans JP;fontColor=#744210;align=left;verticalAlign=middle;spacingLeft=14;" vertex="1" parent="sys-gk-container">
+          <mxGeometry x="20" y="175" width="220" height="245" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-gk-note" value="外部サービスのドライバー&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;OAuth・狭い権限・action log&lt;br&gt;human-in-the-loop 承認&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#D97706;strokeWidth=2;fontSize=14;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#7C2D12;align=center;verticalAlign=middle;" vertex="1" parent="sys-gk-container">
+          <mxGeometry x="20" y="455" width="220" height="92" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sys-litellm-container" value="LiteLLM コンテナ&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;service: litellm / internal :4000&lt;/font&gt;" style="swimlane;html=1;rounded=1;startSize=42;fillColor=#F8FBF8;swimlaneFillColor=#DFF3E4;strokeColor=#4B9B67;strokeWidth=2;fontSize=16;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#164A2B;whiteSpace=wrap;" vertex="1" parent="sys-compose-frame">
+          <mxGeometry x="930" y="70" width="260" height="700" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-litellm-gateway" value="OpenAI互換ゲートウェイ&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;LiteLLM API /v1&lt;br&gt;master-key 認証&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E8B57;strokeWidth=2;fontSize=14;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#164A2B;align=center;verticalAlign=middle;" vertex="1" parent="sys-litellm-container">
+          <mxGeometry x="20" y="65" width="220" height="88" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-litellm-config" value="litellm/config.yaml&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;モデル別名 / provider route&lt;br&gt;telemetry=false&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FFF4;strokeColor=#48BB78;strokeWidth=2;fontSize=14;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#22543D;align=center;verticalAlign=middle;" vertex="1" parent="sys-litellm-container">
+          <mxGeometry x="20" y="180" width="220" height="88" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-litellm-routes" value="モデルプロバイダー経路&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;Z.ai / NVIDIA NIM / Gemini&lt;br&gt;Amazon Bedrock Mantle&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FFF4;strokeColor=#48BB78;strokeWidth=2;fontSize=14;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#22543D;align=center;verticalAlign=middle;" vertex="1" parent="sys-litellm-container">
+          <mxGeometry x="20" y="295" width="220" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-litellm-host" value="Host diagnostic port&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;127.0.0.1:4001&lt;br&gt;コンテナ外へは限定公開&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FFF4;strokeColor=#48BB78;strokeWidth=2;fontSize=14;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#22543D;align=center;verticalAlign=middle;" vertex="1" parent="sys-litellm-container">
+          <mxGeometry x="20" y="530" width="220" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sys-volumes" value="Compose volumes / secrets&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;cloudflare-os-wrangler → /workspace/.wrangler　　pnpm-store → /pnpm/store　　.env・secrets/aws/* → LiteLLM（read-only mount）&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F4F8;strokeColor=#829AB1;strokeWidth=2;fontSize=14;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#243B53;align=center;verticalAlign=middle;" vertex="1" parent="sys-compose-frame">
+          <mxGeometry x="30" y="790" width="1160" height="78" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sys-external-frame" value="外部サービス / モデルプロバイダー" style="swimlane;html=1;rounded=1;startSize=40;fillColor=#FFFFFF;swimlaneFillColor=#F1F5F9;strokeColor=#829AB1;strokeWidth=2;fontSize=18;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;whiteSpace=wrap;" vertex="1" parent="sys-1">
+          <mxGeometry x="1300" y="300" width="660" height="900" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-model-frame" value="モデルプロバイダー" style="swimlane;html=1;rounded=1;startSize=34;fillColor=#FAFFFC;swimlaneFillColor=#E8F5E9;strokeColor=#74A57F;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#164A2B;whiteSpace=wrap;" vertex="1" parent="sys-external-frame">
+          <mxGeometry x="30" y="58" width="600" height="305" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-zai" value="Z.ai&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;GLM 系&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FFF4;strokeColor=#48BB78;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#22543D;align=center;verticalAlign=middle;" vertex="1" parent="sys-model-frame">
+          <mxGeometry x="25" y="60" width="260" height="78" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-nvidia" value="NVIDIA NIM&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;推論・埋め込み&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FFF4;strokeColor=#48BB78;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#22543D;align=center;verticalAlign=middle;" vertex="1" parent="sys-model-frame">
+          <mxGeometry x="315" y="60" width="260" height="78" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-gemini" value="Google Gemini&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;Gemma 系&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FFF4;strokeColor=#48BB78;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#22543D;align=center;verticalAlign=middle;" vertex="1" parent="sys-model-frame">
+          <mxGeometry x="25" y="170" width="260" height="78" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-bedrock" value="Amazon Bedrock Mantle&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;AWS profile / region&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FFF4;strokeColor=#48BB78;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#22543D;align=center;verticalAlign=middle;" vertex="1" parent="sys-model-frame">
+          <mxGeometry x="315" y="170" width="260" height="78" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-provider-hub" value="Provider route / fan-out" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6FFFA;strokeColor=#319795;strokeWidth=2;fontSize=13;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#234E52;align=center;verticalAlign=middle;" vertex="1" parent="sys-model-frame">
+          <mxGeometry x="180" y="260" width="240" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-service-frame" value="Gatekeeper が接続するサービス / リソース" style="swimlane;html=1;rounded=1;startSize=34;fillColor=#FFFCF7;swimlaneFillColor=#FFF4E5;strokeColor=#D69E2E;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#7C2D12;whiteSpace=wrap;" vertex="1" parent="sys-external-frame">
+          <mxGeometry x="30" y="395" width="600" height="355" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-service-list" value="GitHub　/　Google　/　Cloudflare　/　Supabase&lt;br&gt;Notion　/　Confluence　/　Slack　/　Linear&lt;br&gt;Spotify　/　ZoomInfo　/　Home Assistant&lt;br&gt;Email　/　MCP Server　/　MCP Portal&lt;br&gt;Context Library　/　Scheduler&lt;br&gt;&lt;font style=&quot;font-size:12px&quot;&gt;OAuth・外部API・Cap'n Web resource&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFDF8;strokeColor=#D69E2E;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#744210;align=center;verticalAlign=middle;" vertex="1" parent="sys-service-frame">
+          <mxGeometry x="25" y="62" width="550" height="245" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-security-note" value="デフォルトは capability-based access control&lt;br&gt;必要なリソースだけを Agent / Gadget に紹介" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#7C6FC2;strokeWidth=2;fontSize=13;fontFamily=Noto Sans JP;fontColor=#3C366B;align=center;verticalAlign=middle;" vertex="1" parent="sys-external-frame">
+          <mxGeometry x="30" y="790" width="600" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sys-e-browser-router" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2F80ED;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="sys-1" source="sys-browser" target="sys-router">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-e-tailscale-router" value="HTTPS入口" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#805AD5;strokeWidth=2;fontSize=12;fontFamily=Noto Sans JP;fontColor=#5B21B6;endArrow=block;endFill=1;" edge="1" parent="sys-1" source="sys-tailscale" target="sys-browser">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-e-qa-browser" value="browser flow" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#D97706;strokeWidth=2;fontSize=12;fontFamily=Noto Sans JP;fontColor=#92400E;endArrow=block;endFill=1;entryX=0.5;entryY=0;entryPerimeter=0;" edge="1" parent="sys-1" source="sys-qa" target="sys-browser">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="750" y="125"/><mxPoint x="190" y="125"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="sys-e-router-backend" value="/api・/blueprint-screenshot" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2F80ED;strokeWidth=2;fontSize=12;fontFamily=Noto Sans JP;fontColor=#1D4ED8;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitPerimeter=0;entryX=0.235;entryY=0;entryPerimeter=0;" edge="1" parent="sys-1" source="sys-router" target="sys-backend">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="230" y="565"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="sys-e-router-frontend" value="静的UI / SPA" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#2F80ED;strokeWidth=2;fontSize=12;fontFamily=Noto Sans JP;fontColor=#1D4ED8;endArrow=block;endFill=1;exitX=1;exitY=0.5;exitPerimeter=0;entryX=0;entryY=0.5;entryPerimeter=0;" edge="1" parent="sys-1" source="sys-router" target="sys-frontend">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-e-frontend-backend" value="Cap'n Web RPC / API" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2E8B57;strokeWidth=2;fontSize=12;fontFamily=Noto Sans JP;fontColor=#166534;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitPerimeter=0;entryX=0.765;entryY=0;entryPerimeter=0;" edge="1" parent="sys-1" source="sys-frontend" target="sys-backend">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="565"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="sys-e-backend-agent" value="作業実行" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#B7791F;strokeWidth=2;fontSize=12;fontFamily=Noto Sans JP;fontColor=#744210;endArrow=block;endFill=1;exitX=0.235;exitY=1;exitPerimeter=0;entryX=0.5;entryY=0;entryPerimeter=0;" edge="1" parent="sys-1" source="sys-backend" target="sys-agent">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="230" y="717"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="sys-e-backend-gadgets" value="provision / RPC" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#C05640;strokeWidth=2;fontSize=12;fontFamily=Noto Sans JP;fontColor=#9B2C2C;endArrow=block;endFill=1;exitX=0.765;exitY=1;exitPerimeter=0;entryX=0.5;entryY=0;entryPerimeter=0;" edge="1" parent="sys-1" source="sys-backend" target="sys-gadgets">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="717"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="sys-e-backend-storage" value="DO / KV / R2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#627D98;strokeWidth=2;fontSize=12;fontFamily=Noto Sans JP;fontColor=#334E68;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitPerimeter=0;entryX=0.5;entryY=0;entryPerimeter=0;" edge="1" parent="sys-1" source="sys-backend" target="sys-storage">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="sys-e-backend-litellm" value="http://litellm:4000/v1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2E8B57;strokeWidth=2;fontSize=12;fontFamily=Noto Sans JP;fontColor=#166534;endArrow=block;endFill=1;exitX=0.95;exitY=0;exitPerimeter=0;entryX=0;entryY=0.65;entryPerimeter=0;" edge="1" parent="sys-1" source="sys-backend" target="sys-litellm-gateway">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="680" y="587"/><mxPoint x="680" y="573"/><mxPoint x="965" y="573"/><mxPoint x="965" y="520"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="sys-e-litellm-provider" value="provider API" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#48BB78;strokeWidth=2;fontSize=12;fontFamily=Noto Sans JP;fontColor=#166534;endArrow=block;endFill=1;" edge="1" parent="sys-1" source="sys-litellm-routes" target="sys-provider-hub">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1260" y="650"/><mxPoint x="1340" y="650"/><mxPoint x="1340" y="620"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="sys-e-gk-service" value="OAuth / external API" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#D97706;strokeWidth=2;fontSize=12;fontFamily=Noto Sans JP;fontColor=#92400E;endArrow=block;endFill=1;" edge="1" parent="sys-1" source="sys-gk-note" target="sys-service-list">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1210" y="850"/><mxPoint x="1360" y="850"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="sys-legend" value="実線：主要な実行経路　　破線：任意・補助経路　　色分け：Runtime / Gatekeeper / AI gateway / External" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;fontFamily=Noto Sans JP;fontColor=#627D98;" vertex="1" parent="sys-1">
+          <mxGeometry x="60" y="1240" width="1900" height="30" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram id="repository-structure" name="リポジトリ構造">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1500" math="0" shadow="0" defaultFontFamily="Noto Sans JP" background="#F7FAFC">
+      <root>
+        <mxCell id="repo-0"/>
+        <mxCell id="repo-1" parent="repo-0"/>
+
+        <mxCell id="repo-title" value="cloudflare-os-local — リポジトリ構造" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=26;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;" vertex="1" parent="repo-1">
+          <mxGeometry x="50" y="35" width="1900" height="48" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-subtitle" value="Wrapper / 運用資材と、固定した upstream/cloudflare-os の pnpm workspace を対応づけた構成" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=14;fontFamily=Noto Sans JP;fontColor=#486581;" vertex="1" parent="repo-1">
+          <mxGeometry x="50" y="82" width="1900" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="repo-frame" value="cloudflare-os-local" style="swimlane;html=1;rounded=1;startSize=40;fillColor=#FFFFFF;swimlaneFillColor=#E6F0F7;strokeColor=#829AB1;strokeWidth=2;fontSize=18;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;whiteSpace=wrap;" vertex="1" parent="repo-1">
+          <mxGeometry x="40" y="145" width="1930" height="1075" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="repo-wrapper" value="ローカル統合 / 運用ラッパー" style="swimlane;html=1;rounded=1;startSize=42;fillColor=#F8FBFD;swimlaneFillColor=#D9EAF7;strokeColor=#5B8DB8;strokeWidth=2;fontSize=16;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;whiteSpace=wrap;" vertex="1" parent="repo-frame">
+          <mxGeometry x="30" y="70" width="430" height="955" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-wrapper-files" value="&lt;b&gt;設定・保護対象&lt;/b&gt;&lt;br&gt;.env / .env.example&lt;br&gt;secrets/aws/*（未コミット）&lt;br&gt;LICENSE / SECURITY.md&lt;br&gt;THIRD-PARTY-NOTICES.md&lt;br&gt;README.md / README.ja.md" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F4F8;strokeColor=#627D98;strokeWidth=2;fontSize=14;fontFamily=Noto Sans JP;fontColor=#243B53;align=left;verticalAlign=middle;spacingLeft=14;" vertex="1" parent="repo-wrapper">
+          <mxGeometry x="24" y="62" width="382" height="190" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-compose" value="docker-compose.yml&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;litellm + cloudflare-os&lt;br&gt;network / port / volume&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#2F80ED;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;align=center;verticalAlign=middle;" vertex="1" parent="repo-wrapper">
+          <mxGeometry x="24" y="280" width="382" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-dockerfile" value="Dockerfile&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;Node + pnpm&lt;br&gt;COPY upstream/cloudflare-os&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#2F80ED;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;align=center;verticalAlign=middle;" vertex="1" parent="repo-wrapper">
+          <mxGeometry x="24" y="405" width="382" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-scripts" value="scripts/* + qa/*&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;Tailscale Serve / config verify&lt;br&gt;browser QA / evidence capture&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#D97706;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#7C2D12;align=center;verticalAlign=middle;" vertex="1" parent="repo-wrapper">
+          <mxGeometry x="24" y="530" width="382" height="105" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-docs" value="docs/*&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;getting-started / usage&lt;br&gt;architecture / troubleshooting&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#7C6FC2;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#3C366B;align=center;verticalAlign=middle;" vertex="1" parent="repo-wrapper">
+          <mxGeometry x="24" y="660" width="382" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-litellm" value="litellm/*&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;Dockerfile / config.yaml&lt;br&gt;Mantle patch / provider config&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E8B57;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#164A2B;align=center;verticalAlign=middle;" vertex="1" parent="repo-wrapper">
+          <mxGeometry x="24" y="780" width="382" height="95" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="repo-upstream" value="upstream/cloudflare-os（固定リビジョン）" style="swimlane;html=1;rounded=1;startSize=42;fillColor=#FBFDFF;swimlaneFillColor=#EAF2F8;strokeColor=#5B8DB8;strokeWidth=2;fontSize=16;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;whiteSpace=wrap;" vertex="1" parent="repo-frame">
+          <mxGeometry x="500" y="70" width="1380" height="955" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-upstream-root" value="ルート実行・開発設定&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;package.json / pnpm-workspace.yaml / pnpm-lock.yaml&lt;br&gt;wrangler.jsonc / run-dev-server.js / scripts/run-local.mjs&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#2F80ED;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;align=center;verticalAlign=middle;" vertex="1" parent="repo-upstream">
+          <mxGeometry x="30" y="62" width="1320" height="98" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="repo-core-frame" value="Core runtime packages" style="swimlane;html=1;rounded=1;startSize=34;fillColor=#F8FBFD;swimlaneFillColor=#D9EAF7;strokeColor=#5B8DB8;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;whiteSpace=wrap;" vertex="1" parent="repo-upstream">
+          <mxGeometry x="30" y="190" width="650" height="280" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-core-backend" value="workshop-backend&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;kernel相当 / Workers + DO&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDF4FF;strokeColor=#147D92;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#0B4F5C;align=center;verticalAlign=middle;" vertex="1" parent="repo-core-frame">
+          <mxGeometry x="25" y="58" width="285" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-core-frontend" value="workshop-frontend&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;shell相当 / React UI&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E8B57;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#164A2B;align=center;verticalAlign=middle;" vertex="1" parent="repo-core-frame">
+          <mxGeometry x="340" y="58" width="285" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-core-router" value="router&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;public origin / path routing&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#2F80ED;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#102A43;align=center;verticalAlign=middle;" vertex="1" parent="repo-core-frame">
+          <mxGeometry x="25" y="170" width="285" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-core-shared" value="workshop-shared&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;API / Gatekeeper 型 / feature flags&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#7C6FC2;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#3C366B;align=center;verticalAlign=middle;" vertex="1" parent="repo-core-frame">
+          <mxGeometry x="340" y="170" width="285" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="repo-shared-frame" value="Shared / support packages" style="swimlane;html=1;rounded=1;startSize=34;fillColor=#FCFBFF;swimlaneFillColor=#F0E7FF;strokeColor=#7C6FC2;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#3C366B;whiteSpace=wrap;" vertex="1" parent="repo-upstream">
+          <mxGeometry x="710" y="190" width="640" height="280" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-shared-mcp" value="mcp-shared&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;MCP account / OAuth / session&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#7C6FC2;strokeWidth=2;fontSize=14;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#3C366B;align=center;verticalAlign=middle;" vertex="1" parent="repo-shared-frame">
+          <mxGeometry x="20" y="58" width="190" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-shared-utils" value="backend-utils&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;logger / observability&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#7C6FC2;strokeWidth=2;fontSize=14;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#3C366B;align=center;verticalAlign=middle;" vertex="1" parent="repo-shared-frame">
+          <mxGeometry x="225" y="58" width="190" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-shared-storage" value="typed-storage&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;型付きストレージ&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#7C6FC2;strokeWidth=2;fontSize=14;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#3C366B;align=center;verticalAlign=middle;" vertex="1" parent="repo-shared-frame">
+          <mxGeometry x="430" y="58" width="190" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-shared-error" value="error-reporting&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;共有エラー報告&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#7C6FC2;strokeWidth=2;fontSize=14;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#3C366B;align=center;verticalAlign=middle;" vertex="1" parent="repo-shared-frame">
+          <mxGeometry x="120" y="170" width="190" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-shared-config" value="configurator-ui&lt;br&gt;&lt;font style=&quot;font-size:12px;font-weight:normal&quot;&gt;Gatekeeper設定UI生成&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#7C6FC2;strokeWidth=2;fontSize=14;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#3C366B;align=center;verticalAlign=middle;" vertex="1" parent="repo-shared-frame">
+          <mxGeometry x="330" y="170" width="190" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="repo-gk-frame" value="Gatekeeper packages（各ディレクトリに wrangler.jsonc / src / README.md）" style="swimlane;html=1;rounded=1;startSize=34;fillColor=#FFFCF7;swimlaneFillColor=#FFF4E5;strokeColor=#D69E2E;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#7C2D12;whiteSpace=wrap;" vertex="1" parent="repo-upstream">
+          <mxGeometry x="30" y="500" width="1320" height="300" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-gk-list-a" value="gatekeeper-cloudflare&lt;br&gt;gatekeeper-confluence&lt;br&gt;gatekeeper-context&lt;br&gt;gatekeeper-email&lt;br&gt;gatekeeper-github&lt;br&gt;gatekeeper-google&lt;br&gt;gatekeeper-homeassistant&lt;br&gt;gatekeeper-linear" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFDF8;strokeColor=#D69E2E;strokeWidth=2;fontSize=14;fontFamily=Noto Sans JP;fontColor=#744210;align=left;verticalAlign=middle;spacingLeft=14;" vertex="1" parent="repo-gk-frame">
+          <mxGeometry x="25" y="58" width="400" height="210" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-gk-list-b" value="gatekeeper-mcp&lt;br&gt;gatekeeper-mcp-portal&lt;br&gt;gatekeeper-notion&lt;br&gt;gatekeeper-scheduler&lt;br&gt;gatekeeper-slack&lt;br&gt;gatekeeper-spotify&lt;br&gt;gatekeeper-supabase&lt;br&gt;gatekeeper-zoominfo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFDF8;strokeColor=#D69E2E;strokeWidth=2;fontSize=14;fontFamily=Noto Sans JP;fontColor=#744210;align=left;verticalAlign=middle;spacingLeft=14;" vertex="1" parent="repo-gk-frame">
+          <mxGeometry x="455" y="58" width="400" height="210" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-gk-role" value="各 Gatekeeper は外部サービス用の独立 Worker。&lt;br&gt;run-dev-server.js が gatekeeper-* を走査し、Backend / Router に動的 binding を追加。" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#D97706;strokeWidth=2;fontSize=14;fontFamily=Noto Sans JP;fontColor=#7C2D12;align=center;verticalAlign=middle;" vertex="1" parent="repo-gk-frame">
+          <mxGeometry x="885" y="58" width="410" height="210" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="repo-other-frame" value="Tests / plans / docs" style="swimlane;html=1;rounded=1;startSize=34;fillColor=#F9FAFB;swimlaneFillColor=#F0F4F8;strokeColor=#829AB1;strokeWidth=2;fontSize=15;fontStyle=1;fontFamily=Noto Sans JP;fontColor=#243B53;whiteSpace=wrap;" vertex="1" parent="repo-upstream">
+          <mxGeometry x="30" y="830" width="1320" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="repo-other" value="integration-tests　/　plans/*　/　docs/*　/　packages/*/__tests__　/　packages/*/README.md" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F4F8;strokeColor=#829AB1;strokeWidth=2;fontSize=14;fontFamily=Noto Sans JP;fontColor=#243B53;align=center;verticalAlign=middle;" vertex="1" parent="repo-other-frame">
+          <mxGeometry x="25" y="48" width="1270" height="36" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="repo-e-docker-upstream" value="COPY source" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#2F80ED;strokeWidth=2;fontSize=12;fontFamily=Noto Sans JP;fontColor=#1D4ED8;endArrow=block;endFill=1;" edge="1" parent="repo-1" source="repo-dockerfile" target="repo-upstream-root">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="520" y="690"/><mxPoint x="520" y="300"/></Array></mxGeometry>
+        </mxCell>
+
+        <mxCell id="repo-legend" value="読み方：左＝このローカル統合で追加・管理する資材　／　右＝上流モノレポの実行コードと Worker パッケージ" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;fontFamily=Noto Sans JP;fontColor=#627D98;" vertex="1" parent="repo-1">
+          <mxGeometry x="50" y="1260" width="1900" height="30" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
