@@ -1,7 +1,7 @@
 import { RpcCompatible, RpcStub, RpcTarget } from "capnweb";
 import { validateRpc } from "capnweb-validate";
-import { Overseer, GadgetMetadata, UiBundle, WorkpieceId, WorkpieceSummary, WorkpiecesSubscriber, GadgetClient, GadgetBindingInfo, GatekeeperClient, ActionState, ActionLogEntry, ActionsSubscriber, CodeUpdate, CodeSubscriber, AiChatMetadata, AiChatMessage, AiChatHistoryPage, AiChatSubscriber, AiChatAuthorInfo, AiModelConfig, AiChatMessageBody, AgentSpawnerConfig, ConsoleLogSubscriber, ConsoleLogEvent, CapsuleSpecifier, CollaboratorInfo, CollaboratorRole, AffectedCollaborator, ShareLinkInfo, GatekeeperCreationSpec, ObserverConfigCallback, ObserverBindingNeed, ObserverBindingFailure, BlueprintBindingAnnotation, BlueprintBinding, BlueprintMetadata, BlueprintOutput, MessageFormatRef, isOutputIcon, SpawnerEnvTarget, BlueprintGadgetSummary, AiChatStreamEvent, BlueprintScreenshotUpload, BLUEPRINT_SCREENSHOT_R2_PREFIX, blueprintScreenshotUrl, ChatAttachmentUpload, ChatAttachmentHandle, ChatAttachmentRef, BoundHookInfo, PreApprovableAction, PresenceParticipant, PresenceSubscriber, SlashCommandChoice, SlashCommandRequest, validateBindingName, createOpenGadgetError, OPEN_GADGET_ERROR_CODES, resolveSiteName } from '@gadgets/workshop-shared/api';
-import { Gatekeeper, HookInitiator, ResourceDescription, ApprovalQueue, ActionDescription, ObservationAuthorizer, ObservationDescription, VendorDescription, SupportedResource, resolveRequestedResource, HookController, HookDescription, AGENT_CATALOG_MAX_ENTRIES, ActionKind } from "@gadgets/workshop-shared/gatekeeper";
+import { Overseer, GadgetMetadata, UiBundle, WorkpieceId, WorkpieceSummary, WorkpiecesSubscriber, GadgetClient, GadgetBindingInfo, GatekeeperClient, ActionState, ActionLogEntry, ActionsSubscriber, CodeUpdate, CodeSubscriber, AiChatMetadata, AiChatMessage, AiChatHistoryPage, AiChatSubscriber, AiChatAuthorInfo, AiModelConfig, AiChatMessageBody, AgentSpawnerConfig, ConsoleLogSubscriber, ConsoleLogEvent, CapsuleSpecifier, CollaboratorInfo, CollaboratorRole, AffectedCollaborator, ShareLinkInfo, GatekeeperCreationSpec, ObserverConfigCallback, ObserverBindingNeed, ObserverBindingFailure, BlueprintBindingAnnotation, BlueprintBinding, BlueprintMetadata, BlueprintOutput, MessageFormatRef, isOutputIcon, SpawnerEnvTarget, BlueprintGadgetSummary, AiChatStreamEvent, BlueprintScreenshotUpload, BLUEPRINT_SCREENSHOT_R2_PREFIX, blueprintScreenshotUrl, ChatAttachmentUpload, ChatAttachmentHandle, ChatAttachmentRef, BoundHookInfo, PreApprovableAction, PresenceParticipant, PresenceSubscriber, SlashCommandChoice, SlashCommandRequest, GatekeeperAuditEvent, validateBindingName, createOpenGadgetError, OPEN_GADGET_ERROR_CODES, resolveSiteName } from '@gadgets/workshop-shared/api';
+import { Gatekeeper, HookInitiator, ResourceDescription, ApprovalQueue, ActionDescription, ObservationAuthorizer, ObservationDescription, VendorDescription, SupportedResource, resolveRequestedResource, HookController, HookDescription, AGENT_CATALOG_MAX_ENTRIES, ActionKind, GatekeeperNetworkRequest } from "@gadgets/workshop-shared/gatekeeper";
 import {
   DurableObject, WorkerEntrypoint, RpcStub as NativeRpcStub,
   RpcTarget as NativeRpcTarget, restore,
@@ -27,6 +27,7 @@ import { ambientGatekeeperMode } from "./provisioning-policy";
 import { listFeaturedBlueprintsFromKv, readBlueprintContent, readBlueprintKvRecord, sanitizeBlueprintOutput } from "./blueprint-archive";
 import { WebFetchEnv } from "./web-fetch";
 import { UserDurableObject, UserAiModelRecord, type UserChatContext, type WorkspaceOutputEntry } from "./user";
+import type { AdminSettings } from "./admin-settings";
 import { AgentSpawnerBinding } from "./agent-spawner-binding";
 import { recordAnalytics } from "./analytics";
 import { reportIssue } from "@gadgets/backend-utils/error-reporting";
@@ -1016,6 +1017,7 @@ class OverseerImpl implements AgentHooks {
   ownerProfileId?: string;
 
   users: DurableObjectNamespace<UserDurableObject>;
+  private adminSettings: DurableObjectNamespace<AdminSettings>;
 
   // Tracks the size of the most-recent snapshot, and the size of all incremental updates since,
   // in order to help decide when to make a new snapshot.
@@ -1302,6 +1304,7 @@ class OverseerImpl implements AgentHooks {
     this.logger = logger.with({ gadgetId: ctx.id.toString() });
     this.storage = makeOverseerStorage(ctx.storage);
     this.users = this.ctx.exports.UserDurableObject;
+    this.adminSettings = this.ctx.exports.AdminSettings;
     this.ownerId = this.storage.ownerId.get();
 
     // Run any pending storage migration before anything else can touch storage. This must happen
@@ -2485,6 +2488,10 @@ class OverseerImpl implements AgentHooks {
     record.resolvedBy = resolvedBy;
     record.autoApproved = autoApproved;
     this.storage.actions.put(record);
+    this.recordGatekeeperOperation("action.approved", record.gatekeeperId, record.caller, {
+      actionId: record.id,
+      outcome: "approved",
+    }, {id: resolvedBy.id, name: resolvedBy.name});
   }
 
   // Apply all currently-eligible pending actions of the given gatekeeper, in ascending id order.
@@ -2641,6 +2648,72 @@ class OverseerImpl implements AgentHooks {
     }
   }
 
+  #callerAuditFields(caller: GatekeeperCaller): Pick<GatekeeperAuditEvent,
+      "actor" | "actorId" | "gadgetId" | "chatId"> {
+    switch (caller.from) {
+      case "agent":
+        return {actor: "agent", actorId: `chat:${caller.chatId}`, chatId: caller.chatId};
+      case "gadget":
+        return {
+          actor: "gadget",
+          actorId: caller.gadgetId === undefined ? "gadget" : `gadget:${caller.gadgetId}`,
+          gadgetId: caller.gadgetId,
+          chatId: caller.chatId,
+        };
+      case "user":
+        return {actor: "user", actorId: this.ownerId, chatId: caller.chatId};
+      case "hook":
+        return {actor: "hook", actorId: "hook"};
+    }
+  }
+
+  #writeAuditEvent(event: Omit<GatekeeperAuditEvent, "id" | "timestamp">): void {
+    let record: GatekeeperAuditEvent = {
+      id: crypto.randomUUID(),
+      timestamp: new Date().toISOString(),
+      workspaceId: this.ctx.id.toString(),
+      ...event,
+    };
+    this.ctx.waitUntil(this.adminSettings.getByName("").appendAuditEvent(record).catch(err => {
+      this.logger.warn("failed to persist Gatekeeper audit event", {
+        event: "gatekeeper.audit.persist.failed", error: err,
+      });
+    }));
+  }
+
+  recordGatekeeperOperation(
+      operation: string, gatekeeperId: number | undefined, caller: GatekeeperCaller,
+      fields: Partial<Omit<GatekeeperAuditEvent,
+          "id" | "timestamp" | "kind" | "operation" | "actor" | "workspaceId">> = {},
+      actor?: {id: string; name?: string}): void {
+    let gatekeeper = gatekeeperId === undefined
+      ? undefined
+      : this.storage.gatekeepers.get(gatekeeperId);
+    this.#writeAuditEvent({
+      kind: "operation",
+      operation,
+      ...this.#callerAuditFields(caller),
+      gatekeeperId,
+      vendorId: gatekeeperVendorId(gatekeeper),
+      resourceTitle: gatekeeper?.resourceTitle,
+      resourceUrl: gatekeeper?.resourceUrl,
+      ...(actor ? {actor: "user", actorId: actor.id, actorName: actor.name} : {}),
+      ...fields,
+    });
+  }
+
+  recordNetworkRequest(
+      gatekeeperId: number, request: GatekeeperNetworkRequest, caller: GatekeeperCaller): void {
+    this.recordGatekeeperOperation("external.request", gatekeeperId, caller, {
+      method: request.method,
+      host: request.host,
+      path: request.path,
+      status: request.status,
+      durationMs: request.durationMs,
+      outcome: request.outcome,
+    });
+  }
+
   async authorizeObservation(gatekeeperId: number, description: ObservationDescription,
                              caller: GatekeeperCaller): Promise<void> {
     if (description.prohibitAllSharing) {
@@ -2682,6 +2755,10 @@ class OverseerImpl implements AgentHooks {
 
     this.storage.actions.put(record);
     this.#associateAction(caller, actionId);
+    this.recordGatekeeperOperation("observation.recorded", gatekeeperId, caller, {
+      actionId,
+      outcome: "completed",
+    });
   }
 
   async getChatAttachmentData(chatId: number, id: string): Promise<Uint8Array> {
@@ -2852,6 +2929,12 @@ class OverseerImpl implements AgentHooks {
 
     this.storage.actions.put(record);
     this.#associateAction(caller, actionId);
+    this.recordGatekeeperOperation("observation.recorded", undefined, caller, {
+      actionId,
+      outcome: "completed",
+      resourceTitle,
+      resourceUrl,
+    });
   }
 
   async submitAction(gatekeeperId: number, action: number,
@@ -2883,6 +2966,10 @@ class OverseerImpl implements AgentHooks {
 
     this.storage.actions.put(record);
     this.#associateAction(caller, actionId);
+    this.recordGatekeeperOperation("action.requested", gatekeeperId, caller, {
+      actionId,
+      outcome: "pending",
+    });
 
     // Same auto-approval gate as before, named because awaitDecision uses it too. The drain is
     // deferred because applying calls back into the gatekeeper facet still awaiting submitAction.
@@ -2951,6 +3038,10 @@ class OverseerImpl implements AgentHooks {
 
     this.storage.actions.put(record);
     this.#associateAction(caller, actionId);
+    this.recordGatekeeperOperation("hook.bound", gatekeeperId, caller, {
+      actionId,
+      outcome: "approved",
+    });
   }
 
   // What is the last active time that we know the user DO has been made aware of?
@@ -7621,6 +7712,13 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
       if (actionRecord?.type === "bindHook") {
         actionRecord.enabled = true;
         this.impl.storage.actions.put(actionRecord);
+        this.impl.ctx.waitUntil(this.#getClientProfile().then(profile => {
+          this.impl.recordGatekeeperOperation("hook.enabled", actionRecord!.gatekeeperId,
+              actionRecord!.caller, {
+                actionId: actionRecord!.id,
+                outcome: "approved",
+              }, {id: profile.id, name: profile.name});
+        }).catch(() => undefined));
       }
     }
   }
@@ -7639,6 +7737,13 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
       if (actionRecord?.type === "bindHook") {
         actionRecord.enabled = false;
         this.impl.storage.actions.put(actionRecord);
+        this.impl.ctx.waitUntil(this.#getClientProfile().then(profile => {
+          this.impl.recordGatekeeperOperation("hook.disabled", actionRecord!.gatekeeperId,
+              actionRecord!.caller, {
+                actionId: actionRecord!.id,
+                outcome: "rejected",
+              }, {id: profile.id, name: profile.name});
+        }).catch(() => undefined));
       }
     }
   }
@@ -7714,6 +7819,10 @@ class OverseerClientInterface extends RpcTarget implements Overseer {
     action.appliedAt = new Date();
     action.resolvedBy = profile;
     this.impl.storage.actions.put(action);
+    this.impl.recordGatekeeperOperation("action.rejected", action.gatekeeperId, action.caller, {
+      actionId: action.id,
+      outcome: "rejected",
+    }, {id: profile.id, name: profile.name});
 
     // Deny leaves the turn ended, like denyConnectionRequest. The rejected record also prevents a
     // sibling approval from resuming this turn.
@@ -9413,6 +9522,11 @@ class ApprovalQueueImpl extends RpcTarget implements ApprovalQueue {
 
   authorizeObservation(description: ObservationDescription): Promise<void> {
     return this.impl.authorizeObservation(this.gatekeeperId, description, this.caller);
+  }
+
+  recordNetworkRequest(request: GatekeeperNetworkRequest): Promise<void> {
+    this.impl.recordNetworkRequest(this.gatekeeperId, request, this.caller);
+    return Promise.resolve();
   }
 
   submitAction(action: number, description: ActionDescription): Promise<void> {

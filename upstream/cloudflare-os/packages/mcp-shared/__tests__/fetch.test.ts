@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { guardedFetch, isAllowedUrl, sdkFetch } from "../src/fetch.js";
+import { guardedFetch, isAllowedUrl, sdkFetch, type FetchRequestAudit } from "../src/fetch.js";
 
 type Hop = {
   url: string;
@@ -138,6 +138,56 @@ describe("guardedFetch", () => {
     const response = await guardedFetch("https://a.example.com/", {});
     expect(response.status).toBe(307);
     expect(hops.length).toBeLessThanOrEqual(4);
+  });
+
+  it("reports safe metadata for every allowed request hop", async () => {
+    const hops = stubChain({
+      "https://mcp.example.com/mcp?secret=omit": "https://mcp.example.com/v2/mcp",
+    });
+    const audit: Array<{ method: string; url: string; status?: number; outcome: string }> = [];
+    await guardedFetch("https://mcp.example.com/mcp?secret=omit", {
+      method: "POST",
+    }, {
+      onRequest: request => { audit.push(request); },
+    });
+    expect(hops).toHaveLength(2);
+    expect(audit.map(request => ({
+      method: request.method,
+      url: request.url,
+      status: request.status,
+      outcome: request.outcome,
+    }))).toEqual([
+      {
+        method: "POST",
+        url: "https://mcp.example.com/mcp?secret=omit",
+        status: 307,
+        outcome: "completed",
+      },
+      {
+        method: "POST",
+        url: "https://mcp.example.com/v2/mcp",
+        status: 200,
+        outcome: "completed",
+      },
+    ]);
+  });
+
+  it("does not let a telemetry callback change a provider error", async () => {
+    vi.stubGlobal("fetch", async () => { throw new Error("provider unavailable"); });
+    const audit: FetchRequestAudit[] = [];
+    await expect(guardedFetch("https://mcp.example.com/mcp", {}, {
+      onRequest: request => {
+        audit.push(request);
+        throw new Error("telemetry unavailable");
+      },
+    })).rejects.toThrow("provider unavailable");
+    expect(audit).toHaveLength(1);
+    expect(audit[0]).toMatchObject({
+      method: "GET",
+      url: "https://mcp.example.com/mcp",
+      outcome: "error",
+    });
+    expect(audit[0]?.durationMs).toBeGreaterThanOrEqual(0);
   });
 });
 

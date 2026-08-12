@@ -746,6 +746,19 @@ export interface ObservationAuthorizer extends RpcTarget {
   authorizeObservation(description: ObservationDescription): Promise<void>;
 }
 
+// Safe transport metadata reported by a gatekeeper when it makes an outbound request on behalf
+// of a Gadget. This deliberately excludes request/response bodies, headers, query strings, and
+// credentials. It is optional on ApprovalQueue so older or non-network gatekeepers do not need to
+// implement it.
+export type GatekeeperNetworkRequest = {
+  method: string;
+  host: string;
+  path: string;
+  status?: number;
+  durationMs: number;
+  outcome: "completed" | "error";
+};
+
 // Macro expansion produced by a slash command. An absent message suppresses the generated
 // agent-visible message and agent turn; the visible command event remains in chat history.
 export type SlashCommandResult = {
@@ -819,6 +832,10 @@ export interface ApprovalQueue extends ObservationAuthorizer {
   // TODO: It would be nice if we can link this with the output gate so that if the submission
   //   does not complete, any SQL writes performed just before submit() are rolled back...
   submitAction(action: number, description: ActionDescription): Promise<void>;
+
+  // Records safe metadata for an outbound request made during the current gatekeeper session.
+  // This is telemetry only: failures must never change the result of the underlying operation.
+  recordNetworkRequest?(request: GatekeeperNetworkRequest): Promise<void>;
 
   // Notifies the overseer that the gadget (or an agent) has requested to register a persistent
   // callback hook.

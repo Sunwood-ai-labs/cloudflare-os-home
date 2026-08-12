@@ -9,7 +9,7 @@
 
 import { McpAuthRequiredError, McpClient, McpSessionExpiredError, type ToolCatalog }
   from "./client.js";
-import { fetchOptions, type InsecureEnv } from "./fetch.js";
+import { fetchOptions, type FetchRequestAudit, type InsecureEnv } from "./fetch.js";
 import { MAX_TOOLS_PER_SERVER } from "./tools.js";
 
 // The environment this module reads. Each Worker's own `Env` satisfies it structurally.
@@ -21,6 +21,8 @@ export type ConnectionEnv = InsecureEnv & {
 export type WithClientOptions = {
   // False for a call that may have taken effect, so a dropped session is not retried. See above.
   retryOnExpiry?: boolean;
+  // Optional, best-effort transport telemetry for a live Gatekeeper session.
+  networkAudit?: (request: FetchRequestAudit) => void | Promise<void>;
 };
 
 // Everything an account must hand over before a request can be made. One value rather than two
@@ -64,7 +66,10 @@ export async function withClient<T>(
   // valid here stays valid for the handful of requests a single `withClient` makes.
   const { authorization, sessionId, generation } = await account.getConnection(endpoint);
   const client = new McpClient(
-    endpoint, async () => authorization, sessionId, fetchOptions(env));
+    endpoint, async () => authorization, sessionId, {
+      ...fetchOptions(env),
+      onRequest: options.networkAudit,
+    });
 
   const run = async (): Promise<T> => {
     const result = await fn(client);

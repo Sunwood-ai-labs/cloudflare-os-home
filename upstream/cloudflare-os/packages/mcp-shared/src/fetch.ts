@@ -16,7 +16,19 @@ const MAX_REDIRECTS = 3;
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 
 // Set by local development against an MCP server on localhost, which is otherwise refused.
-export type FetchOptions = { allowInsecure?: boolean };
+export type FetchRequestAudit = {
+  method: string;
+  url: string;
+  status?: number;
+  durationMs: number;
+  outcome: "completed" | "error";
+};
+
+export type FetchOptions = {
+  allowInsecure?: boolean;
+  // Best-effort telemetry hook. It is deliberately not allowed to change the fetch result.
+  onRequest?: (request: FetchRequestAudit) => void | Promise<void>;
+};
 
 // The one environment variable this package reads. Each Worker's own `Env` satisfies it structurally.
 export type InsecureEnv = {
@@ -28,6 +40,19 @@ export type InsecureEnv = {
 // checks and copies of it would be copies of that.
 export function fetchOptions(env: InsecureEnv): FetchOptions {
   return { allowInsecure: (env.MCP_ALLOW_INSECURE ?? "").toLowerCase() === "true" };
+}
+
+function reportFetch(options: FetchOptions, request: FetchRequestAudit): void {
+  if (!options.onRequest) return;
+  try {
+    // Keep telemetry off the provider-request critical path. The callback is intentionally
+    // fire-and-forget; its failure or latency must not change the fetch result.
+    void Promise.resolve(options.onRequest(request)).catch(() => {
+      // Telemetry must never make a permitted provider request fail.
+    });
+  } catch {
+    // Telemetry must never make a permitted provider request fail.
+  }
 }
 
 // Cap on any single response body this gatekeeper buffers.
@@ -121,7 +146,26 @@ export async function guardedFetch(
   const origin = new URL(url).origin;
 
   for (let hop = 0; ; hop++) {
-    const response = await fetch(current, { ...init, method, body, headers, redirect: "manual" });
+    const startedAt = Date.now();
+    let response: Response;
+    try {
+      response = await fetch(current, { ...init, method, body, headers, redirect: "manual" });
+    } catch (error) {
+      reportFetch(options, {
+        method,
+        url: current,
+        durationMs: Date.now() - startedAt,
+        outcome: "error",
+      });
+      throw error;
+    }
+    reportFetch(options, {
+      method,
+      url: current,
+      status: response.status,
+      durationMs: Date.now() - startedAt,
+      outcome: "completed",
+    });
     if (!REDIRECT_STATUSES.has(response.status)) return response;
 
     const location = response.headers.get("Location");

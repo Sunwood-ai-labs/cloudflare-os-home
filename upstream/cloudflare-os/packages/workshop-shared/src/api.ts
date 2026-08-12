@@ -742,6 +742,41 @@ export type AdminFormat = {
   bundled: boolean;
 };
 
+export type GatekeeperAuditEventKind = "operation" | "network";
+export type GatekeeperAuditActor = "agent" | "gadget" | "user" | "hook" | "system";
+export type GatekeeperAuditOutcome =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "completed"
+  | "error";
+
+// Deployment-wide, admin-only telemetry. Values are intentionally metadata-only: the audit stream
+// must never become a second channel for prompts, request bodies, headers, tokens, or provider data.
+export type GatekeeperAuditEvent = {
+  id: string;
+  timestamp: string;
+  kind: GatekeeperAuditEventKind;
+  operation: string;
+  actor: GatekeeperAuditActor;
+  actorId?: string;
+  actorName?: string;
+  workspaceId?: string;
+  gadgetId?: WorkpieceId;
+  chatId?: number;
+  gatekeeperId?: WorkpieceId;
+  vendorId?: string;
+  resourceTitle?: string;
+  resourceUrl?: string;
+  actionId?: number;
+  method?: string;
+  host?: string;
+  path?: string;
+  status?: number;
+  durationMs?: number;
+  outcome?: GatekeeperAuditOutcome;
+};
+
 // Capability for managing deployment-wide admin settings, obtained via
 // AuthenticatedApi.getAdminApi() (which is null for non-admins). The access check happens when the
 // capability is minted, so these methods don't re-check. Covers branding, agent instructions, and
@@ -750,6 +785,10 @@ export type AdminFormat = {
 export interface AdminApi {
   // Read all admin-managed settings for the admin UI in one call.
   getSettings(): Promise<AdminSettingsView>;
+
+  // Return the newest deployment-wide Gatekeeper telemetry entries first. The server bounds the
+  // requested limit and retains only a finite ring buffer on this experimental branch.
+  listGatekeeperAuditEvents(limit?: number): Promise<GatekeeperAuditEvent[]>;
 
   // Enable or disable new account signups. Existing users can still log in while signups are closed.
   setSignupsEnabled(enabled: boolean): Promise<void>;

@@ -7,9 +7,11 @@
 import { RpcTarget, type RpcStub } from "cloudflare:workers";
 import type { ActionDescription, ActionKind, ApprovalQueue }
   from "@gadgets/workshop-shared/gatekeeper";
+import type { GatekeeperNetworkRequest } from "@gadgets/workshop-shared/gatekeeper";
 
 import type { McpClient } from "./client.js";
 import type { WithClientOptions } from "./connection.js";
+import type { FetchRequestAudit } from "./fetch.js";
 import { isWholeEndpoint, type ToolScope } from "./scope.js";
 import { describeCall, toCallResult, toolInfo, type ClassifiedTool } from "./tools.js";
 import type { McpCallResult, McpToolInfo } from "./types";
@@ -71,6 +73,24 @@ export class McpSessionBase extends RpcTarget {
     this.#queue = queue;
   }
 
+  async #recordNetworkRequest(request: FetchRequestAudit): Promise<void> {
+    let url = new URL(request.url);
+    let audit: GatekeeperNetworkRequest = {
+      method: request.method,
+      host: url.host,
+      path: url.pathname,
+      status: request.status,
+      durationMs: request.durationMs,
+      outcome: request.outcome,
+    };
+    let queue = this.#queue as unknown as {
+      recordNetworkRequest?: (request: GatekeeperNetworkRequest) => Promise<void>;
+    };
+    if (typeof queue.recordNetworkRequest === "function") {
+      await queue.recordNetworkRequest(audit);
+    }
+  }
+
   [Symbol.dispose](): void {
     (this.#queue as RpcStub<ApprovalQueue> & { [Symbol.dispose](): void })[Symbol.dispose]();
   }
@@ -117,7 +137,9 @@ export class McpSessionBase extends RpcTarget {
     });
 
     if (entry.mode === "read") {
-      const result = await host.call(client => client.callTool(name, toolArgs));
+      const result = await host.call(client => client.callTool(name, toolArgs), {
+        networkAudit: request => this.#recordNetworkRequest(request),
+      });
       // Authorize before the data is handed back, per the gatekeeper contract.
       await this.#queue.authorizeObservation(described);
       return toCallResult(result);

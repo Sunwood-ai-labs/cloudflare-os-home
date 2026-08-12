@@ -1,4 +1,4 @@
-import { AdminApi, AdminFormat, AdminFormatPatch, AdminResourceVendor, AdminSettingsView, AmbientGatekeeperMode, BannerColor, BlueprintPublicInfo, MAX_ANNOUNCEMENT_LENGTH, MAX_INSTANCE_INSTRUCTIONS_LENGTH, MAX_SITE_NAME_LENGTH, isAmbientGatekeeperMode, isBannerColor, isHexColor } from '@gadgets/workshop-shared/api';
+import { AdminApi, AdminFormat, AdminFormatPatch, AdminResourceVendor, AdminSettingsView, AmbientGatekeeperMode, BannerColor, BlueprintPublicInfo, GatekeeperAuditEvent, MAX_ANNOUNCEMENT_LENGTH, MAX_INSTANCE_INSTRUCTIONS_LENGTH, MAX_SITE_NAME_LENGTH, isAmbientGatekeeperMode, isBannerColor, isHexColor } from '@gadgets/workshop-shared/api';
 import { GatekeeperVendor } from '@gadgets/workshop-shared/gatekeeper';
 import { DurableObject } from 'cloudflare:workers';
 import { RpcTarget } from 'capnweb';
@@ -15,6 +15,61 @@ import { formatBlueprintsManifestVersion, installFormatBlueprints } from './form
 import { FORMAT_BLUEPRINTS } from './generated/format-blueprints.js';
 
 const logger = createWorkshopLogger("workshop.admin.settings");
+
+// Experimental deployment-wide telemetry retention. This deliberately lives beside the existing
+// singleton settings DO so the first dashboard slice needs no new Durable Object migration.
+const MAX_GATEKEEPER_AUDIT_EVENTS = 1_000;
+const DEFAULT_GATEKEEPER_AUDIT_LIMIT = 200;
+
+function auditText(value: string | undefined, maxLength: number): string | undefined {
+  if (value === undefined) return undefined;
+  let cleaned = value.replace(/[\r\n]+/g, " ").trim();
+  return cleaned.length > maxLength ? `${cleaned.slice(0, maxLength)}…` : cleaned;
+}
+
+function auditUrl(value: string | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  try {
+    let url = new URL(value);
+    // Query strings and fragments are intentionally dropped: they are not needed for a transport
+    // map and can contain credentials or user-provided sensitive selectors.
+    url.username = "";
+    url.password = "";
+    url.search = "";
+    url.hash = "";
+    return auditText(url.toString(), 512);
+  } catch {
+    return undefined;
+  }
+}
+
+function normalizeAuditEvent(event: GatekeeperAuditEvent): GatekeeperAuditEvent {
+  return {
+    id: auditText(event.id, 100) ?? crypto.randomUUID(),
+    timestamp: auditText(event.timestamp, 80) ?? new Date().toISOString(),
+    kind: event.kind,
+    operation: auditText(event.operation, 80) ?? "unknown",
+    actor: event.actor,
+    actorId: auditText(event.actorId, 160),
+    actorName: auditText(event.actorName, 160),
+    workspaceId: auditText(event.workspaceId, 160),
+    gadgetId: Number.isInteger(event.gadgetId) ? event.gadgetId : undefined,
+    chatId: Number.isInteger(event.chatId) ? event.chatId : undefined,
+    gatekeeperId: Number.isInteger(event.gatekeeperId) ? event.gatekeeperId : undefined,
+    vendorId: auditText(event.vendorId, 80),
+    resourceTitle: auditText(event.resourceTitle, 240),
+    resourceUrl: auditUrl(event.resourceUrl),
+    actionId: Number.isInteger(event.actionId) ? event.actionId : undefined,
+    method: auditText(event.method, 24)?.toUpperCase(),
+    host: auditText(event.host, 255),
+    path: auditText(event.path, 512),
+    status: Number.isInteger(event.status) ? event.status : undefined,
+    durationMs: typeof event.durationMs === "number" && Number.isFinite(event.durationMs)
+      ? Math.max(0, Math.round(event.durationMs))
+      : undefined,
+    outcome: event.outcome,
+  };
+}
 
 function makeAdminSettingsStorage(storage: DurableObjectStorage) {
   return createTypedStorage(storage, {
@@ -40,6 +95,10 @@ function makeAdminSettingsStorage(storage: DurableObjectStorage) {
       // exactly once per blueprint: an admin who then removes a format keeps it removed, while a
       // deployment that installed before curation existed still gets promoted.
       promotedFormatBlueprints: <string[]>[],
+
+      // Bounded deployment-wide Gatekeeper audit stream used by the experimental admin monitor.
+      // This is metadata only and is not intended to replace durable log analytics at scale.
+      gatekeeperAuditEvents: <GatekeeperAuditEvent[]>[],
     },
   });
 }
@@ -71,6 +130,25 @@ export class AdminSettings extends DurableObject<Cloudflare.Env> {
     this.storage = makeAdminSettingsStorage(ctx.storage);
     this.users = this.ctx.exports.UserDurableObject;
     this.vendors = buildGatekeeperVendorMap(env);
+  }
+
+  // Internal service method used by Overseer instances. It is intentionally not exposed through
+  // AdminApi; only the admin capability can read the resulting stream.
+  async appendAuditEvent(event: GatekeeperAuditEvent): Promise<void> {
+    let events = this.storage.gatekeeperAuditEvents.get();
+    events.push(normalizeAuditEvent(event));
+    if (events.length > MAX_GATEKEEPER_AUDIT_EVENTS) {
+      events = events.slice(-MAX_GATEKEEPER_AUDIT_EVENTS);
+    }
+    this.storage.gatekeeperAuditEvents.put(events);
+  }
+
+  async listAuditEvents(limit: number = DEFAULT_GATEKEEPER_AUDIT_LIMIT)
+      : Promise<GatekeeperAuditEvent[]> {
+    let bounded = Number.isFinite(limit)
+      ? Math.min(MAX_GATEKEEPER_AUDIT_EVENTS, Math.max(1, Math.floor(limit)))
+      : DEFAULT_GATEKEEPER_AUDIT_LIMIT;
+    return this.storage.gatekeeperAuditEvents.get().slice(-bounded).toReversed();
   }
 
   // Install the format blueprints bundled with this deployment, if that hasn't already happened
@@ -560,6 +638,10 @@ export class AdminApiImpl extends RpcTarget implements AdminApi {
 
   getSettings(): Promise<AdminSettingsView> {
     return this.admin.getSettings(this.adminUserId);
+  }
+
+  listGatekeeperAuditEvents(limit?: number): Promise<GatekeeperAuditEvent[]> {
+    return this.admin.listAuditEvents(limit);
   }
 
   async setSignupsEnabled(enabled: boolean): Promise<void> {
