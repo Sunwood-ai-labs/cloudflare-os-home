@@ -9,6 +9,7 @@ import { cacheBustSiteLogoUrl, prepareSiteLogo } from './siteLogoUtils'
 import SiteLogo from './components/SiteLogo'
 import { useDocumentTitle } from './useDocumentTitle'
 import AdminFormatsPanel from './components/format/AdminFormatsPanel'
+import GatekeeperMonitorPanel from './components/GatekeeperMonitorPanel'
 
 // Preset accent colors offered in the Theme section ('' = default brand).
 const ACCENT_PRESETS: { label: string; value: string }[] = [
@@ -404,6 +405,7 @@ export default function AdminPage() {
           { value: 'gatekeepers', label: 'Gatekeepers' },
           { value: 'formats', label: 'Formats' },
           { value: 'access', label: 'Access' },
+          { value: 'monitor', label: 'Monitor' },
         ]}
       />
 
@@ -414,6 +416,11 @@ export default function AdminPage() {
           formats={formats}
           onChanged={async () => { setFormats((await admin.api.getSettings()).formats) }}
         />
+      )}
+
+      {/* Experimental deployment-wide Gatekeeper activity and transport monitor */}
+      {activeTab === 'monitor' && admin && (
+        <GatekeeperMonitorPanel admin={admin.api} />
       )}
 
       {/* Sign-ups */}
