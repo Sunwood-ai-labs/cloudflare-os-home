@@ -63,10 +63,10 @@ function EventPill({ event }: { event: GatekeeperAuditEvent }) {
     <span
       className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${
         error
-          ? 'border-rose-400/30 bg-rose-400/10 text-rose-300'
+          ? 'border-kumo-danger/30 bg-kumo-danger-tint text-kumo-danger'
           : pending
-            ? 'border-amber-300/30 bg-amber-300/10 text-amber-200'
-            : 'border-emerald-300/25 bg-emerald-300/10 text-emerald-200'
+            ? 'border-kumo-warning/30 bg-kumo-warning-tint text-kumo-warning'
+            : 'border-kumo-success/30 bg-kumo-success-tint text-kumo-success'
       }`}
     >
       {label}
@@ -76,9 +76,9 @@ function EventPill({ event }: { event: GatekeeperAuditEvent }) {
 
 function EmptyStream({ message }: { message: string }) {
   return (
-    <div className="flex min-h-32 flex-col items-center justify-center rounded-xl border border-dashed border-slate-700 bg-slate-950/40 px-5 text-center">
-      <Pulse size={20} className="mb-2 text-slate-600" />
-      <p className="max-w-md text-xs leading-5 text-slate-500">{message}</p>
+    <div className="flex min-h-32 flex-col items-center justify-center rounded-xl border border-dashed border-kumo-line bg-kumo-recessed/35 px-5 text-center">
+      <Pulse size={20} className="mb-2 text-kumo-inactive" />
+      <p className="max-w-md text-xs leading-5 text-kumo-subtle">{message}</p>
     </div>
   )
 }
@@ -95,34 +95,34 @@ function Metric({
   detail: string
 }) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-      <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+    <div className="rounded-xl border border-kumo-line bg-kumo-base/75 p-4 shadow-[var(--shadow-stack)] transition-colors hover:bg-kumo-tint/70">
+      <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-kumo-inactive">
         {icon}
         {label}
       </div>
-      <div className="mt-3 text-2xl font-semibold tracking-tight text-slate-100">{value}</div>
-      <div className="mt-1 text-[11px] text-slate-500">{detail}</div>
+      <div className="mt-3 text-2xl font-semibold tracking-tight text-kumo-strong">{value}</div>
+      <div className="mt-1 text-[11px] text-kumo-subtle">{detail}</div>
     </div>
   )
 }
 
 function OperationRow({ event }: { event: GatekeeperAuditEvent }) {
   return (
-    <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-slate-800/80 py-3 last:border-b-0">
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-400/10 text-sky-300">
+    <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-kumo-line/80 py-3 last:border-b-0">
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-kumo-info-tint text-kumo-info">
         <Eye size={16} />
       </div>
       <div className="min-w-0">
-        <div className="truncate text-xs font-medium text-slate-200">
+        <div className="truncate text-xs font-medium text-kumo-default">
           {OPERATION_LABELS[event.operation] ?? event.operation}
         </div>
-        <div className="mt-1 truncate text-[11px] text-slate-500">
+        <div className="mt-1 truncate text-[11px] text-kumo-subtle">
           {actorLabel(event)} · {targetLabel(event)}
         </div>
       </div>
       <div className="text-right">
         <EventPill event={event} />
-        <div className="mt-1 whitespace-nowrap font-mono text-[10px] text-slate-600">
+        <div className="mt-1 whitespace-nowrap font-mono text-[10px] text-kumo-inactive">
           {formatTime(event.timestamp)}
         </div>
       </div>
@@ -133,21 +133,21 @@ function OperationRow({ event }: { event: GatekeeperAuditEvent }) {
 function NetworkRow({ event }: { event: GatekeeperAuditEvent }) {
   const statusError = event.outcome === 'error' || (event.status !== undefined && event.status >= 400)
   return (
-    <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-slate-800/80 py-3 last:border-b-0">
-      <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${statusError ? 'bg-rose-400/10 text-rose-300' : 'bg-emerald-400/10 text-emerald-300'}`}>
+    <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-kumo-line/80 py-3 last:border-b-0">
+      <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${statusError ? 'bg-kumo-danger-tint text-kumo-danger' : 'bg-kumo-success-tint text-kumo-success'}`}>
         <Globe size={16} />
       </div>
       <div className="min-w-0">
-        <div className="truncate font-mono text-[11px] text-slate-200">
+        <div className="truncate font-mono text-[11px] text-kumo-default">
           {event.method ?? '—'} {event.host ?? 'unknown host'}{event.path ?? '/'}
         </div>
-        <div className="mt-1 truncate text-[11px] text-slate-500">
+        <div className="mt-1 truncate text-[11px] text-kumo-subtle">
           {actorLabel(event)} · {event.vendorId ?? 'gatekeeper'}
         </div>
       </div>
       <div className="text-right">
         <EventPill event={event} />
-        <div className="mt-1 whitespace-nowrap font-mono text-[10px] text-slate-600">
+        <div className="mt-1 whitespace-nowrap font-mono text-[10px] text-kumo-inactive">
           {event.durationMs === undefined ? '—' : `${event.durationMs} ms`}
         </div>
       </div>
@@ -194,29 +194,29 @@ export default function GatekeeperMonitorPanel({ admin }: Props) {
 
   return (
     <div className="space-y-5">
-      <section className="relative overflow-hidden rounded-2xl border border-slate-800 bg-[#0a1019] p-5 text-slate-100 shadow-xl shadow-slate-950/20">
-        <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl" />
+      <section className="relative overflow-hidden rounded-2xl border border-kumo-line border-l-4 border-l-kumo-brand bg-kumo-elevated p-5 text-kumo-default shadow-[var(--shadow-stack)]">
+        <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-kumo-brand/10 blur-3xl" />
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-300">
+            <div className="flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-kumo-brand">
               <ShieldCheck size={14} />
               Gatekeeper / Observability
             </div>
             <h2 className="mt-3 text-xl font-semibold tracking-tight">Activity and transport trace</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-kumo-subtle">
               Deployment-wide admin telemetry. See which actor requested an operation and which MCP
               read-tool HTTP requests were actually observed.
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/25 bg-emerald-300/10 px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-200">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" />
+            <span className="inline-flex items-center gap-2 rounded-full border border-kumo-success/30 bg-kumo-success-tint px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-kumo-success">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-kumo-success" />
               polling / 3s
             </span>
             <button
               type="button"
               onClick={() => void loadEvents()}
-              className="rounded-lg border border-slate-700 bg-slate-900/70 p-2 text-slate-400 transition hover:border-slate-500 hover:text-slate-100"
+              className="rounded-lg border border-kumo-line bg-kumo-control p-2 text-kumo-subtle transition hover:border-kumo-fill hover:bg-kumo-tint hover:text-kumo-default"
               aria-label="Refresh telemetry"
             >
               <ArrowsClockwise size={17} />
@@ -233,7 +233,7 @@ export default function GatekeeperMonitorPanel({ admin }: Props) {
       </section>
 
       {error && (
-        <div className="flex items-center gap-3 rounded-xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">
+        <div className="flex items-center gap-3 rounded-xl border border-kumo-danger/30 bg-kumo-danger-tint px-4 py-3 text-sm text-kumo-danger">
           <WarningCircle size={18} />
           <span className="flex-1">{error}</span>
           <button type="button" onClick={() => void loadEvents()} className="font-medium underline underline-offset-2">
@@ -243,16 +243,16 @@ export default function GatekeeperMonitorPanel({ admin }: Props) {
       )}
 
       <div className="grid gap-5 xl:grid-cols-2">
-        <section className="rounded-2xl border border-slate-800 bg-[#0a1019] p-5 text-slate-100">
+        <section className="rounded-2xl border border-kumo-line bg-kumo-elevated p-5 text-kumo-default shadow-[var(--shadow-stack)]">
           <div className="mb-3 flex items-end justify-between gap-3">
             <div>
-              <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-300">Control plane</div>
+              <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-kumo-info">Control plane</div>
               <h3 className="mt-1 text-base font-semibold">Who did what</h3>
             </div>
-            <span className="font-mono text-[10px] text-slate-600">{operations.length} records</span>
+            <span className="font-mono text-[10px] text-kumo-inactive">{operations.length} records</span>
           </div>
           {loading ? (
-            <div className="min-h-32 animate-pulse rounded-xl bg-slate-900/70" />
+            <div className="min-h-32 animate-pulse rounded-xl bg-kumo-tint/70" />
           ) : operations.length === 0 ? (
             <EmptyStream message="No operation has reached the audit stream yet. Run a real Gatekeeper read or submit an approval-gated action to populate this panel." />
           ) : (
@@ -260,16 +260,16 @@ export default function GatekeeperMonitorPanel({ admin }: Props) {
           )}
         </section>
 
-        <section className="rounded-2xl border border-slate-800 bg-[#0a1019] p-5 text-slate-100">
+        <section className="rounded-2xl border border-kumo-line bg-kumo-elevated p-5 text-kumo-default shadow-[var(--shadow-stack)]">
           <div className="mb-3 flex items-end justify-between gap-3">
             <div>
-              <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-300">Data plane</div>
+              <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-kumo-success">Data plane</div>
               <h3 className="mt-1 text-base font-semibold">What was communicated</h3>
             </div>
-            <span className="font-mono text-[10px] text-slate-600">{network.length} requests</span>
+            <span className="font-mono text-[10px] text-kumo-inactive">{network.length} requests</span>
           </div>
           {loading ? (
-            <div className="min-h-32 animate-pulse rounded-xl bg-slate-900/70" />
+            <div className="min-h-32 animate-pulse rounded-xl bg-kumo-tint/70" />
           ) : network.length === 0 ? (
             <EmptyStream message="No MCP read-tool HTTP request has been observed yet. Connection setup, tools/list, approved writes, provider-specific fetches, and non-MCP Gatekeepers are outside this first experimental slice." />
           ) : (
@@ -278,22 +278,22 @@ export default function GatekeeperMonitorPanel({ admin }: Props) {
         </section>
       </div>
 
-      <section className="rounded-2xl border border-slate-800 bg-[#0a1019] p-5 text-slate-100">
+      <section className="rounded-2xl border border-kumo-line bg-kumo-elevated p-5 text-kumo-default shadow-[var(--shadow-stack)]">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Event stream</div>
+            <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-kumo-inactive">Event stream</div>
             <h3 className="mt-1 text-base font-semibold">Latest signals</h3>
           </div>
-          <div className="flex items-center gap-3 font-mono text-[10px] text-slate-600">
+          <div className="flex items-center gap-3 font-mono text-[10px] text-kumo-inactive">
             <span className="inline-flex items-center gap-1.5"><ClockCounterClockwise size={13} /> {updatedAt ? `updated ${formatTime(updatedAt)}` : 'waiting'}</span>
           </div>
         </div>
         {events.length === 0 ? (
           <EmptyStream message="The stream is empty. This is a real-data view; it does not seed sample traffic." />
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-slate-800">
+          <div className="overflow-x-auto rounded-xl border border-kumo-line">
             <table className="min-w-full text-left text-xs">
-              <thead className="border-b border-slate-800 bg-slate-900/80 font-mono text-[10px] uppercase tracking-[0.12em] text-slate-500">
+              <thead className="border-b border-kumo-line bg-kumo-tint/70 font-mono text-[10px] uppercase tracking-[0.12em] text-kumo-inactive">
                 <tr>
                   <th className="px-3 py-2.5 font-medium">Time</th>
                   <th className="px-3 py-2.5 font-medium">Type</th>
@@ -302,13 +302,13 @@ export default function GatekeeperMonitorPanel({ admin }: Props) {
                   <th className="px-3 py-2.5 font-medium">Result</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/80">
+              <tbody className="divide-y divide-kumo-line/80">
                 {events.slice(0, 20).map((event) => (
-                  <tr key={event.id} className="bg-slate-950/20 transition hover:bg-slate-900/60">
-                    <td className="whitespace-nowrap px-3 py-3 font-mono text-[10px] text-slate-500">{formatTime(event.timestamp)}</td>
-                    <td className="px-3 py-3 text-slate-400">{event.kind === 'network' ? 'network' : 'operation'}</td>
-                    <td className="max-w-40 truncate px-3 py-3 text-slate-300">{actorLabel(event)}</td>
-                    <td className="max-w-[24rem] truncate px-3 py-3 font-mono text-[11px] text-slate-400">{targetLabel(event)}</td>
+                  <tr key={event.id} className="bg-kumo-base/35 transition hover:bg-kumo-tint/70">
+                    <td className="whitespace-nowrap px-3 py-3 font-mono text-[10px] text-kumo-inactive">{formatTime(event.timestamp)}</td>
+                    <td className="px-3 py-3 text-kumo-subtle">{event.kind === 'network' ? 'network' : 'operation'}</td>
+                    <td className="max-w-40 truncate px-3 py-3 text-kumo-default">{actorLabel(event)}</td>
+                    <td className="max-w-[24rem] truncate px-3 py-3 font-mono text-[11px] text-kumo-subtle">{targetLabel(event)}</td>
                     <td className="px-3 py-3"><EventPill event={event} /></td>
                   </tr>
                 ))}
