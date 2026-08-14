@@ -67,6 +67,8 @@ function normalizeAuditEvent(event: GatekeeperAuditEvent): GatekeeperAuditEvent 
     durationMs: typeof event.durationMs === "number" && Number.isFinite(event.durationMs)
       ? Math.max(0, Math.round(event.durationMs))
       : undefined,
+    policyCode: auditText(event.policyCode, 120),
+    policyReason: auditText(event.policyReason, 300),
     outcome: event.outcome,
   };
 }

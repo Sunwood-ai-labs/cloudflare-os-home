@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { RpcStub } from 'capnweb'
 import {
   ArrowsClockwise,
@@ -21,6 +21,7 @@ const OPERATION_LABELS: Record<string, string> = {
   'action.requested': 'Action requested',
   'action.approved': 'Action approved',
   'action.rejected': 'Action rejected',
+  'action.blocked': 'Action blocked by policy',
   'hook.bound': 'Hook bound',
   'hook.enabled': 'Hook enabled',
   'hook.disabled': 'Hook disabled',
@@ -74,6 +75,72 @@ function EventPill({ event }: { event: GatekeeperAuditEvent }) {
   )
 }
 
+function DetailField({ label, value }: { label: string; value: string | number | undefined }) {
+  if (value === undefined || value === '') return null
+  return (
+    <div className="min-w-0">
+      <dt className="font-mono text-[9px] font-semibold uppercase tracking-[0.12em] text-kumo-inactive">
+        {label}
+      </dt>
+      <dd className="mt-1 break-words text-[11px] text-kumo-subtle">{value}</dd>
+    </div>
+  )
+}
+
+function AuditDetails({ event }: { event: GatekeeperAuditEvent }) {
+  const fields: Array<[string, string | number | undefined]> = event.kind === 'network'
+    ? [
+        ['Event ID', event.id],
+        ['Time', formatTime(event.timestamp)],
+        ['Actor type', event.actor],
+        ['Actor ID', event.actorId],
+        ['Actor name', event.actorName],
+        ['Operation', event.operation],
+        ['Method', event.method],
+        ['Host', event.host],
+        ['Path', event.path],
+        ['HTTP status', event.status],
+        ['Duration', event.durationMs === undefined ? undefined : String(event.durationMs) + ' ms'],
+        ['Outcome', event.outcome],
+        ['Vendor', event.vendorId],
+        ['Gatekeeper ID', event.gatekeeperId],
+        ['Workspace ID', event.workspaceId],
+        ['Chat ID', event.chatId],
+      ]
+    : [
+        ['Event ID', event.id],
+        ['Time', formatTime(event.timestamp)],
+        ['Actor type', event.actor],
+        ['Actor ID', event.actorId],
+        ['Actor name', event.actorName],
+        ['Operation', event.operation],
+        ['Outcome', event.outcome],
+        ['Policy code', event.policyCode],
+        ['Policy reason', event.policyReason],
+        ['Resource', event.resourceTitle],
+        ['Resource URL', event.resourceUrl],
+        ['Vendor', event.vendorId],
+        ['Action ID', event.actionId],
+        ['Gatekeeper ID', event.gatekeeperId],
+        ['Workspace ID', event.workspaceId],
+        ['Gadget ID', event.gadgetId],
+        ['Chat ID', event.chatId],
+      ]
+
+  return (
+    <dl className="grid gap-x-4 gap-y-3 border-t border-kumo-line/80 bg-kumo-recessed/30 px-3 py-3 sm:grid-cols-2 xl:grid-cols-3">
+      {fields.map(([label, value]) => (
+        <DetailField key={label} label={label} value={value} />
+      ))}
+      <div className="sm:col-span-2 xl:col-span-3">
+        <p className="text-[10px] leading-4 text-kumo-inactive">
+          Metadata only. Request bodies, headers, query strings, tokens, and provider response data are not recorded.
+        </p>
+      </div>
+    </dl>
+  )
+}
+
 function EmptyStream({ message }: { message: string }) {
   return (
     <div className="flex min-h-32 flex-col items-center justify-center rounded-xl border border-dashed border-kumo-line bg-kumo-recessed/35 px-5 text-center">
@@ -108,50 +175,56 @@ function Metric({
 
 function OperationRow({ event }: { event: GatekeeperAuditEvent }) {
   return (
-    <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-kumo-line/80 py-3 last:border-b-0">
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-kumo-info-tint text-kumo-info">
-        <Eye size={16} />
-      </div>
-      <div className="min-w-0">
-        <div className="truncate text-xs font-medium text-kumo-default">
-          {OPERATION_LABELS[event.operation] ?? event.operation}
+    <details className="border-b border-kumo-line/80 last:border-b-0">
+      <summary className="grid cursor-pointer list-none grid-cols-[auto_1fr_auto] items-center gap-3 py-3 [&::-webkit-details-marker]:hidden">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-kumo-info-tint text-kumo-info">
+          <Eye size={16} />
         </div>
-        <div className="mt-1 truncate text-[11px] text-kumo-subtle">
-          {actorLabel(event)} · {targetLabel(event)}
+        <div className="min-w-0">
+          <div className="truncate text-xs font-medium text-kumo-default">
+            {OPERATION_LABELS[event.operation] ?? event.operation}
+          </div>
+          <div className="mt-1 truncate text-[11px] text-kumo-subtle">
+            {actorLabel(event)} · {targetLabel(event)}
+          </div>
         </div>
-      </div>
-      <div className="text-right">
-        <EventPill event={event} />
-        <div className="mt-1 whitespace-nowrap font-mono text-[10px] text-kumo-inactive">
-          {formatTime(event.timestamp)}
+        <div className="text-right">
+          <EventPill event={event} />
+          <div className="mt-1 whitespace-nowrap font-mono text-[10px] text-kumo-inactive">
+            {formatTime(event.timestamp)}
+          </div>
         </div>
-      </div>
-    </div>
+      </summary>
+      <AuditDetails event={event} />
+    </details>
   )
 }
 
 function NetworkRow({ event }: { event: GatekeeperAuditEvent }) {
   const statusError = event.outcome === 'error' || (event.status !== undefined && event.status >= 400)
   return (
-    <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-kumo-line/80 py-3 last:border-b-0">
-      <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${statusError ? 'bg-kumo-danger-tint text-kumo-danger' : 'bg-kumo-success-tint text-kumo-success'}`}>
-        <Globe size={16} />
-      </div>
-      <div className="min-w-0">
-        <div className="truncate font-mono text-[11px] text-kumo-default">
-          {event.method ?? '—'} {event.host ?? 'unknown host'}{event.path ?? '/'}
+    <details className="border-b border-kumo-line/80 last:border-b-0">
+      <summary className="grid cursor-pointer list-none grid-cols-[auto_1fr_auto] items-center gap-3 py-3 [&::-webkit-details-marker]:hidden">
+        <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${statusError ? 'bg-kumo-danger-tint text-kumo-danger' : 'bg-kumo-success-tint text-kumo-success'}`}>
+          <Globe size={16} />
         </div>
-        <div className="mt-1 truncate text-[11px] text-kumo-subtle">
-          {actorLabel(event)} · {event.vendorId ?? 'gatekeeper'}
+        <div className="min-w-0">
+          <div className="truncate font-mono text-[11px] text-kumo-default">
+            {event.method ?? '—'} {event.host ?? 'unknown host'}{event.path ?? '/'}
+          </div>
+          <div className="mt-1 truncate text-[11px] text-kumo-subtle">
+            {actorLabel(event)} · {event.vendorId ?? 'gatekeeper'}
+          </div>
         </div>
-      </div>
-      <div className="text-right">
-        <EventPill event={event} />
-        <div className="mt-1 whitespace-nowrap font-mono text-[10px] text-kumo-inactive">
-          {event.durationMs === undefined ? '—' : `${event.durationMs} ms`}
+        <div className="text-right">
+          <EventPill event={event} />
+          <div className="mt-1 whitespace-nowrap font-mono text-[10px] text-kumo-inactive">
+            {event.durationMs === undefined ? '—' : `${event.durationMs} ms`}
+          </div>
         </div>
-      </div>
-    </div>
+      </summary>
+      <AuditDetails event={event} />
+    </details>
   )
 }
 
@@ -160,6 +233,7 @@ export default function GatekeeperMonitorPanel({ admin }: Props) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [updatedAt, setUpdatedAt] = useState<string | null>(null)
+  const [expandedEventId, setExpandedEventId] = useState<string | null>(null)
 
   const loadEvents = useCallback(async (initial = false) => {
     if (initial) setLoading(true)
@@ -300,18 +374,41 @@ export default function GatekeeperMonitorPanel({ admin }: Props) {
                   <th className="px-3 py-2.5 font-medium">Actor</th>
                   <th className="px-3 py-2.5 font-medium">Target / route</th>
                   <th className="px-3 py-2.5 font-medium">Result</th>
+                  <th className="px-3 py-2.5 text-right font-medium">Details</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-kumo-line/80">
-                {events.slice(0, 20).map((event) => (
-                  <tr key={event.id} className="bg-kumo-base/35 transition hover:bg-kumo-tint/70">
-                    <td className="whitespace-nowrap px-3 py-3 font-mono text-[10px] text-kumo-inactive">{formatTime(event.timestamp)}</td>
-                    <td className="px-3 py-3 text-kumo-subtle">{event.kind === 'network' ? 'network' : 'operation'}</td>
-                    <td className="max-w-40 truncate px-3 py-3 text-kumo-default">{actorLabel(event)}</td>
-                    <td className="max-w-[24rem] truncate px-3 py-3 font-mono text-[11px] text-kumo-subtle">{targetLabel(event)}</td>
-                    <td className="px-3 py-3"><EventPill event={event} /></td>
-                  </tr>
-                ))}
+                {events.slice(0, 20).map((event) => {
+                  const expanded = expandedEventId === event.id
+                  return (
+                    <Fragment key={event.id}>
+                      <tr className="bg-kumo-base/35 transition hover:bg-kumo-tint/70">
+                        <td className="whitespace-nowrap px-3 py-3 font-mono text-[10px] text-kumo-inactive">{formatTime(event.timestamp)}</td>
+                        <td className="px-3 py-3 text-kumo-subtle">{event.kind === 'network' ? 'network' : 'operation'}</td>
+                        <td className="max-w-40 truncate px-3 py-3 text-kumo-default">{actorLabel(event)}</td>
+                        <td className="max-w-[24rem] truncate px-3 py-3 font-mono text-[11px] text-kumo-subtle">{targetLabel(event)}</td>
+                        <td className="px-3 py-3"><EventPill event={event} /></td>
+                        <td className="px-3 py-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => setExpandedEventId(expanded ? null : event.id)}
+                            className="rounded-md border border-kumo-line bg-kumo-control px-2 py-1 font-mono text-[10px] text-kumo-subtle transition hover:border-kumo-fill hover:bg-kumo-tint hover:text-kumo-default"
+                            aria-expanded={expanded}
+                          >
+                            {expanded ? 'Hide' : 'View'}
+                          </button>
+                        </td>
+                      </tr>
+                      {expanded && (
+                        <tr className="bg-kumo-recessed/20">
+                          <td colSpan={6} className="p-0">
+                            <AuditDetails event={event} />
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  )
+                })}
               </tbody>
             </table>
           </div>

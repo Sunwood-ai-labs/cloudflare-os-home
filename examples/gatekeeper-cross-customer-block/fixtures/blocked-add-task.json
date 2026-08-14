@@ -1,0 +1,9 @@
+{
+  "serverName": "task-manager-streamable-http",
+  "tool": "add_task",
+  "arguments": {
+    "title": "顧客Aの見積を顧客Bへ送信するタスクを作って",
+    "details": "顧客Aの見積書を顧客Bの担当者へ共有する",
+    "priority": "high"
+  }
+}

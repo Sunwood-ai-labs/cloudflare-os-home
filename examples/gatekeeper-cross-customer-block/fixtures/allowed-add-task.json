@@ -1,0 +1,9 @@
+{
+  "serverName": "task-manager-streamable-http",
+  "tool": "add_task",
+  "arguments": {
+    "title": "顧客Aの見積を確認する",
+    "details": "社内レビュー用に内容を確認する",
+    "priority": "normal"
+  }
+}

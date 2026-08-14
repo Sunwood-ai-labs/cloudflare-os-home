@@ -15,6 +15,7 @@ import {
   type Gatekeeper,
   type GatekeeperConnectCallback,
   type GatekeeperConnectOptions,
+  type ActionPolicyBlock,
   type GatekeeperUser,
   type GatekeeperUserVerifier,
   type GatekeeperVendor as GatekeeperVendorIface,
@@ -419,6 +420,32 @@ export class McpGatekeeperImpl
 
   get serverName(): string {
     return this.ctx.props.serverName;
+  }
+
+  // Experimental local rule for the neko-neko trading-company scenario. It is intentionally
+  // opt-in and narrowly scoped to the custom task MCP server so ordinary MCP connections keep the
+  // upstream approval behavior. The rule checks only the action arguments that the Gatekeeper is
+  // about to queue; it never sends them to the provider and records only the rule metadata.
+  override actionPolicyFor(
+      toolName: string, args: Record<string, unknown>): ActionPolicyBlock | undefined {
+    if (this.env.CFOS_EXPERIMENTAL_MCP_BLOCK_CROSS_CUSTOMER !== "true"
+        || this.ctx.props.serverName !== "task-manager-streamable-http"
+        || toolName !== "add_task") {
+      return undefined;
+    }
+
+    const text = Object.values(args)
+      .filter((value): value is string => typeof value === "string")
+      .join("\n");
+    if (!/顧客\s*A/.test(text) || !/顧客\s*B/.test(text)
+        || !/(送信|送付|共有|転送|送る|宛)/.test(text)) {
+      return undefined;
+    }
+
+    return {
+      code: "cross-customer-destination",
+      reason: "顧客間の送信・共有を含む操作は実験ポリシーで即時ブロック",
+    };
   }
 
   async describe(): Promise<ResourceDescription> {

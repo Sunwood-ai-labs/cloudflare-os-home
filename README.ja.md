@@ -43,6 +43,7 @@ Cloudflare OS Homeは、Cloudflare OSをエージェント中心のワークス�
 | コンテナ構成を理解する | [アーキテクチャ](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/guide/architecture) |
 | Agentの動作を再現する | [Agentスモークテスト](#-エージェントスモークテスト) |
 | tailnet限定アクセスを設定する | [Tailscaleアクセス](#-tailscaleアクセス) |
+| 再利用可能なサンプルを試す | [Examples](examples/) |
 | 実験結果とスクショを見る | [Cloudflare OS Home Lab](https://github.com/Sunwood-ai-labs/cloudflare-os-home-lab) |
 | 起動失敗を調べる | [トラブルシュート](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/guide/troubleshooting) |
 
@@ -137,6 +138,14 @@ node .\qa\agentic-gadget-smoke.mjs
 ```
 
 成功すると、`Pending changes`、`Accept changes`、`Discard`を持つGadget Draftが作られます。詳細な解釈とスクショは[Cloudflare OS Home Lab](https://github.com/Sunwood-ai-labs/cloudflare-os-home-lab)に分離しています。
+
+## 🧰 再利用可能なサンプル
+
+[examplesディレクトリ](examples/)に、ローカル実験を繰り返すための安全な入力、期待する結果、実装箇所、制限事項をまとめています。まずは[Gatekeeper：顧客間送信の書き込みブロック](examples/gatekeeper-cross-customer-block/)から試せます。
+
+[実験インデックス](https://github.com/Sunwood-ai-labs/cloudflare-os-home-lab/blob/main/experiments/README.ja.md)では、実際に確認した機能と、それぞれの詳細記録を一覧できます。
+
+サンプルは合成データまたはローカルデータだけを使います。認証情報、実顧客データ、非公開エンドポイント、公開履歴の追跡情報は追加しないでください。
 
 ## 🧪 ランタイムQA
 

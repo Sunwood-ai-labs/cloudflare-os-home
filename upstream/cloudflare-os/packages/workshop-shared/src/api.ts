@@ -774,6 +774,10 @@ export type GatekeeperAuditEvent = {
   path?: string;
   status?: number;
   durationMs?: number;
+  // Metadata-only explanation for a Gatekeeper policy block. Payloads and credentials never belong
+  // here.
+  policyCode?: string;
+  policyReason?: string;
   outcome?: GatekeeperAuditOutcome;
 };
 
@@ -1260,7 +1264,7 @@ export type ActionLogEntry = {
   resolvedBy?: AiChatAuthorInfo;
 
   // True when the action was applied automatically by an auto-approval rule rather than by a human
-  // clicking Approve. Only ever set alongside state "approved" (there is no automatic rejection).
+  // clicking Approve. Only ever set alongside state "approved".
   autoApproved?: boolean;
 } | {
   type: "observation";

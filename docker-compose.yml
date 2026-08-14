@@ -46,6 +46,8 @@ services:
       VITE_BACKEND_HOST: ${CFOS_BACKEND_HOST:-localhost:8877}
       WRANGLER_DEV_IP: 0.0.0.0
       TZ: Asia/Tokyo
+      CFOS_ADMIN_USERNAMES: ${CFOS_ADMIN_USERNAMES:-admin}
+      CFOS_EXPERIMENTAL_MCP_BLOCK_CROSS_CUSTOMER: ${CFOS_EXPERIMENTAL_MCP_BLOCK_CROSS_CUSTOMER:-false}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:

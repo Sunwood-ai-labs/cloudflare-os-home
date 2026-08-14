@@ -1,7 +1,7 @@
 import { RpcCompatible, RpcStub, RpcTarget } from "capnweb";
 import { validateRpc } from "capnweb-validate";
 import { Overseer, GadgetMetadata, UiBundle, WorkpieceId, WorkpieceSummary, WorkpiecesSubscriber, GadgetClient, GadgetBindingInfo, GatekeeperClient, ActionState, ActionLogEntry, ActionsSubscriber, CodeUpdate, CodeSubscriber, AiChatMetadata, AiChatMessage, AiChatHistoryPage, AiChatSubscriber, AiChatAuthorInfo, AiModelConfig, AiChatMessageBody, AgentSpawnerConfig, ConsoleLogSubscriber, ConsoleLogEvent, CapsuleSpecifier, CollaboratorInfo, CollaboratorRole, AffectedCollaborator, ShareLinkInfo, GatekeeperCreationSpec, ObserverConfigCallback, ObserverBindingNeed, ObserverBindingFailure, BlueprintBindingAnnotation, BlueprintBinding, BlueprintMetadata, BlueprintOutput, MessageFormatRef, isOutputIcon, SpawnerEnvTarget, BlueprintGadgetSummary, AiChatStreamEvent, BlueprintScreenshotUpload, BLUEPRINT_SCREENSHOT_R2_PREFIX, blueprintScreenshotUrl, ChatAttachmentUpload, ChatAttachmentHandle, ChatAttachmentRef, BoundHookInfo, PreApprovableAction, PresenceParticipant, PresenceSubscriber, SlashCommandChoice, SlashCommandRequest, GatekeeperAuditEvent, validateBindingName, createOpenGadgetError, OPEN_GADGET_ERROR_CODES, resolveSiteName } from '@gadgets/workshop-shared/api';
-import { Gatekeeper, HookInitiator, ResourceDescription, ApprovalQueue, ActionDescription, ObservationAuthorizer, ObservationDescription, VendorDescription, SupportedResource, resolveRequestedResource, HookController, HookDescription, AGENT_CATALOG_MAX_ENTRIES, ActionKind, GatekeeperNetworkRequest } from "@gadgets/workshop-shared/gatekeeper";
+import { Gatekeeper, HookInitiator, ResourceDescription, ApprovalQueue, ActionDescription, ActionSubmissionResult, ObservationAuthorizer, ObservationDescription, VendorDescription, SupportedResource, resolveRequestedResource, HookController, HookDescription, AGENT_CATALOG_MAX_ENTRIES, ActionKind, GatekeeperNetworkRequest } from "@gadgets/workshop-shared/gatekeeper";
 import {
   DurableObject, WorkerEntrypoint, RpcStub as NativeRpcStub,
   RpcTarget as NativeRpcTarget, restore,
@@ -2649,10 +2649,18 @@ class OverseerImpl implements AgentHooks {
   }
 
   #callerAuditFields(caller: GatekeeperCaller): Pick<GatekeeperAuditEvent,
-      "actor" | "actorId" | "gadgetId" | "chatId"> {
+      "actor" | "actorId" | "actorName" | "gadgetId" | "chatId"> {
     switch (caller.from) {
       case "agent":
-        return {actor: "agent", actorId: `chat:${caller.chatId}`, chatId: caller.chatId};
+        // A chat id is useful for correlating the run, but it is not an identity. The workspace
+        // owner is the account whose agent made the call, so keep that stable identity in the
+        // deployment-wide audit stream as well.
+        return {
+          actor: "agent",
+          actorId: this.ownerId ?? ("chat:" + caller.chatId),
+          actorName: this.ownerId,
+          chatId: caller.chatId,
+        };
       case "gadget":
         return {
           actor: "gadget",
@@ -2661,7 +2669,12 @@ class OverseerImpl implements AgentHooks {
           chatId: caller.chatId,
         };
       case "user":
-        return {actor: "user", actorId: this.ownerId, chatId: caller.chatId};
+        return {
+          actor: "user",
+          actorId: this.ownerId,
+          actorName: this.ownerId,
+          chatId: caller.chatId,
+        };
       case "hook":
         return {actor: "hook", actorId: "hook"};
     }
@@ -2704,7 +2717,15 @@ class OverseerImpl implements AgentHooks {
 
   recordNetworkRequest(
       gatekeeperId: number, request: GatekeeperNetworkRequest, caller: GatekeeperCaller): void {
-    this.recordGatekeeperOperation("external.request", gatekeeperId, caller, {
+    let gatekeeper = this.storage.gatekeepers.get(gatekeeperId);
+    this.#writeAuditEvent({
+      kind: "network",
+      operation: "external.request",
+      ...this.#callerAuditFields(caller),
+      gatekeeperId,
+      vendorId: gatekeeperVendorId(gatekeeper),
+      resourceTitle: gatekeeper?.resourceTitle,
+      resourceUrl: gatekeeper?.resourceUrl,
       method: request.method,
       host: request.host,
       path: request.path,
@@ -2939,7 +2960,7 @@ class OverseerImpl implements AgentHooks {
 
   async submitAction(gatekeeperId: number, action: number,
                      description: ActionDescription, caller: GatekeeperCaller)
-      : Promise<void> {
+      : Promise<ActionSubmissionResult> {
     if (this.storage.prohibitAllSharing.get()) {
       throw new Error(
           "This workspace has observed sensitive data. To prevent leaks, the workspace is prohibited " +
@@ -2959,13 +2980,25 @@ class OverseerImpl implements AgentHooks {
       resourceUrl: gatekeeper?.resourceUrl,
       action,
       createdAt: new Date(),
-      state: "pending",
+      state: description.policyBlock ? "rejected" : "pending",
       type: "action",
-      description
+      description,
+      ...(description.policyBlock ? {appliedAt: new Date()} : {}),
     };
 
     this.storage.actions.put(record);
     this.#associateAction(caller, actionId);
+
+    if (description.policyBlock) {
+      this.recordGatekeeperOperation("action.blocked", gatekeeperId, caller, {
+        actionId,
+        outcome: "rejected",
+        policyCode: description.policyBlock.code,
+        policyReason: description.policyBlock.reason,
+      });
+      return {status: "blocked", policy: description.policyBlock};
+    }
+
     this.recordGatekeeperOperation("action.requested", gatekeeperId, caller, {
       actionId,
       outcome: "pending",
@@ -2985,6 +3018,8 @@ class OverseerImpl implements AgentHooks {
     if (willAutoApprove) {
       this.ctx.waitUntil(this.drainAutoApprovals(gatekeeperId));
     }
+
+    return {status: "pending"};
   }
 
   async bindHook<Hook extends RpcTarget>(
@@ -9529,7 +9564,7 @@ class ApprovalQueueImpl extends RpcTarget implements ApprovalQueue {
     return Promise.resolve();
   }
 
-  submitAction(action: number, description: ActionDescription): Promise<void> {
+  submitAction(action: number, description: ActionDescription): Promise<ActionSubmissionResult> {
     return this.impl.submitAction(this.gatekeeperId, action, description, this.caller);
   }
 

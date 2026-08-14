@@ -1,0 +1,12 @@
+{
+  "operation": "action.blocked",
+  "outcome": "rejected",
+  "policy": {
+    "code": "cross-customer-destination",
+    "reason": "顧客間の送信・共有を含む操作は実験ポリシーで即時ブロック"
+  },
+  "resource": "task-manager-streamable-http",
+  "tool": "add_task",
+  "mcpRequestForwarded": false,
+  "taskDataChanged": false
+}

@@ -196,7 +196,7 @@ const PASSTHROUGH_GATEKEEPER_VARS = {
     "MCP_PORTAL_URL", "MCP_PORTAL_NAME", "MCP_PORTAL_AUTH", "MCP_PORTAL_TOKEN",
     "MCP_PORTAL_TRUST_ANNOTATIONS", "MCP_ALLOW_INSECURE",
   ],
-  "gatekeeper-mcp": ["MCP_ALLOW_INSECURE"],
+  "gatekeeper-mcp": ["MCP_ALLOW_INSECURE", "CFOS_EXPERIMENTAL_MCP_BLOCK_CROSS_CUSTOMER"],
 };
 
 for (const gk of gatekeepers) {
@@ -235,9 +235,15 @@ for (const gk of gatekeepers) {
 
   config.services = config.services || [];
 
-  // For local testing, create an account named "admin" to test admin features.
+  // For local testing, create accounts named in CFOS_ADMIN_USERNAMES to test admin features.
+  // Keep the default "admin" account for backwards compatibility, while allowing an
+  // experiment-only admin identity without changing production configuration.
   config.vars = config.vars || {};
-  config.vars.ADMINS = ["admin"];
+  const configuredAdmins = (process.env.CFOS_ADMIN_USERNAMES || "admin")
+    .split(",")
+    .map(name => name.trim())
+    .filter(Boolean);
+  config.vars.ADMINS = [...new Set(configuredAdmins)];
 
   // Pass through the optional OAuth sign-in / AI Gateway billing env vars from the shell
   // environment, so you can run e.g.

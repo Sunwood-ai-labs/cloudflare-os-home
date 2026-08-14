@@ -831,7 +831,7 @@ export interface ApprovalQueue extends ObservationAuthorizer {
   //
   // TODO: It would be nice if we can link this with the output gate so that if the submission
   //   does not complete, any SQL writes performed just before submit() are rolled back...
-  submitAction(action: number, description: ActionDescription): Promise<void>;
+  submitAction(action: number, description: ActionDescription): Promise<ActionSubmissionResult>;
 
   // Records safe metadata for an outbound request made during the current gatekeeper session.
   // This is telemetry only: failures must never change the result of the underlying operation.
@@ -990,6 +990,18 @@ export type ActionKind = {
   label: string;
 };
 
+// A Gatekeeper-side policy can stop an action before it becomes approvable. The fields are
+// deliberately metadata-only: they identify the rule without copying the action payload into the
+// deployment-wide audit stream.
+export type ActionPolicyBlock = {
+  code: string;
+  reason: string;
+};
+
+export type ActionSubmissionResult =
+  | {status: "pending"}
+  | {status: "blocked"; policy: ActionPolicyBlock};
+
 // Describes an action submitted to the action approval queue. This contains all the information
 // needed to:
 // - Decide whether the action needs to be approved and who can approve it.
@@ -1066,6 +1078,10 @@ export type ActionDescription = {
   // any tag-keyed rule -- those always require manual approval. `actionKind.tag` is what auto-
   // approval rules and the future policy engine key on; `actionKind.label` is shown in the UI.
   actionKind?: ActionKind;
+
+  // Set by the Gatekeeper when this concrete action violates an unconditional policy. A blocked
+  // action is recorded as rejected, never shown as pending, and must not reach the provider.
+  policyBlock?: ActionPolicyBlock;
 }
 
 // Describes a registered hook, for display purposes (e.g. so the user can see what hooks are

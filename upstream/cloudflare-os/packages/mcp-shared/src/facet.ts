@@ -4,6 +4,7 @@
 import { DurableObject, type RpcStub } from "cloudflare:workers";
 import type {
   ActionKind,
+  ActionPolicyBlock,
   ApprovalQueue,
   Gatekeeper,
   GatekeeperUserVerifier,
@@ -183,5 +184,15 @@ export abstract class McpFacetBase<
   /** Namespaces one tool's approval kind to this facet. */
   actionKindFor(toolName: string): ActionKind {
     return actionKindFor(this.actionScopeTag, toolName);
+  }
+
+  /** Returns an unconditional policy block for a concrete action, when the connector defines one. */
+  actionPolicyFor(_toolName: string, _args: Record<string, unknown>): ActionPolicyBlock | undefined {
+    return undefined;
+  }
+
+  /** Marks an action rejected inside the MCP facet without contacting the upstream server. */
+  rejectStagedAction(id: number): void {
+    this.#actions().reject(id);
   }
 }

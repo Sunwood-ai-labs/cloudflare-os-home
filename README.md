@@ -43,6 +43,7 @@ This is an unofficial integration, not a Cloudflare-hosted product or official d
 | Understand the containers | [Architecture](https://sunwood-ai-labs.github.io/cloudflare-os-home/guide/architecture) |
 | Reproduce the agent test | [Agent smoke test](#-agent-smoke-test) |
 | Configure tailnet-only access | [Tailscale access](#-tailscale-access) |
+| Try a reusable example | [Examples](examples/) |
 | Read experiment results and screenshots | [Cloudflare OS Home Lab](https://github.com/Sunwood-ai-labs/cloudflare-os-home-lab) |
 | Diagnose a failed setup | [Troubleshooting](https://sunwood-ai-labs.github.io/cloudflare-os-home/guide/troubleshooting) |
 
@@ -137,6 +138,14 @@ node .\qa\agentic-gadget-smoke.mjs
 ```
 
 The run should produce a Gadget draft with `Pending changes`, `Accept changes`, and `Discard`. Detailed interpretation and visual evidence belong in the [Cloudflare OS Home Lab](https://github.com/Sunwood-ai-labs/cloudflare-os-home-lab).
+
+## 🧰 Reusable examples
+
+The [examples directory](examples/) collects public-safe inputs, expected results, implementation pointers, and limitations for repeatable local experiments. Start with the [Gatekeeper cross-customer write block](examples/gatekeeper-cross-customer-block/) example.
+
+[The experiment index](https://github.com/Sunwood-ai-labs/cloudflare-os-home-lab/blob/main/experiments/README.md) maps the verified Cloudflare OS Home capabilities to their detailed records.
+
+Examples use synthetic or local data only. Do not add credentials, real customer records, private endpoints, or publication-tracking metadata.
 
 ## 🧪 Runtime QA
 

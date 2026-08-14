@@ -5,7 +5,7 @@
 // supplies. The base never touches the Durable Object, the account, or the endpoint's credentials.
 
 import { RpcTarget, type RpcStub } from "cloudflare:workers";
-import type { ActionDescription, ActionKind, ApprovalQueue }
+import type { ActionDescription, ActionKind, ActionPolicyBlock, ApprovalQueue }
   from "@gadgets/workshop-shared/gatekeeper";
 import type { GatekeeperNetworkRequest } from "@gadgets/workshop-shared/gatekeeper";
 
@@ -55,7 +55,12 @@ export interface McpSessionHost {
   // The approval-kind tag for one tool, namespaced so pre-approvals cannot cross servers.
   actionKindFor(toolName: string): ActionKind;
 
+  // Optional per-Gatekeeper policy evaluation for a concrete action. The Gatekeeper owns this
+  // decision; the MCP provider is never contacted while a block is being evaluated.
+  actionPolicyFor(toolName: string, args: Record<string, unknown>): ActionPolicyBlock | undefined;
+
   stageAction(toolName: string, args: Record<string, unknown>): StoredAction;
+  rejectStagedAction(id: number): void;
   discardStagedAction(id: number): void;
   lookupAction(id: number): StoredAction | undefined;
 }
@@ -145,6 +150,7 @@ export class McpSessionBase extends RpcTarget {
       return toCallResult(result);
     }
 
+    const policyBlock = host.actionPolicyFor(name, toolArgs);
     const staged = host.stageAction(name, toolArgs);
     const description: ActionDescription = {
       ...described,
@@ -155,10 +161,20 @@ export class McpSessionBase extends RpcTarget {
       awaitDecision: true,
       autoApprovable: entry.autoApprovable,
       actionKind: host.actionKindFor(name),
+      ...(policyBlock ? {policyBlock} : {}),
     };
 
     try {
-      await this.#queue.submitAction(staged.id, description);
+      const submission = await this.#queue.submitAction(staged.id, description);
+      if (submission.status === "blocked") {
+        host.rejectStagedAction(staged.id);
+        return {
+          status: "rejected",
+          message:
+            `Calling "${name}" on ${host.serverName} was blocked by Gatekeeper policy ` +
+            `(${submission.policy.code}): ${submission.policy.reason}`,
+        };
+      }
     } catch (err) {
       host.discardStagedAction(staged.id);
       throw err;
