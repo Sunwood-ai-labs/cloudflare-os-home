@@ -5,8 +5,9 @@ import { username, password } from './test-config.mjs'
 
 const baseUrl = process.env.BASE_URL ?? 'http://localhost:8877'
 const litellmKey = process.env.LITELLM_KEY
-const modelId = 'glm-4.7'
-const modelName = 'LiteLLM · glm-4.7'
+const litellmApiUrl = process.env.LITELLM_API_URL ?? 'http://litellm:4000/v1'
+const modelId = process.env.LITELLM_MODEL ?? 'glm-4.7'
+const modelName = `LiteLLM · ${modelId}`
 if (!litellmKey) throw new Error('Set LITELLM_KEY for the browser flow.')
 
 const screenshotDir = resolve(process.cwd(), '..', 'artifacts', 'screenshots')
@@ -37,7 +38,7 @@ try {
   await page.getByRole('textbox', { name: 'Display Name', exact: true }).fill(modelName)
   await page.getByRole('textbox', { name: 'API Token', exact: true }).fill(litellmKey)
   await page.getByText('Advanced Settings', { exact: true }).click()
-  await page.getByRole('textbox', { name: 'API URL', exact: true }).fill('http://litellm:4000/v1')
+  await page.getByRole('textbox', { name: 'API URL', exact: true }).fill(litellmApiUrl)
   await page.screenshot({ path: resolve(screenshotDir, '10-network-model-form.png'), fullPage: true })
   await page.getByRole('button', { name: 'Add Model', exact: true }).click()
   await page.getByText('AI model added successfully', { exact: true }).waitFor({ state: 'visible', timeout: 30000 })

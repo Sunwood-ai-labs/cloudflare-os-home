@@ -15,6 +15,7 @@ import {
   markdownToBlocks,
   notionUrlFromId,
   databaseSchema,
+  itemResponseToSummary,
   pageToMetadata,
   pageToSummary,
   plainToRichText,
@@ -27,6 +28,10 @@ import {
   type NotionPageResponse,
 } from "./notion-api";
 import type { RpcStub } from "cloudflare:workers";
+import {
+  type ActionDescriptionBuilder,
+  buildDescription,
+} from "@gadgets/gatekeeper-kit/action-description";
 import type { ActionDescription, ApprovalQueue, ObservationDescription } from "@gadgets/workshop-shared/gatekeeper";
 import type {
   NotionComment,
@@ -46,7 +51,9 @@ import type {
 export type NotionActionParent =
   | { kind: "page"; pageId: string }
   | { kind: "database"; databaseId: string }
-  | { kind: "workspace" };
+  // The page a workspace-level page is created under, chosen when the action is staged so the
+  // approver sees it. Absent on records staged before that, which choose it when applied.
+  | { kind: "workspace"; pageId?: string; title?: string };
 
 export type NotionAction =
   | { type: "appendContent"; pageId: string; markdown: string }
@@ -79,9 +86,9 @@ export type StoredActionRecord = {
   action: NotionAction;
   state: "pending" | "applied" | "reverted";
   submittedAt: number;
-  // For appendContent revert: the IDs of the blocks created on apply.
+  /** For appendContent revert: the IDs of the blocks created on apply. */
   appendedBlockIds?: string[];
-  // For createPage: the real Notion page ID assigned on apply.
+  /** For createPage: the real Notion page ID assigned on apply. */
   createdPageId?: string;
 };
 
@@ -157,9 +164,11 @@ export class NotionStore {
     return this.allActions().filter(r => r.state === "pending");
   }
 
-  // Pending actions targeting a specific page, in submission order. The page may be addressed by
-  // either its provisional id or its real id (the same page can be reached both ways once a creation
-  // has been applied), so we compare *resolved* IDs on both sides.
+  /**
+   * Pending actions targeting a specific page, in submission order. The page may be addressed by
+   * either its provisional id or its real id (the same page can be reached both ways once a creation
+   * has been applied), so we compare *resolved* IDs on both sides.
+   */
   pendingForPage(pageId: string): StoredActionRecord[] {
     const target = this.resolveId(pageId);
     return this.pendingActions().filter(r => {
@@ -178,21 +187,23 @@ export class NotionStore {
     this.#kv.put(`prov:${provisionalId}`, realId);
   }
 
-  // Resolve a (possibly provisional) ID to a real Notion ID, if the creating action has applied.
+  /** Resolve a (possibly provisional) ID to a real Notion ID, if the creating action has applied. */
   resolveId(id: string): string {
     if (!NotionStore.isProvisional(id)) return id;
     return this.#kv.get<string>(`prov:${id}`) ?? id;
   }
 
-  // True if this provisional ID belongs to a page created in this session (still pending or already
-  // applied). Lets getPage() rehydrate a provisional handle.
+  /**
+   * True if this provisional ID belongs to a page created in this session (still pending or already
+   * applied). Lets getPage() rehydrate a provisional handle.
+   */
   knowsProvisional(id: string): boolean {
     if (this.resolveId(id) !== id) return true; // already applied -> real ID mapped
     return this.allActions().some(
       r => r.action.type === "createPage" && r.action.provisionalId === id);
   }
 
-  // The createPage action for a provisional ID, if any.
+  /** The createPage action for a provisional ID, if any. */
   createActionFor(provisionalId: string): StoredActionRecord | undefined {
     return this.allActions().find(
       r => r.action.type === "createPage" && r.action.provisionalId === provisionalId);
@@ -221,8 +232,10 @@ export class NotionStore {
     return markdown;
   }
 
-  // Resolve a user to its full form (name/avatar/email), cached — page metadata only includes
-  // partial `{id}` users, unlike property values.
+  /**
+   * Resolve a user to its full form (name/avatar/email), cached — page metadata only includes
+   * partial `{id}` users, unlike property values.
+   */
   async getUser(id: string): Promise<NotionUser> {
     const cached = this.#kv.get<{ fetchedAt: number; user: NotionUser }>(`cache:user:${id}`);
     if (cached && Date.now() - cached.fetchedAt < USER_TTL_MS) return cached.user;
@@ -240,7 +253,7 @@ export class NotionStore {
     return db;
   }
 
-  // The primary data source ID for a database (cached via the database response).
+  /** The primary data source ID for a database (cached via the database response). */
   async getDataSourceId(databaseId: string): Promise<string> {
     return primaryDataSourceId(await this.getDatabaseResponse(databaseId));
   }
@@ -253,7 +266,7 @@ export class NotionStore {
     return dataSource;
   }
 
-  // The row schema for a database, read from its primary data source.
+  /** The row schema for a database, read from its primary data source. */
   async getDatabaseSchema(databaseId: string): Promise<NotionDatabaseSchema> {
     const dataSourceId = await this.getDataSourceId(databaseId);
     return databaseSchema(await this.getDataSourceResponse(dataSourceId));
@@ -307,8 +320,10 @@ function defaultValueForType(type: NotionPropertyValue["type"]): NotionPropertyV
   }
 }
 
-// All columns of a schema with their default (empty) values, used to seed a pending row so it has
-// the same property keys an approved row would.
+/**
+ * All columns of a schema with their default (empty) values, used to seed a pending row so it has
+ * the same property keys an approved row would.
+ */
 export function defaultPropertiesFromSchema(schema: NotionDatabaseSchema): Record<string, NotionPropertyValue> {
   const props: Record<string, NotionPropertyValue> = {};
   for (const [name, prop] of Object.entries(schema.properties)) {
@@ -366,7 +381,7 @@ function pendingArchivedState(records: StoredActionRecord[]): boolean | undefine
   return state;
 }
 
-// Simulated page metadata. `base` is null for a provisional page that doesn't exist on Notion yet.
+/** Simulated page metadata. `base` is null for a provisional page that doesn't exist on Notion yet. */
 export function simulatePageMetadata(
   base: NotionPageMetadata | null,
   pageId: string,
@@ -406,8 +421,10 @@ export function simulatePageMetadata(
   return meta;
 }
 
-// The effective page title after applying pending records, considering every way a title can be
-// set: setTitle(), createPage `title`, and a `title`-typed property in createPage/setProperties.
+/**
+ * The effective page title after applying pending records, considering every way a title can be
+ * set: setTitle(), createPage `title`, and a `title`-typed property in createPage/setProperties.
+ */
 export function simulatedTitle(records: StoredActionRecord[], baseTitle: string): string {
   let title = baseTitle;
   for (const r of records) {
@@ -430,8 +447,10 @@ function iconInputDisplay(icon: NotionIconInput): string {
   return "emoji" in icon ? icon.emoji : icon.imageUrl;
 }
 
-// Simulated page property values. For a provisional page (`base` null), `seed` supplies the
-// parent database's full column set with default values so the shape matches an approved row.
+/**
+ * Simulated page property values. For a provisional page (`base` null), `seed` supplies the
+ * parent database's full column set with default values so the shape matches an approved row.
+ */
 export function simulatePageProperties(
   base: Record<string, NotionPropertyValue> | null,
   records: StoredActionRecord[],
@@ -478,7 +497,7 @@ function normalizeAppendedMarkdown(markdown: string): string {
   return blocksToMarkdown(blocks.map(block => ({ block: block as BlockWithChildren["block"] })));
 }
 
-// Simulated page body Markdown.
+/** Simulated page body Markdown. */
 export function simulatePageContent(
   base: string | null,
   records: StoredActionRecord[],
@@ -493,7 +512,7 @@ export function simulatePageContent(
   return parts.filter(Boolean).join("\n\n");
 }
 
-// Simulated comment list (base comments plus pending ones).
+/** Simulated comment list (base comments plus pending ones). */
 export function simulateComments(
   base: NotionComment[],
   records: StoredActionRecord[],
@@ -559,11 +578,13 @@ function createdInScope(
   });
 }
 
-// Overlay pending changes onto a batch of database query rows. `firstPage` controls whether
-// pending newly-created rows are prepended (only on the first page, to avoid duplication).
-//
-// NOTE: pending created rows ignore the query's filter and sort — they are always surfaced so the
-// agent sees its own writes. This is a documented simulation limitation.
+/**
+ * Overlay pending changes onto a batch of database query rows. `firstPage` controls whether
+ * pending newly-created rows are prepended (only on the first page, to avoid duplication).
+ *
+ * NOTE: pending created rows ignore the query's filter and sort — they are always surfaced so the
+ * agent sees its own writes. This is a documented simulation limitation.
+ */
 export function overlayDatabaseRows(
   rows: NotionPageSummary[],
   databaseId: string,
@@ -593,7 +614,7 @@ export function overlayDatabaseRows(
   return result;
 }
 
-// Overlay pending child pages created under a page (and drop pending-archived children).
+/** Overlay pending child pages created under a page (and drop pending-archived children). */
 export function overlayChildPages(
   items: NotionItemSummary[],
   parentPageId: string,
@@ -625,8 +646,10 @@ function itemFromCreated(summary: NotionPageSummary): NotionItemSummary {
   };
 }
 
-// Overlay pending changes onto search results: drop pending-archived items, and prepend pending
-// created pages (only when the caller isn't filtering to databases, since created items are pages).
+/**
+ * Overlay pending changes onto search results: drop pending-archived items, and prepend pending
+ * created pages (only when the caller isn't filtering to databases, since created items are pages).
+ */
 export function overlaySearch(
   items: NotionItemSummary[],
   store: NotionStore,
@@ -658,78 +681,125 @@ export function observation(title: string, description: string): ObservationDesc
 // ---------------------------------------------------------------------------------------------
 // Action descriptions
 
+// Starts a description naming, by ID, the page an action writes to or under.
+function onPage(intro: string, pageId: string, label = "Page ID"): ActionDescriptionBuilder {
+  const builder = buildDescription(intro).inline(label, pageId);
+  return NotionStore.isProvisional(pageId)
+    ? builder.prose("An ID starting with `~` names a page created by an earlier action in this workspace.")
+    : builder;
+}
+
+/**
+ * The approver's text, built so every value the agent supplied (page bodies, comments, titles,
+ * property values, icons) is shown in full in a field, and the completeness claim is
+ * the builder's.
+ */
 export function describeAction(action: NotionAction): ActionDescription {
   switch (action.type) {
     case "appendContent":
       return {
         title: "Append content to Notion page",
-        description: `Append the following Markdown to the page body:\n\n${truncate(action.markdown)}`,
+        ...onPage("Append the following Markdown to the page body.", action.pageId)
+          .verbatim("Content", action.markdown, "markdown")
+          .finish(),
         implementsRevert: true,
       };
     case "setTitle":
       return {
         title: "Rename Notion page",
-        description: `Change the page title to **${action.title}** (was “${action.previousTitle}”).`,
+        ...onPage("Change the page title.", action.pageId)
+          .inline("Current title", action.previousTitle)
+          .inline("New title", action.title)
+          .finish(),
         implementsRevert: true,
       };
     case "setProperties":
       return {
         title: "Update Notion page properties",
-        description: `Update properties: ${Object.keys(action.properties).join(", ") || "(none)"}.`,
+        ...onPage("Update the page's properties to the values below.", action.pageId)
+          .json("Properties", action.properties)
+          .finish(),
         implementsRevert: true,
       };
     case "setIcon":
       return {
         title: "Change Notion page icon",
-        description: action.icon
-          ? `Set the page icon to ${iconInputDisplay(action.icon)}.`
-          : "Remove the page icon.",
+        ...(action.icon
+          ? onPage("Set the page icon.", action.pageId).inline("Icon", iconInputDisplay(action.icon)).finish()
+          : onPage("Remove the page icon.", action.pageId).finish()),
         implementsRevert: true,
       };
     case "archive":
       return {
         title: "Move Notion page to trash",
-        description: "Move the page to the Notion trash (reversible).",
+        ...onPage("Move the page to the Notion trash (reversible).", action.pageId).finish(),
         implementsRevert: true,
       };
     case "restore":
       return {
         title: "Restore Notion page from trash",
-        description: "Restore the page from the Notion trash.",
+        ...onPage("Restore the page from the Notion trash.", action.pageId).finish(),
         implementsRevert: true,
       };
     case "addComment":
       return {
         title: "Comment on Notion page",
-        description: `Post a comment:\n\n${truncate(action.text)}`,
+        ...onPage("Post a comment.", action.pageId).verbatim("Comment", action.text).finish(),
         // The Notion public API can't delete comments, so this can't be reverted automatically.
         implementsRevert: false,
       };
     case "createPage": {
-      const where =
-        action.parent.kind === "page" ? "as a sub-page"
-        : action.parent.kind === "database" ? "as a database row"
+      const { parent } = action;
+      let builder: ActionDescriptionBuilder;
+      if (parent.kind === "page") {
+        builder = onPage("Create a new page as a sub-page.", parent.pageId, "Parent page ID");
+      } else if (parent.kind === "database") {
+        builder = buildDescription("Create a new page as a database row.")
+          .inline("Database ID", parent.databaseId);
+      } else if (parent.pageId !== undefined) {
         // Workspace-level: the API needs a concrete parent, so the page lands under the most
-        // recently edited shared page (chosen when this action is approved).
-        : "under the most recently edited shared page (Notion has no true top-level page)";
+        // recently edited shared page, found when the action was staged.
+        builder = buildDescription(
+          "Create a new page under the most recently edited shared page, chosen now (Notion has " +
+          "no top-level page).")
+          .inline("Parent page ID", parent.pageId)
+          .inline("Parent page title", parent.title ?? "");
+      } else {
+        builder = buildDescription(
+          "Create a new page under the most recently edited shared page, chosen when this action " +
+          "is approved (Notion has no top-level page).");
+      }
+      builder.inline("Provisional ID", action.provisionalId);
+      // The title the page is created with, as `buildCreateBody` resolves it: a database row takes
+      // a title-typed entry in the properties over `title`, and the properties field shows it.
+      const titleProperty = Object.values(action.properties ?? {}).some(p => p.type === "title");
+      const titleOverridden = titleProperty && (parent.kind === "database" || action.title === undefined);
+      if (!titleOverridden) builder.inline("Title", action.title ?? "");
+      // A database row's title is written under the data source's title column, a property name
+      // apply sends alongside the value.
+      if (parent.kind === "database" && action.title !== undefined) {
+        const key = titlePropertyKey(true, action.properties, action.titlePropertyName);
+        if (key !== undefined) builder.inline("Title property", key);
+      }
+      if (action.properties) builder.json("Properties", action.properties);
+      builder.verbatim("Content", action.content ?? "", "markdown");
+      if (action.icon) builder.inline("Icon", iconInputDisplay(action.icon));
       return {
         title: "Create Notion page",
-        description: `Create a new page ${where} titled **${action.title ?? "Untitled"}**.`,
+        ...builder.finish(),
         implementsRevert: true,
       };
     }
   }
 }
 
-function truncate(text: string, max = 2000): string {
-  return text.length > max ? text.slice(0, max) + "…" : text;
-}
-
 // ---------------------------------------------------------------------------------------------
 // Apply / revert
 
-// Apply a previously-submitted action against Notion. Mutates and persists the record (e.g. to
-// store created IDs for later revert). Throws on failure (the overseer surfaces this to the user).
+/**
+ * Apply a previously-submitted action against Notion. Mutates and persists the record (e.g. to
+ * store created IDs for later revert). Throws on failure (the overseer surfaces this to the user).
+ */
 export async function applyNotionAction(store: NotionStore, record: StoredActionRecord): Promise<void> {
   const api = store.api;
   const action = record.action;
@@ -798,7 +868,7 @@ export async function applyNotionAction(store: NotionStore, record: StoredAction
   store.putAction(record);
 }
 
-// Revert a previously-applied action. Returns guidance if the revert can't fully complete.
+/** Revert a previously-applied action. Returns guidance if the revert can't fully complete. */
 export async function revertNotionAction(
   store: NotionStore,
   record: StoredActionRecord,
@@ -935,8 +1005,17 @@ async function resolveCreateParent(
     const databaseId = requireResolved(store, parent.databaseId);
     return { type: "data_source_id", data_source_id: await store.getDataSourceId(databaseId) };
   }
-  // Workspace-level: the Notion API needs a concrete parent, so pick the most recently edited
-  // shared page to create under.
+  // Workspace-level: the page chosen when the action was staged, or for a record staged before
+  // that was recorded, the most recently edited shared page now.
+  const pageId = parent.pageId ?? (await findWorkspaceParentPage(store)).id;
+  return { type: "page_id", page_id: pageId };
+}
+
+/**
+ * The page a workspace-level page is created under: the Notion API needs a concrete parent, so this
+ * is the most recently edited page shared with the connection.
+ */
+export async function findWorkspaceParentPage(store: NotionStore): Promise<{ id: string; title: string }> {
   const search = await store.api.search({
     filter: { property: "object", value: "page" },
     sort: { direction: "descending", timestamp: "last_edited_time" },
@@ -948,7 +1027,8 @@ async function resolveCreateParent(
       "No writable Notion page is shared with this connection to create the page under.",
     );
   }
-  return { type: "page_id", page_id: parentPage.id };
+  const { id, title } = itemResponseToSummary(parentPage);
+  return { id, title };
 }
 
 async function titlePropName(store: NotionStore, pageId: string): Promise<string> {
@@ -957,6 +1037,20 @@ async function titlePropName(store: NotionStore, pageId: string): Promise<string
   return entry ? entry[0] : "title";
 }
 
+// The property `buildCreateBody` writes a page's `title` under. A sub-page's is always `title`. A
+// database row's is the data source's title column, named by `titlePropertyName` when known and
+// `Name` otherwise, or none when a title-typed entry in `properties` already supplies the title.
+function titlePropertyKey(
+  isDatabaseRow: boolean,
+  properties: Record<string, NotionPropertyInput> | undefined,
+  titlePropertyName: string | undefined,
+): string | undefined {
+  if (!isDatabaseRow) return "title";
+  const hasTitle = properties ? Object.values(properties).some(p => p.type === "title") : false;
+  return hasTitle ? undefined : titlePropertyName ?? "Name";
+}
+
+/** The Notion create-page request body for a staged `createPage` action and its resolved parent. */
 export function buildCreateBody(
   parent: NotionCreateParent,
   title: string | undefined,
@@ -970,13 +1064,8 @@ export function buildCreateBody(
     : {};
 
   if (title !== undefined) {
-    if (parent.type === "page_id") {
-      notionProperties["title"] = { title: plainToRichText(title) };
-    } else {
-      const hasTitle = properties ? Object.values(properties).some(p => p.type === "title") : false;
-      // Use the data source's actual title column name when known, else fall back to "Name".
-      if (!hasTitle) notionProperties[titlePropertyName ?? "Name"] = { title: plainToRichText(title) };
-    }
+    const key = titlePropertyKey(parent.type === "data_source_id", properties, titlePropertyName);
+    if (key !== undefined) notionProperties[key] = { title: plainToRichText(title) };
   }
 
   const body: Record<string, unknown> = { parent, properties: notionProperties };
@@ -985,8 +1074,10 @@ export function buildCreateBody(
   return body;
 }
 
-// Record a pending action and submit it to the approval queue for later approval. If the submit
-// fails, the stored record is rolled back so it doesn't pollute simulation. Returns the action ID.
+/**
+ * Record a pending action and submit it to the approval queue for later approval. If the submit
+ * fails, the stored record is rolled back so it doesn't pollute simulation. Returns the action ID.
+ */
 export async function stageAction(
   store: NotionStore,
   approvalQueue: RpcStub<ApprovalQueue>,

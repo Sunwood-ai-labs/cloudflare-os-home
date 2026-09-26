@@ -1,17 +1,24 @@
-// Minimal OAuth 2.0 (authorization-code + PKCE) client for the Cloudflare dashboard. The token
-// endpoint expects client credentials via HTTP Basic auth; PKCE binds the redeemed code to a
-// short-lived verifier stored in the UserAccount DO.
+// OAuth 2.0 (authorization-code + PKCE) for the Cloudflare dashboard, over the kit's OAuthClient.
+// The token endpoint expects client credentials via HTTP Basic auth; PKCE binds the redeemed code
+// to a short-lived verifier stored in the UserAccount DO.
 
 // Cloudflare's dashboard OAuth endpoints. Stable across deployments; overridable via env for
 // staging/testing against a non-production dashboard.
 const CF_OAUTH_AUTH_URL = "https://dash.cloudflare.com/oauth2/auth";
 const CF_OAUTH_TOKEN_URL = "https://dash.cloudflare.com/oauth2/token";
 
-// Scopes for sign-in + the AI Gateway billing/BYOK flow: read account details and route inference
-// through the user's own AI Gateway. We deliberately do NOT request "openid" — the dashboard OAuth
-// client isn't permitted it; identity comes from user-details.read (the /user API). offline_access
-// yields a refresh token; account-settings.read is required to enumerate the user's account(s).
-export const FULL_SCOPES = [
+import {
+  createPkce, isInvalidGrant, OAuthClient, OAuthResponseError, type OAuthTokens,
+} from "@gadgets/gatekeeper-kit/oauth-client";
+import { observabilityScopesForResources } from "./resources.js";
+
+/**
+ * Scopes for the AI Gateway billing/BYOK flow: read account details and route inference
+ * through the user's own AI Gateway. We deliberately do NOT request "openid" — the dashboard OAuth
+ * client isn't permitted it; identity comes from user-details.read (the /user API). offline_access
+ * yields a refresh token; account-settings.read is required to enumerate the user's account(s).
+ */
+export const BILLING_SCOPES = [
   "offline_access",
   "aig.read",
   "aig.run",
@@ -19,8 +26,15 @@ export const FULL_SCOPES = [
   "account-settings.read",
 ];
 
-// Minimal scopes for sign-in only: a refresh token + the /user identity read. Used in "auth" mode
-// (the resulting grant is transient).
+/** Persistent billing scopes plus the explicitly selected gadget resources. */
+export function persistentScopesForResources(resourceUrlPatterns?: string[]): string[] {
+  return [...BILLING_SCOPES, ...observabilityScopesForResources(resourceUrlPatterns)];
+}
+
+/**
+ * Minimal scopes for sign-in only: a refresh token + the /user identity read. Used in "auth" mode
+ * (the resulting grant is transient).
+ */
 export const AUTH_SCOPES = [
   "offline_access",
   "user-details.read",
@@ -34,8 +48,10 @@ export interface CloudflareOAuthConfig {
   redirectUri: string;
 }
 
-// Build the OAuth config from the gatekeeper's env. `redirectUri` is the gatekeeper's own /oauth
-// endpoint. Returns null if the client credentials aren't configured.
+/**
+ * Build the OAuth config from the gatekeeper's env. `redirectUri` is the gatekeeper's own /oauth
+ * endpoint. Returns null if the client credentials aren't configured.
+ */
 export function getOAuthConfig(
   clientId: string | undefined, clientSecret: string | undefined, baseUrl: string,
 ): CloudflareOAuthConfig | null {
@@ -49,89 +65,52 @@ export function getOAuthConfig(
   };
 }
 
-function b64urlEncode(bytes: ArrayBuffer | Uint8Array): string {
-  const arr = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
-  return btoa(String.fromCharCode(...arr)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+function oauthClient(config: CloudflareOAuthConfig): OAuthClient {
+  return new OAuthClient({
+    label: "Cloudflare",
+    client: { method: "basic", id: config.clientId, secret: config.clientSecret },
+    tokenEndpoint: config.tokenUrl,
+    authorizationEndpoint: config.authUrl,
+    defaultExpiresIn: 3600,
+  });
 }
 
-// Generate a PKCE verifier and its S256 challenge.
+/** Generate a PKCE verifier and its S256 challenge. */
 export async function generatePkce(): Promise<{ verifier: string; challenge: string }> {
-  const verifier = b64urlEncode(crypto.getRandomValues(new Uint8Array(32)));
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier));
-  return { verifier, challenge: b64urlEncode(digest) };
+  const { codeVerifier, codeChallenge } = await createPkce();
+  return { verifier: codeVerifier, challenge: codeChallenge };
 }
 
 export function buildAuthorizeUrl(
   config: CloudflareOAuthConfig, state: string, challenge: string, scopes: string[],
 ): string {
-  const url = new URL(config.authUrl);
-  url.searchParams.set("response_type", "code");
-  url.searchParams.set("client_id", config.clientId);
-  url.searchParams.set("redirect_uri", config.redirectUri);
-  url.searchParams.set("scope", scopes.join(" "));
-  url.searchParams.set("state", state);
-  url.searchParams.set("code_challenge", challenge);
-  url.searchParams.set("code_challenge_method", "S256");
-  return url.toString();
+  return oauthClient(config).authorizationUrl({
+    redirectUri: config.redirectUri, state, scopes, codeChallenge: challenge,
+  }).toString();
 }
 
-export interface TokenResponse {
-  accessToken: string;
-  refreshToken?: string;
-  expiresIn: number;
-  tokenType?: string;
-}
-
-interface RawTokenResponse {
-  access_token?: string;
-  refresh_token?: string;
-  expires_in?: number;
-  token_type?: string;
-}
-
-function basicAuth(config: CloudflareOAuthConfig): string {
-  return "Basic " + btoa(`${config.clientId}:${config.clientSecret}`);
-}
-
-// Exchange an authorization code (with its PKCE verifier) for tokens.
-export async function exchangeCode(
+/** Exchange an authorization code (with its PKCE verifier) for tokens. */
+export function exchangeCode(
   config: CloudflareOAuthConfig, code: string, verifier: string,
-): Promise<TokenResponse | null> {
-  return redeem(config, new URLSearchParams({
-    grant_type: "authorization_code",
-    code,
-    redirect_uri: config.redirectUri,
-    code_verifier: verifier,
-  }));
+): Promise<OAuthTokens> {
+  return oauthClient(config).exchangeCode({ code, redirectUri: config.redirectUri, codeVerifier: verifier });
 }
 
-// Refresh an access token using a refresh token.
-export async function refreshTokens(
-  config: CloudflareOAuthConfig, refreshToken: string,
-): Promise<TokenResponse | null> {
-  return redeem(config, new URLSearchParams({ grant_type: "refresh_token", refresh_token: refreshToken }));
+/** Refresh an access token using a refresh token. */
+export function refreshTokens(config: CloudflareOAuthConfig, refreshToken: string): Promise<OAuthTokens> {
+  return oauthClient(config).refresh({ refreshToken });
 }
 
-async function redeem(config: CloudflareOAuthConfig, body: URLSearchParams): Promise<TokenResponse | null> {
-  const resp = await fetch(config.tokenUrl, {
-    method: "POST",
-    headers: {
-      "Authorization": basicAuth(config),
-      "Content-Type": "application/x-www-form-urlencoded",
-      "Accept": "application/json",
-    },
-    body,
-  });
-  if (!resp.ok) {
-    resp.body?.cancel();
-    return null;
-  }
-  const data = await resp.json() as RawTokenResponse;
-  if (!data.access_token) return null;
-  return {
-    accessToken: data.access_token,
-    refreshToken: data.refresh_token,
-    expiresIn: data.expires_in ?? 3600,
-    tokenType: data.token_type,
-  };
+/**
+ * Whether a refresh failure proves the grant is dead. Wider than the kit's `isInvalidGrant`: how
+ * Cloudflare rejects a revoked grant is unverified, so every OAuth error in a 4xx but 429 keeps
+ * marking the account expired until a live test justifies narrowing it. A 4xx without one, such as
+ * a WAF challenge, comes from in front of the token endpoint and says nothing about the grant.
+ * `invalid_client` is excluded: it is this deployment's client failing authentication, so a bad
+ * `CLIENT_SECRET` would expire every account at once, and no reconnect could fix it.
+ */
+export function isGrantDeath(error: unknown): boolean {
+  return isInvalidGrant(error) || (error instanceof OAuthResponseError
+    && error.oauthError !== undefined && error.oauthError !== "invalid_client"
+    && error.httpStatus >= 400 && error.httpStatus < 500 && error.httpStatus !== 429);
 }

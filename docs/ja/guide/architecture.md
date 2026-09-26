@@ -37,4 +37,11 @@ Cloudflare OSがエージェントループと、Gadget作成、ファイル書�
 
 ## ソースの境界
 
-ラッパーはTHIRD-PARTY-NOTICES.mdに記録した上流リビジョンを固定しています。上流ライセンスはupstream/cloudflare-os/LICENSEに残しています。本リポジトリは非公式のローカル統合です。
+ラッパーは`THIRD-PARTY-NOTICES.md`に記録した上流リビジョン（2026-09-26時点の`004ab773fad6d4fb7fe67be920a3ef37e46dc58a`）を固定しています。上流ライセンスは`upstream/cloudflare-os/LICENSE`に残しています。本リポジトリは非公式のローカル統合です。
+
+`upstream/cloudflare-os/`を本家の最新`main`（または特定コミット）へ更新し、コンテナ用オーバーレイ（`scripts/run-dev-server.ts`における`CFOS_DISABLE_DEV_WATCHERS`、`WRANGLER_DEV_IP`、`PUBLIC_BASE_URL`に基づくGatekeeper OAuth URL生成）を再適用するには次を実行します。
+
+```powershell
+.\scripts\sync-upstream.ps1
+docker compose up --build -d
+```

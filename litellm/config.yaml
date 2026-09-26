@@ -73,6 +73,16 @@ model_list:
         thinking:
           type: disabled
 
+  - model_name: glm-5.3-flash
+    litellm_params:
+      model: zai/glm-5.3-flash
+      api_base: https://api.z.ai/api/coding/paas/v4
+      api_key: os.environ/ZAI_API_KEY
+      max_parallel_requests: 10
+      extra_body:
+        thinking:
+          type: disabled
+
   - model_name: glm-4.5
     litellm_params:
       model: zai/glm-4.5

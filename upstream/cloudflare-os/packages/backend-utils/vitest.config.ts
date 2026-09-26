@@ -5,13 +5,25 @@ export default defineConfig({
   plugins: [
     cloudflareTest({
       miniflare: {
-        compatibilityDate: "2026-02-02",
-        // nodejs_als enables observability context; experimental enables the Reporter stub below.
-        compatibilityFlags: ["experimental", "nodejs_als"],
+        compatibilityDate: "2026-09-04",
+        // nodejs_als enables observability context; experimental enables the Reporter stub below
+        // and the streaming_tail_worker flag (which workerd refuses without experimental mode).
+        compatibilityFlags: ["experimental", "nodejs_als", "streaming_tail_worker"],
         serviceBindings: {
           ERROR_REPORTER: { name: "reporter", entrypoint: "ErrorReporter" },
         },
+        // Invocations are only traced (span.isTraced === true) when a tail consumer is attached;
+        // the no-op "span-sink" below exists solely so tracing.test.ts can observe span lifetime.
+        tails: ["span-sink"],
         workers: [{
+          name: "span-sink",
+          modules: true,
+          compatibilityDate: "2026-09-04",
+          compatibilityFlags: ["streaming_tail_worker"],
+          // The no-op tail() silences workerd's legacy tail delivery, which it attempts alongside
+          // the streaming path.
+          script: `export default { tail: () => {}, tailStream: () => () => {} }`,
+        }, {
           name: "reporter",
           modules: true,
           script: `
@@ -38,5 +50,8 @@ export default defineConfig({
   ],
   test: {
     include: ["__tests__/*.test.ts"],
+    // Asserts the pool actually started; only one file here imports `cloudflare:workers`, so the
+    // rest would pass under a Node fallback without noticing.
+    setupFiles: ["@gadgets/scripts/assert-workerd"],
   },
 });

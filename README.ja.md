@@ -27,9 +27,10 @@ Cloudflare OS Homeは、Cloudflare OSをエージェント中心のワークス�
 
 ## 🚀 含まれるもの
 
-- 既知の上流リビジョンに固定したCloudflare OSソース
+- 上流リビジョン`004ab773`（2026-09-26時点：`workerd 1.20260921.1`、Pi `0.87.1`、子エージェントとWorktree、Restrictedモードの全文手動承認、Gitベース保存）に固定したCloudflare OSソース
 - `http://litellm:4000/v1`のOpenAI互換プロジェクト内LiteLLM
-- `.env`から認証情報を読む26モデル構成テンプレート
+- `.env`から認証情報を読む27モデル構成テンプレート（`glm-4.7`、`glm-5.2`、`glm-5.3-flash`を含む）
+- `upstream/cloudflare-os/`を更新してローカルコンテナ用オーバーレイを再適用する同期スクリプト（`scripts/sync-upstream.ps1`）
 - 外部のOpen WebUIネットワークに依存しないDocker Compose構成
 - 任意のTailscale Serveによるtailnet限定HTTPS
 - モデル登録、チャット永続化、レスポンシブ表示、Agentic Gadget作成のブラウザーQA
@@ -40,6 +41,7 @@ Cloudflare OS Homeは、Cloudflare OSをエージェント中心のワークス�
 | 目的 | 入口 |
 | --- | --- |
 | ローカルワークスペースを起動する | [クイックスタート](#-クイックスタート) |
+| 本家Cloudflare OSの最新コミットを取り込む | [上流の更新取り込み](#-上流cloudflare-osの更新取り込み) |
 | コンテナ構成を理解する | [アーキテクチャ](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/guide/architecture) |
 | Agentの動作を再現する | [Agentスモークテスト](#-エージェントスモークテスト) |
 | tailnet限定アクセスを設定する | [Tailscaleアクセス](#-tailscaleアクセス) |
@@ -111,6 +113,21 @@ Cloudflare OSはワークスペース、エージェントループ、Gadgetツ�
 </p>
 
 <p align="center"><em>リポジトリ構造：ローカル統合ラッパーと固定した上流モノレポ。</em></p>
+
+## 🔄 上流Cloudflare OSの更新取り込み
+
+`upstream/cloudflare-os/`は、コンテナ起動時に未検証の変更が混入しないよう特定コミット（2026-09-26時点の`004ab773fad6d4fb7fe67be920a3ef37e46dc58a`）に固定しています。本家`cloudflare/cloudflare-os`の最新`main`（または任意のコミット・ブランチ）を取り込み、ローカルコンテナ用オーバーレイを再適用するには次を実行します。
+
+```powershell
+.\scripts\sync-upstream.ps1
+docker compose up --build -d
+```
+
+特定のリビジョンやブランチを指定する場合:
+
+```powershell
+.\scripts\sync-upstream.ps1 -Ref <commit-or-branch>
+```
 
 ## 🌐 Tailscaleアクセス
 

@@ -27,9 +27,10 @@ This is an unofficial integration, not a Cloudflare-hosted product or official d
 
 ## 🚀 What you get
 
-- Cloudflare OS source pinned to a known upstream revision.
+- Cloudflare OS source pinned to upstream revision `004ab773` (2026-09-26: `workerd 1.20260921.1`, Pi `0.87.1`, child-agent Worktrees, Restricted mode full-text manual approval, and git-backed storage).
 - Project-local LiteLLM with an OpenAI-compatible endpoint at `http://litellm:4000/v1`.
-- A 26-model configuration template with provider credentials loaded from `.env`.
+- A 27-model configuration template (including `glm-4.7`, `glm-5.2`, and `glm-5.3-flash`) with provider credentials loaded from `.env`.
+- Repeatable upstream sync script (`scripts/sync-upstream.ps1`) that updates `upstream/cloudflare-os/` and re-applies the local container overlay.
 - Docker Compose networking that does not depend on an external Open WebUI network.
 - Optional tailnet-only HTTPS access through Tailscale Serve.
 - Browser QA scripts for model registration, chat persistence, responsive layout, and agentic Gadget creation.
@@ -40,6 +41,7 @@ This is an unofficial integration, not a Cloudflare-hosted product or official d
 | Goal | Start here |
 | --- | --- |
 | Run the local workspace | [Quick start](#-quick-start) |
+| Pull newer upstream Cloudflare OS commits | [Syncing upstream](#-syncing-upstream-cloudflare-os) |
 | Understand the containers | [Architecture](https://sunwood-ai-labs.github.io/cloudflare-os-home/guide/architecture) |
 | Reproduce the agent test | [Agent smoke test](#-agent-smoke-test) |
 | Configure tailnet-only access | [Tailscale access](#-tailscale-access) |
@@ -111,6 +113,21 @@ The editable draw.io source is [`docs/cloudflare-os-architecture.drawio`](docs/c
 </p>
 
 <p align="center"><em>Repository structure: the local integration wrapper and the pinned upstream monorepo.</em></p>
+
+## 🔄 Syncing upstream Cloudflare OS
+
+`upstream/cloudflare-os/` is pinned to a specific upstream commit (`004ab773fad6d4fb7fe67be920a3ef37e46dc58a` as of 2026-09-26) rather than pulling unreviewed changes during `docker compose up`. To pull the latest `cloudflare/cloudflare-os` `main` (or a specific commit/branch) and re-apply the local container overlay:
+
+```powershell
+.\scripts\sync-upstream.ps1
+docker compose up --build -d
+```
+
+You can also target a specific upstream ref:
+
+```powershell
+.\scripts\sync-upstream.ps1 -Ref <commit-or-branch>
+```
 
 ## 🌐 Tailscale access
 

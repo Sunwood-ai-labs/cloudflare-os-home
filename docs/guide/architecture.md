@@ -37,4 +37,11 @@ Cloudflare OS owns the agent loop and tool definitions such as creating a Gadget
 
 ## Source boundary
 
-The wrapper pins the upstream source revision recorded in THIRD-PARTY-NOTICES.md. The upstream license remains in upstream/cloudflare-os/LICENSE. This repository is an unofficial local integration.
+The wrapper pins the upstream source revision recorded in `THIRD-PARTY-NOTICES.md` (`004ab773fad6d4fb7fe67be920a3ef37e46dc58a` as of 2026-09-26). The upstream license remains in `upstream/cloudflare-os/LICENSE`. This repository is an unofficial local integration.
+
+To update `upstream/cloudflare-os/` to the latest upstream `main` (or a specific commit) and re-apply the container overlay (`CFOS_DISABLE_DEV_WATCHERS`, `WRANGLER_DEV_IP`, and `PUBLIC_BASE_URL` Gatekeeper OAuth routing in `scripts/run-dev-server.ts`), run:
+
+```powershell
+.\scripts\sync-upstream.ps1
+docker compose up --build -d
+```
