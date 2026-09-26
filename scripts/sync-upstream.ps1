@@ -26,9 +26,30 @@ try {
     throw "git read-tree failed for $sha"
   }
 
-  # Re-apply the Cloudflare OS Home local container overlay to scripts/run-dev-server.ts.
+  # Re-apply the Cloudflare OS Home local container overlay to scripts/run-local.ts and scripts/run-dev-server.ts.
   node -e '
     const fs = require("node:fs");
+
+    const localFile = "upstream/cloudflare-os/scripts/run-local.ts";
+    let localSrc = fs.readFileSync(localFile, "utf8");
+    if (!localSrc.includes("CFOS_DISABLE_DEV_WATCHERS")) {
+      localSrc = localSrc.replace(
+        "import { execFileSync, spawn } from \"node:child_process\";\n",
+        "import { execFileSync, spawn } from \"node:child_process\";\nimport { existsSync } from \"node:fs\";\n"
+      );
+      localSrc = localSrc.replace(
+        "runPnpm([\"install\"]);\nrunPnpm([\"exec\", \"vp\", \"run\", \"--cache\", \"@gadgets/typed-storage#build\"]);\nrunPnpm([\"exec\", \"vp\", \"run\", \"--cache\", \"@gadgets/workshop-frontend#build:assets\"]);",
+        "const disableDevWatchers = process.env.CFOS_DISABLE_DEV_WATCHERS === \"true\";\n" +
+        "const vpCacheFlag = disableDevWatchers ? \"--no-cache\" : \"--cache\";\n" +
+        "if (!disableDevWatchers || !existsSync(join(ROOT, \"packages\", \"workshop-frontend\", \"dist\", \"index.html\"))) {\n" +
+        "  runPnpm([\"install\"]);\n" +
+        "  runPnpm([\"exec\", \"vp\", \"run\", vpCacheFlag, \"@gadgets/typed-storage#build\"]);\n" +
+        "  runPnpm([\"exec\", \"vp\", \"run\", vpCacheFlag, \"@gadgets/workshop-frontend#build:assets\"]);\n" +
+        "}"
+      );
+      fs.writeFileSync(localFile, localSrc);
+    }
+
     const file = "upstream/cloudflare-os/scripts/run-dev-server.ts";
     let src = fs.readFileSync(file, "utf8");
 
@@ -36,6 +57,15 @@ try {
       src = src.replace(
         "let stoppingDevWatchers = false;\n",
         "let stoppingDevWatchers = false;\nconst disableDevWatchers = process.env.CFOS_DISABLE_DEV_WATCHERS === \"true\";\n"
+      );
+      src = src.replace(
+        "const VP_PREFLIGHT_BUILDS = [\n  {\n    label: \"configurator UIs\",\n    args: [\"exec\", \"vp\", \"run\", \"-r\", \"--cache\", \"build:configurator\", \"--dev\"],\n  },\n  { label: \"gatekeeper app UIs\", args: [\"exec\", \"vp\", \"run\", \"-r\", \"--cache\", \"build:app:dev\"] },\n];",
+        "const vpCacheFlag = disableDevWatchers ? \"--no-cache\" : \"--cache\";\n" +
+        "const VP_PREFLIGHT_BUILDS = [\n  {\n    label: \"configurator UIs\",\n    args: [\"exec\", \"vp\", \"run\", \"-r\", vpCacheFlag, \"build:configurator\", \"--dev\"],\n  },\n  { label: \"gatekeeper app UIs\", args: [\"exec\", \"vp\", \"run\", \"-r\", vpCacheFlag, \"build:app:dev\"] },\n];"
+      );
+      src = src.replace(
+        /try \{\n  await Promise\.all\(\[\n    runBuild\(\n      "bundled blueprints"[\s\S]*?  process\.exit\(1\);\n\}\n/,
+        match => `if (!disableDevWatchers || !existsSync(join(WORKSHOP_BACKEND_DIR, "src", "generated", "bundled-blueprints.ts"))) {\n${match.replace(/^(?=.+)/gm, "  ")}}\n`
       );
       src = src.replace(
         /for \(const gk of gatekeepers\) \{\n  \/\/ Configurator UI[\s\S]*?\n\}\n/,
@@ -71,7 +101,7 @@ try {
     fs.writeFileSync(file, src);
   '
 
-  git add upstream/cloudflare-os/scripts/run-dev-server.ts
+  git add upstream/cloudflare-os/scripts/run-local.ts upstream/cloudflare-os/scripts/run-dev-server.ts
 
   # Update pinned commit in THIRD-PARTY-NOTICES.md.
   node -e '

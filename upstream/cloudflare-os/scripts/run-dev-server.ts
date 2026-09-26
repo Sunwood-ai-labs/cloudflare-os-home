@@ -316,35 +316,38 @@ function runBuild(
 // and the two together twice it. Floored at vp's default of 4, so a small machine is unchanged and a
 // big one stops double-claiming. Computed once, so the note prints once, and after `loadDevVars()`
 // so a `.dev.vars` override is honoured.
+const vpCacheFlag = disableDevWatchers ? "--no-cache" : "--cache";
 const VP_PREFLIGHT_BUILDS = [
   {
     label: "configurator UIs",
-    args: ["exec", "vp", "run", "-r", "--cache", "build:configurator", "--dev"],
+    args: ["exec", "vp", "run", "-r", vpCacheFlag, "build:configurator", "--dev"],
   },
-  { label: "gatekeeper app UIs", args: ["exec", "vp", "run", "-r", "--cache", "build:app:dev"] },
+  { label: "gatekeeper app UIs", args: ["exec", "vp", "run", "-r", vpCacheFlag, "build:app:dev"] },
 ];
 const vpEnv = vpRunEnv({ concurrentRuns: VP_PREFLIGHT_BUILDS.length });
-try {
-  await Promise.all([
-    runBuild(
-      "bundled blueprints",
-      process.execPath,
-      [join(WORKSHOP_BACKEND_DIR, "scripts", "build-bundled-blueprints.ts")],
-      WORKSHOP_BACKEND_DIR,
-    ),
-    ...VP_PREFLIGHT_BUILDS.map(({ label, args }) =>
-        runBuild(label, ...pnpmCommand(args), ROOT, vpEnv)),
-  ]);
-} catch (err) {
-  // The SIGTERM handler killing the builds also lands here, as the rejection of whichever build
-  // died first. The handler owns teardown and the exit code (143), so park and let it exit.
-  if (stoppingPreflightBuilds) await new Promise(() => {});
-  console.error((err as Error).message);
-  // The siblings of the build that failed are still running. Left alone they would outlive this
-  // process, writing their outputs after startup has reported failure and colliding with an
-  // immediate re-run.
-  await stopPreflightBuilds();
-  process.exit(1);
+if (!disableDevWatchers || !existsSync(join(WORKSHOP_BACKEND_DIR, "src", "generated", "bundled-blueprints.ts"))) {
+  try {
+    await Promise.all([
+      runBuild(
+        "bundled blueprints",
+        process.execPath,
+        [join(WORKSHOP_BACKEND_DIR, "scripts", "build-bundled-blueprints.ts")],
+        WORKSHOP_BACKEND_DIR,
+      ),
+      ...VP_PREFLIGHT_BUILDS.map(({ label, args }) =>
+          runBuild(label, ...pnpmCommand(args), ROOT, vpEnv)),
+    ]);
+  } catch (err) {
+    // The SIGTERM handler killing the builds also lands here, as the rejection of whichever build
+    // died first. The handler owns teardown and the exit code (143), so park and let it exit.
+    if (stoppingPreflightBuilds) await new Promise(() => {});
+    console.error((err as Error).message);
+    // The siblings of the build that failed are still running. Left alone they would outlive this
+    // process, writing their outputs after startup has reported failure and colliding with an
+    // immediate re-run.
+    await stopPreflightBuilds();
+    process.exit(1);
+  }
 }
 
 // Watchers start only after those builds finish. Both watch modes run a full build before they

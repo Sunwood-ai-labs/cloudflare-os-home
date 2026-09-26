@@ -13,6 +13,7 @@
 // Vite+ owns the build cache and restores missing outputs on warm runs.
 
 import { execFileSync, spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getDevServerConfig } from "./dev-server-config.ts";
@@ -43,9 +44,13 @@ function runPnpm(args: string[]): void {
   execFileSync(command, argv, { stdio: "inherit", cwd: ROOT, env });
 }
 
-runPnpm(["install"]);
-runPnpm(["exec", "vp", "run", "--cache", "@gadgets/typed-storage#build"]);
-runPnpm(["exec", "vp", "run", "--cache", "@gadgets/workshop-frontend#build:assets"]);
+const disableDevWatchers = process.env.CFOS_DISABLE_DEV_WATCHERS === "true";
+const vpCacheFlag = disableDevWatchers ? "--no-cache" : "--cache";
+if (!disableDevWatchers || !existsSync(join(ROOT, "packages", "workshop-frontend", "dist", "index.html"))) {
+  runPnpm(["install"]);
+  runPnpm(["exec", "vp", "run", vpCacheFlag, "@gadgets/typed-storage#build"]);
+  runPnpm(["exec", "vp", "run", vpCacheFlag, "@gadgets/workshop-frontend#build:assets"]);
+}
 
 // ---------------------------------------------------------------------------
 // Launch the local server (serves the built frontend as static assets).

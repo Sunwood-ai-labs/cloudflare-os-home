@@ -38,12 +38,26 @@ try {
 
   const thinking = page.getByText('Thinking', { exact: true })
   await thinking.waitFor({ state: 'visible', timeout: 15000 }).catch(() => {})
-  await thinking.waitFor({ state: 'hidden', timeout: 240000 })
-  await page.waitForTimeout(2500)
+  const deadline = Date.now() + 240000
+  while (Date.now() < deadline) {
+    await thinking.waitFor({ state: 'hidden', timeout: Math.max(5000, deadline - Date.now()) })
+    await page.waitForTimeout(4000)
+    if (!(await thinking.isVisible().catch(() => false))) {
+      const bodyNow = await page.locator('body').innerText()
+      if (bodyNow.includes('Wrote') || bodyNow.includes('Created') || bodyNow.includes('TEST PASS') || bodyNow.includes('2 + 2 = 4')) {
+        break
+      }
+    }
+  }
+  const acceptBtn = page.getByRole('button', { name: 'Accept changes' })
+  if (await acceptBtn.isVisible().catch(() => false)) {
+    await acceptBtn.click()
+    await page.waitForTimeout(3000)
+  }
   await page.screenshot({ path: resolve(screenshotDir, '16-agent-gadget-result.png'), fullPage: true })
 
   const body = await page.locator('body').innerText()
-  const markers = ['Running code', 'Writing', 'Creating', 'Agent Proof', '2 + 2 = 4', 'Gadget']
+  const markers = ['Wrote', 'Running code', 'Writing', 'Creating', 'Agent Proof', '2 + 2 = 4', 'Gadget']
   console.log('AGENT_URL:', page.url())
   console.log('AGENT_MARKERS:', markers.filter(marker => body.includes(marker)).join('|'))
   console.log(body.slice(-7000))

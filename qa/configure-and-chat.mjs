@@ -82,7 +82,7 @@ try {
   while (Date.now() < deadline) {
     await page.waitForTimeout(3000)
     text = await page.locator('body').innerText()
-    if (text.includes('Cloudflare OS') && !text.includes('Start a new conversation…')) break
+    if (text.includes('Cloudflare OS') && !text.includes('Start a new conversation…') && !text.includes('Thinking')) break
   }
   await page.screenshot({ path: resolve(screenshotDir, '07-chat-response.png'), fullPage: true })
   console.log(`CHAT_URL: ${page.url()}`)
