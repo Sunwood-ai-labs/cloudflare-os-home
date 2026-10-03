@@ -65,7 +65,18 @@ jobs:
         # Match the runner image. Only synthetic credentials and loopback models are used.
         run: |
           sudo apt-get update
-          sudo apt-get install --yes --no-install-recommends bubblewrap
+          sudo apt-get install --yes --no-install-recommends bubblewrap apparmor-profiles apparmor-utils
+          # Ubuntu 24.04 needs the official bwrap-only user-namespace profile.
+          # Keep AppArmor/user-namespace restrictions enabled globally.
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          target=/etc/apparmor.d/bwrap-userns-restrict
+          test -f "$profile"
+          if sudo test -e "$target"; then sudo cmp "$profile" "$target"; fi
+          if sudo grep -qE '^(bwrap|unpriv_bwrap)( |//)' /sys/kernel/security/apparmor/profiles; then
+            sudo cmp "$profile" "$target"
+          fi
+          sudo install -m 0644 "$profile" "$target"
+          sudo apparmor_parser -r "$target"
           npm install --prefix "${RUNNER_TEMP}/cfos-codex" --ignore-scripts --no-audit --no-fund @openai/codex@0.157.1
           PATH="${RUNNER_TEMP}/cfos-codex/node_modules/.bin:$PATH" node agent-runner/native-codex-mcp-smoke.mjs --check-environment
       - name: Reject private payloads
