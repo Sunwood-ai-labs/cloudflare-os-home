@@ -64,6 +64,8 @@ jobs:
       - name: Verify real Codex shell environment isolation
         # Match the runner image. Only synthetic credentials and loopback models are used.
         run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends bubblewrap
           npm install --prefix "${RUNNER_TEMP}/cfos-codex" --ignore-scripts --no-audit --no-fund @openai/codex@0.157.1
           PATH="${RUNNER_TEMP}/cfos-codex/node_modules/.bin:$PATH" node agent-runner/native-codex-mcp-smoke.mjs --check-environment
       - name: Reject private payloads
