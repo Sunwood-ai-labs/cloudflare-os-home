@@ -29,7 +29,8 @@ Cloudflare OS Homeは、Cloudflare OSをエージェント中心のワークス�
 
 - 上流リビジョン`004ab773`（2026-09-26時点：`workerd 1.20260921.1`、Pi `0.87.1`、子エージェントとWorktree、Restrictedモードの全文手動承認、Gitベース保存）に固定したCloudflare OSソース
 - `http://litellm:4000/v1`のOpenAI互換プロジェクト内LiteLLM
-- `.env`から認証情報を読む27モデル構成テンプレート（`glm-4.7`、`glm-5.2`、`glm-5.3-flash`を含む）
+- Claude Code（GLM）、Codex、Antigravity、Hermes AgentをローカルのログインでLiteLLMモデル`claude-code-glm`・`codex`・`antigravity`・`hermes`として使う`agent-runner`
+- `.env`から認証情報を読む32モデル構成テンプレート（`glm-4.7`、`glm-5.2`、`glm-5.3-flash`と任意のエージェント5経路を含む）
 - `upstream/cloudflare-os/`を更新してローカルコンテナ用オーバーレイを再適用する同期スクリプト（`scripts/sync-upstream.ps1`）
 - 外部のOpen WebUIネットワークに依存しないDocker Compose構成
 - 任意のTailscale Serveによるtailnet限定HTTPS
@@ -113,6 +114,52 @@ Cloudflare OSはワークスペース、エージェントループ、Gadgetツ�
 </p>
 
 <p align="center"><em>リポジトリ構造：ローカル統合ラッパーと固定した上流モノレポ。</em></p>
+
+## 🧠 コーディングエージェント（Claude Code・Codex・Antigravity・Hermes）
+
+Cloudflare OS本体のエージェントはPiです。`agent-runner`サービスは、外部のコーディングエージェント4種を選択可能なモデルとして追加します。OpenMausBotのPodman構成（エンジンはコンテナ内、ログインはローカルのものを使用）を参考にしています。
+
+| LiteLLMモデル | エージェント | ログイン／モデル |
+| --- | --- | --- |
+| `claude-code-glm` | Claude Code | プロジェクト内LiteLLM経由のGLM（`glm-5.2`） |
+| `codex` | Codex CLI | ホストの`~/.codex/auth.json`（`CODEX_AUTH_FILE`） |
+| `antigravity` | Antigravity ACPサーバー | Podman machine内のOpenMausBotのLinuxランタイムとログイン済みプロファイル |
+| `hermes` | Hermes Agent（`hermes acp`） | プロジェクト内LiteLLM経由のGLM（`glm-5.2`） |
+
+`agent-runner`はComposeネットワーク内だけで待ち受けます。ツールを含まないリクエストは`/workspace/<agent>`、Piと連携するリクエストは専用のワークスペースで実行します。そこでのファイル編集は許可、シェルコマンドは自動承認しません。Piのツール結果を待つ間はエージェント処理を保持します。Cloudflare OSには他のLiteLLMモデルと同様に登録します（**Other OpenAI...**、API URL `http://litellm:4000/v1`）。
+
+外部エージェントは任意機能です。通常の起動手順では、エージェントの認証ファイルやマウントは不要です。
+4種すべてを有効にする場合は、`.env`へ強固な`AGENT_RUNNER_TOKEN`と`CODEX_AUTH_FILE`、
+`ANTIGRAVITY_RUNTIME_DIR`、`ANTIGRAVITY_PROFILE_DIR`を設定してください。Antigravityのパスは、
+コンテナエンジンのLinux環境にあるACPランタイムとログイン済みプロファイルのディレクトリを指定します。
+Claude CodeとHermesには、LiteLLMの`glm-5.2`経路の設定も必要です。
+
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.agents.yml up --build -d
+```
+
+任意エージェントの管理には両方のComposeファイルを指定します。5つのLiteLLM経路はRunner起動後に利用できます。
+未設定のエージェントは利用できない理由を返します。
+
+### 🔗 PiとMCPの自動共有
+
+Piのチャットで接続・許可したMCPは、`claude-code-glm`・`codex`・`antigravity`・`hermes`・`agent-team`でも利用できます。各エージェントには、そのモデルリクエストのPiツールを公開する`cloudflare_os` MCPが自動設定されます。`describeBinding`で接続先を確認し、`executeCode`で同じMCPバインディングを呼び出します。エージェントごとのMCP設定ファイルを用意する必要はありません。
+
+呼び出しはPiへ戻して実行するため、チャットに許可した接続範囲、観測ログ、書き込み承認が適用されます。接続先のOAuthトークンは外部エージェントへ渡しません。接続の追加・変更は、次のモデルリクエストから反映されます。
+
+エージェントの処理はPiからツール結果が戻るまで保持します。保持期限やRunnerの再起動で処理が終了した場合は、記録済みのツール結果を含む履歴から再開します。詳しい手順は[使い方](https://sunwood-ai-labs.github.io/cloudflare-os-home/ja/guide/usage#piと全エージェントでmcpを共有する)を参照してください。
+
+### 🤝 エージェントチーム（`agent-team`）
+
+5つ目のモデル`agent-team`は、4つのエージェントを共有ワークスペースで連携させます。Piのリクエストには専用のワークスペースを使い、Piツールを含まないリクエストでは`/workspace/agent-team`を使います。各段階の結果は終わった順にチャットへストリーミングされます。
+
+1. 🧭 **計画**：Antigravityが実装計画を立てる（読み取り専用）
+2. 🛠️ **実装**：Claude Code（GLM）がファイルを作成・編集する
+3. 🔍 **レビュー**：Codexがファイルを読み、ネイティブの権限設定で許可された検証を行い、`VERDICT: APPROVE`か`CHANGES_REQUESTED`で判定する
+4. 🩹 **修正**：`CHANGES_REQUESTED`ならClaude Codeが直してCodexが再レビュー（最大`TEAM_MAX_FIX_ROUNDS`回、既定2）
+5. 📝 **まとめ**：Hermesがユーザー向けの最終回答を書く（読み取り専用）
+
+役割は`TEAM_PLANNER`・`TEAM_IMPLEMENTER`・`TEAM_REVIEWER`・`TEAM_SUMMARIZER`で入れ替えられます。小さなタスクで2〜3分ほどです。段階アイコンはIconify CDN（`api.iconify.design`、ブラウザが取得）経由のFont Awesome 6 SVGで、`TEAM_ICONS=emoji`にすると絵文字に戻ります。`qa/agent-team-chat.mjs`でモデル登録からブラウザでの実行確認までできます。
 
 ## 🔄 上流Cloudflare OSの更新取り込み
 

@@ -29,7 +29,8 @@ This is an unofficial integration, not a Cloudflare-hosted product or official d
 
 - Cloudflare OS source pinned to upstream revision `004ab773` (2026-09-26: `workerd 1.20260921.1`, Pi `0.87.1`, child-agent Worktrees, Restricted mode full-text manual approval, and git-backed storage).
 - Project-local LiteLLM with an OpenAI-compatible endpoint at `http://litellm:4000/v1`.
-- A 27-model configuration template (including `glm-4.7`, `glm-5.2`, and `glm-5.3-flash`) with provider credentials loaded from `.env`.
+- `agent-runner`: Claude Code (on GLM), Codex, Antigravity, and Hermes Agent exposed as the LiteLLM models `claude-code-glm`, `codex`, `antigravity`, and `hermes`, using local logins.
+- A 32-model configuration template (including `glm-4.7`, `glm-5.2`, `glm-5.3-flash`, and five optional coding-agent routes) with provider credentials loaded from `.env`.
 - Repeatable upstream sync script (`scripts/sync-upstream.ps1`) that updates `upstream/cloudflare-os/` and re-applies the local container overlay.
 - Docker Compose networking that does not depend on an external Open WebUI network.
 - Optional tailnet-only HTTPS access through Tailscale Serve.
@@ -113,6 +114,60 @@ The editable draw.io source is [`docs/cloudflare-os-architecture.drawio`](docs/c
 </p>
 
 <p align="center"><em>Repository structure: the local integration wrapper and the pinned upstream monorepo.</em></p>
+
+## 🧠 Coding agents (Claude Code, Codex, Antigravity, Hermes)
+
+Cloudflare OS runs its own Pi agent loop. The `agent-runner` service adds four external coding agents
+as selectable models, following OpenMausBot's Podman setup (engines in a container, logins from the
+local machine):
+
+| LiteLLM model | Agent | Login / model |
+| --- | --- | --- |
+| `claude-code-glm` | Claude Code | GLM (`glm-5.2`) through the project LiteLLM |
+| `codex` | Codex CLI | host `~/.codex/auth.json` (`CODEX_AUTH_FILE`) |
+| `antigravity` | Antigravity ACP server | OpenMausBot's signed-in Linux runtime/profile in the Podman machine |
+| `hermes` | Hermes Agent (`hermes acp`) | GLM (`glm-5.2`) through the project LiteLLM |
+
+`agent-runner` listens only on the Compose network. Requests without Pi tools use
+`/workspace/<agent>`; Pi-enabled requests use dedicated workspaces and retain the native process
+while waiting for Pi tool results. File edits are allowed there, shell commands are not auto-approved. Register the
+models in Cloudflare OS like any LiteLLM model (**Other OpenAI...**, API URL `http://litellm:4000/v1`).
+The coding agents are optional; the normal quickstart keeps running without their credentials or mounts.
+To enable all four agents, set a strong `AGENT_RUNNER_TOKEN`, `CODEX_AUTH_FILE`,
+`ANTIGRAVITY_RUNTIME_DIR`, and `ANTIGRAVITY_PROFILE_DIR` in `.env`. The Antigravity directories
+must point to an installed Linux ACP runtime and signed-in profile inside your container engine's machine.
+Claude Code and Hermes also require the LiteLLM `glm-5.2` route to be configured.
+
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.agents.yml up --build -d
+```
+
+Use both Compose files when managing the optional agents. Their five LiteLLM routes are usable after
+the runner is started; unconfigured agents return an explicit availability error.
+
+### 🔗 Automatic Pi MCP sharing
+
+MCP connections granted in a Pi chat are available to `claude-code-glm`, `codex`, `antigravity`, `hermes`, and `agent-team`. Each agent receives a `cloudflare_os` MCP exposing the Pi tools supplied with that model request. Use `describeBinding` to inspect connections and `executeCode` to call the same MCP bindings. No separate per-agent MCP configuration file is required.
+
+Calls return to Pi for execution, preserving chat grants, observation records, and write approvals. Upstream OAuth tokens stay with Pi. Connection changes take effect on the next model request.
+
+The native agent waits for Pi's tool result. After session expiry or a runner restart, a new native process receives recorded tool results as history. See the [usage guide](https://sunwood-ai-labs.github.io/cloudflare-os-home/guide/usage#share-pi-mcp-with-every-agent) for configuration and verification.
+
+### 🤝 Agent Team (`agent-team`)
+
+A fifth model, `agent-team`, makes the four agents work together on a shared workspace, streaming
+each stage into the chat as it finishes. Pi requests use a dedicated workspace for that request;
+requests without Pi tools use `/workspace/agent-team`.
+
+1. 🧭 **Plan**: Antigravity writes an implementation plan (read-only)
+2. 🛠️ **Implement**: Claude Code (GLM) creates and edits the files
+3. 🔍 **Review**: Codex reviews the files and performs checks permitted by its native policy, answering `VERDICT: APPROVE` or `CHANGES_REQUESTED`
+4. 🩹 **Fix**: on `CHANGES_REQUESTED`, Claude Code fixes and Codex re-reviews (up to `TEAM_MAX_FIX_ROUNDS`, default 2)
+5. 📝 **Summary**: Hermes writes the final answer (read-only)
+
+Roles can be swapped with `TEAM_PLANNER`, `TEAM_IMPLEMENTER`, `TEAM_REVIEWER` and `TEAM_SUMMARIZER`. A small
+task takes about 2–3 minutes. Stage icons are Font Awesome 6 SVGs from the Iconify CDN
+(`api.iconify.design`, fetched by the browser); set `TEAM_ICONS=emoji` to use emoji instead. `qa/agent-team-chat.mjs` registers the model and runs one task in the browser.
 
 ## 🔄 Syncing upstream Cloudflare OS
 

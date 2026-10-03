@@ -208,6 +208,49 @@ model_list:
           thinkingConfig:
             thinkingLevel: high
 
+  # Coding agents served by the agent-runner container (see agent-runner/server.mjs).
+  # Each call runs a whole agent turn, so the timeout is much longer than for plain models.
+  - model_name: claude-code-glm
+    litellm_params:
+      model: custom_openai/claude-code-glm
+      api_base: http://agent-runner:4100/v1
+      api_key: os.environ/AGENT_RUNNER_TOKEN
+      timeout: 1800
+      stream_timeout: 1800
+
+  - model_name: codex
+    litellm_params:
+      model: custom_openai/codex
+      api_base: http://agent-runner:4100/v1
+      api_key: os.environ/AGENT_RUNNER_TOKEN
+      timeout: 1800
+      stream_timeout: 1800
+
+  - model_name: antigravity
+    litellm_params:
+      model: custom_openai/antigravity
+      api_base: http://agent-runner:4100/v1
+      api_key: os.environ/AGENT_RUNNER_TOKEN
+      timeout: 1800
+      stream_timeout: 1800
+
+  - model_name: hermes
+    litellm_params:
+      model: custom_openai/hermes
+      api_base: http://agent-runner:4100/v1
+      api_key: os.environ/AGENT_RUNNER_TOKEN
+      timeout: 1800
+      stream_timeout: 1800
+
+  # Antigravity plans, Claude Code implements, Codex reviews, Hermes summarizes (one shared workspace).
+  - model_name: agent-team
+    litellm_params:
+      model: custom_openai/agent-team
+      api_base: http://agent-runner:4100/v1
+      api_key: os.environ/AGENT_RUNNER_TOKEN
+      timeout: 3600
+      stream_timeout: 3600
+
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
   disable_spend_logs: true
