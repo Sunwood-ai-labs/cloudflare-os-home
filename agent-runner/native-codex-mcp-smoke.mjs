@@ -63,6 +63,10 @@ export async function runNativeCodexMcpSmoke({ codexBinary = 'codex', timeoutMs 
       const shellOutput = (body.input ?? []).filter(item => item.type === 'function_call_output').map(item => JSON.stringify(item.output)).find(text => text.includes(ENV_MARKER))
       if (checkEnvironment) {
         observations.shellToolAdvertised ||= Boolean(shellTool)
+        if (shellTool) observations.shellToolName = shellTool.name
+        const shellReply = (body.input ?? []).find(item => item.call_id === 'call_env_fixture' && item.type.endsWith('_output'))
+        if (shellReply && !shellOutput) observations.shellProbeError = JSON.stringify(shellReply.output)
+          .replaceAll(token, '[redacted]').replaceAll(SECRET_CANARY, '[canary]').slice(0, 1200)
         if (shellOutput) observations.shellEnvironmentIsolated = shellOutput.includes('LANG=C.UTF-8') &&
           shellOutput.includes(`HOME=${directory}`) && ![SECRET_CANARY, token, 'CFOS_MCP_TOKEN=',
             'CFOS_MCP_ENDPOINT=', 'NODE_OPTIONS=', 'BASH_ENV='].some(value => shellOutput.includes(value))
