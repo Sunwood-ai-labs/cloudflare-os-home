@@ -41,6 +41,8 @@ Runnerは、リクエストに含まれるPiツールを`cloudflare_os`という
 
 同期する範囲は、そのチャットに許可した接続です。外部エージェントのローカルファイルや会話履歴をPiと同期する機能ではありません。チーム各段階も同じPi接続を使い、ネイティブCLIのファイル・シェル権限は従来の設定に従います。
 
+Codexへ渡す環境変数は明示した許可リストに限定し、Runnerの`.env`全体は継承しません。マウントしたChatGPTログインとCLIのプロキシ・CA設定は保持し、各プロバイダーのAPIキー、LiteLLMのマスターキー、Runnerのトークンは渡しません。リクエスト専用MCPトークンはブリッジ用プロキシへ転送しますが、CodexのツールシェルにはCLIのプロキシ設定とともに渡しません。Piブリッジがない場合も、シェルは実行環境用の別の許可リストから起動します。この環境変数の制限は、共有Runnerコンテナ内のファイルや他プロセスを隔離するものではありません。
+
 保留セッションの保持時間は`AGENT_RUNNER_MCP_SESSION_TTL_SECONDS`（既定1800秒）、保持件数は`AGENT_RUNNER_MCP_MAX_SESSIONS`（既定16件）で調整できます。ネイティブ処理には別途`AGENT_RUNNER_TIMEOUT_SECONDS`（既定900秒）が適用されます。
 
 コードを更新した後はRunnerを再ビルドします。
@@ -66,9 +68,11 @@ node --test agent-runner/*.test.mjs
 docker run --rm --network none --entrypoint node cloudflare-os-local-agent-runner:latest /app/native-mcp-smoke.mjs --agent claude
 docker run --rm --network none --entrypoint node cloudflare-os-local-agent-runner:latest /app/native-mcp-smoke.mjs --agent codex
 docker run --rm --network none --entrypoint node cloudflare-os-local-agent-runner:latest /app/native-mcp-smoke.mjs --agent hermes
+docker run --rm --network none --entrypoint node cloudflare-os-local-agent-runner:latest /app/native-codex-mcp-smoke.mjs --check-environment
 ```
 
 これは実CLIと模擬モデルの検証です。外部プロバイダーや実MCP接続先の動作を確認するテストではありません。
+Codexの環境変数検証では、模擬秘密値と危険なシェル環境設定を用意し、実ツールシェルへ漏れないことと、その後の認証付きMCP往復を確認します。Repository QAでもコンテナと同じ固定版Codexで実行します。
 
 稼働中のLiteLLMを通して実環境を検証するには、Git対象外のartifactsディレクトリへ固定版Piを導入し、公開ドキュメントMCPの検証を実行します。
 

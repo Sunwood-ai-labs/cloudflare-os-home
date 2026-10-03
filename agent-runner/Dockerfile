@@ -14,7 +14,7 @@ RUN apt-get update \
     && ln -s /opt/hermes/bin/hermes /usr/local/bin/hermes \
     && mkdir -p /agents/codex /agents/state /workspace
 
-COPY server.mjs pi-mcp-session.mjs mcp-config.mjs mcp-proxy.mjs native-mcp-smoke.mjs native-codex-mcp-smoke.mjs native-antigravity-mcp-smoke.mjs /app/
+COPY server.mjs codex-env.mjs pi-mcp-session.mjs mcp-config.mjs mcp-proxy.mjs native-mcp-smoke.mjs native-codex-mcp-smoke.mjs native-antigravity-mcp-smoke.mjs /app/
 
 ENV CODEX_HOME=/agents/codex \
     AGENT_RUNNER_PORT=4100

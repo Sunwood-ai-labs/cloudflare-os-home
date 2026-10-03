@@ -2,22 +2,35 @@
 // Optional REAL Codex CLI smoke against SYNTHETIC loopback Responses/MCP.
 import { spawn, spawnSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join, resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { buildCodexMcpArgs, buildMcpBridgeEnv } from './mcp-config.mjs'
+import { buildCodexMcpArgs } from './mcp-config.mjs'
+import { buildCodexEnv, buildCodexShellEnvArgs } from './codex-env.mjs'
 
 const MARKER = 'CFOS_NATIVE_CODEX_MCP_FIXTURE_42'
+const ENV_MARKER = 'CFOS_SHELL_ENV_PROBE_FINISHED'
+const SECRET_CANARY = 'CFOS_SECRET_MUST_NOT_REACH_CODEX_SHELL'
 
-export async function runNativeCodexMcpSmoke({ codexBinary = 'codex', timeoutMs = 60_000, readOnlyHint = true } = {}) {
+export async function runNativeCodexMcpSmoke({ codexBinary = 'codex', timeoutMs = 60_000, readOnlyHint = true, checkEnvironment = false } = {}) {
   const directory = mkdtempSync(join(tmpdir(), 'cfos-native-codex-'))
   const environment = Object.fromEntries(Object.entries(process.env).filter(([name]) => /^(PATH|PATHEXT|SYSTEMROOT|WINDIR|COMSPEC)$/i.test(name)))
   Object.assign(environment, { HOME: directory, USERPROFILE: directory, APPDATA: directory, LOCALAPPDATA: directory,
-    CODEX_HOME: directory, TEMP: directory, TMP: directory, TERM: 'dumb', NO_COLOR: '1', LANG: 'C.UTF-8' })
+    CODEX_HOME: directory, TMPDIR: directory, TEMP: directory, TMP: directory, TERM: 'dumb', NO_COLOR: '1', LANG: 'C.UTF-8' })
+  if (checkEnvironment) {
+    Object.assign(environment, { LITELLM_MASTER_KEY: SECRET_CANARY, AGENT_RUNNER_TOKEN: SECRET_CANARY,
+      ZAI_API_KEY: SECRET_CANARY, NVIDIA_API_KEY: SECRET_CANARY, GEMINI_API_KEY: SECRET_CANARY,
+      OPENAI_API_KEY: SECRET_CANARY, INNOCENT_NAME: SECRET_CANARY, litellm_master_key: SECRET_CANARY,
+      NODE_OPTIONS: '--require=/nonexistent-cfos-startup-injection', BASH_ENV: '/nonexistent-cfos-shell-injection' })
+    // Config tables merge with CLI overrides. Prove hostile ambient defaults and
+    // extra `set` entries cannot restore secrets to the final tool environment.
+    writeFileSync(join(directory, 'config.toml'), `[shell_environment_policy]\ninherit="all"\nignore_default_excludes=true\nexperimental_use_profile=true\nfilters={"*"="include"}\n[shell_environment_policy.set]\nINNOCENT_CONFIG_NAME="${SECRET_CANARY}"\nCFOS_MCP_TOKEN="${SECRET_CANARY}"\n`)
+  }
   const token = randomUUID()
   const observations = { modelRequests: 0, mcpCalls: 0, consumedToolResult: false, advertisedTool: false }
+  if (checkEnvironment) Object.assign(observations, { shellToolAdvertised: false, shellEnvironmentIsolated: false })
   let child
   const server = createServer(async (req, res) => {
     try {
@@ -46,10 +59,24 @@ export async function runNativeCodexMcpSmoke({ codexBinary = 'codex', timeoutMs 
         ? tool.tools.map(t => ({ ...t, namespace: tool.name })) : [tool])
       const tool = tools.find(t => (t.name?.includes('cloudflare_os') || t.namespace?.includes('cloudflare_os')) && t.name?.endsWith('describeBinding'))
       observations.advertisedTool ||= Boolean(tool)
+      const shellTool = tools.find(t => ['shell_command', 'exec_command', 'shell'].includes(t.name))
+      const shellOutput = (body.input ?? []).filter(item => item.type === 'function_call_output').map(item => JSON.stringify(item.output)).find(text => text.includes(ENV_MARKER))
+      if (checkEnvironment) {
+        observations.shellToolAdvertised ||= Boolean(shellTool)
+        if (shellOutput) observations.shellEnvironmentIsolated = shellOutput.includes('LANG=C.UTF-8') &&
+          shellOutput.includes(`HOME=${directory}`) && ![SECRET_CANARY, token, 'CFOS_MCP_TOKEN=',
+            'CFOS_MCP_ENDPOINT=', 'NODE_OPTIONS=', 'BASH_ENV='].some(value => shellOutput.includes(value))
+      }
       const consumed = (body.input ?? []).some(item => item.type === 'function_call_output' && JSON.stringify(item.output).includes(MARKER))
       observations.consumedToolResult ||= consumed
       const responseId = `resp_fixture_${observations.modelRequests}`
-      const item = consumed ? { id: 'msg_fixture', type: 'message', role: 'assistant', status: 'completed', content: [{ type: 'output_text', text: `Verified ${MARKER}`, annotations: [] }] }
+      const shellCommand = `env; printf '\\n${ENV_MARKER}\\n'`
+      const shellArguments = shellTool?.name === 'exec_command' ? { cmd: shellCommand, login: false }
+        : shellTool?.name === 'shell' ? { command: ['/bin/sh', '-c', shellCommand] } : { command: shellCommand }
+      const item = checkEnvironment && !shellOutput && shellTool && observations.modelRequests === 1
+        ? { id: 'fc_env_fixture', type: 'function_call', call_id: 'call_env_fixture', name: shellTool.name,
+          arguments: JSON.stringify(shellArguments), ...(shellTool.namespace ? { namespace: shellTool.namespace } : {}) }
+        : consumed ? { id: 'msg_fixture', type: 'message', role: 'assistant', status: 'completed', content: [{ type: 'output_text', text: `Verified ${MARKER}`, annotations: [] }] }
         : tool ? { id: 'fc_fixture', type: 'function_call', call_id: 'call_fixture', name: tool.name, arguments: '{}', ...(tool.namespace ? { namespace: tool.namespace } : {}) }
         : { id: 'msg_fixture_missing', type: 'message', role: 'assistant', status: 'completed', content: [{ type: 'output_text', text: 'Expected fixture MCP tool is absent', annotations: [] }] }
       const response = { id: responseId, object: 'response', created_at: 0, status: 'in_progress', model: body.model, output: [] }
@@ -59,8 +86,8 @@ export async function runNativeCodexMcpSmoke({ codexBinary = 'codex', timeoutMs 
       event('response.created', { response })
       event('response.output_item.added', { output_index: 0, item: item.type === 'function_call' ? { ...item, arguments: '' } : { ...item, content: [], status: 'in_progress' } })
       if (item.type === 'function_call') {
-        event('response.function_call_arguments.delta', { item_id: item.id, output_index: 0, delta: '{}' })
-        event('response.function_call_arguments.done', { item_id: item.id, output_index: 0, arguments: '{}' })
+        event('response.function_call_arguments.delta', { item_id: item.id, output_index: 0, delta: item.arguments })
+        event('response.function_call_arguments.done', { item_id: item.id, output_index: 0, arguments: item.arguments })
       } else {
         event('response.content_part.added', { item_id: item.id, output_index: 0, content_index: 0, part: { type: 'output_text', text: '', annotations: [] } })
         event('response.output_text.delta', { item_id: item.id, output_index: 0, content_index: 0, delta: item.content[0].text })
@@ -81,17 +108,18 @@ export async function runNativeCodexMcpSmoke({ codexBinary = 'codex', timeoutMs 
     await new Promise((resolveListen, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolveListen) })
     const base = `http://127.0.0.1:${server.address().port}`
     const bridge = { endpoint: `${base}/mcp/smoke`, token, toolTimeoutSeconds: 45 }
-    Object.assign(environment, buildMcpBridgeEnv(bridge))
-    const version = spawnSync(codexBinary, ['--version'], { env: environment, cwd: directory, encoding: 'utf8', timeout: 10_000 })
+    const childEnv = buildCodexEnv(environment, bridge, directory)
+    const version = spawnSync(codexBinary, ['--version'], { env: childEnv, cwd: directory, encoding: 'utf8', timeout: 10_000 })
     if (version.error || version.status !== 0) throw new Error('Codex CLI version check failed')
     const overrides = { model_provider: 'cfos_fixture', 'model_providers.cfos_fixture.name': 'CFOS synthetic fixture',
       'model_providers.cfos_fixture.base_url': `${base}/v1`, 'model_providers.cfos_fixture.wire_api': 'responses',
       'model_providers.cfos_fixture.requires_openai_auth': false }
     const args = ['exec', '--skip-git-repo-check', '--ephemeral', '--color', 'never', '--sandbox', 'workspace-write', '--model', 'gpt-5',
       ...Object.entries(overrides).flatMap(([key, value]) => ['-c', `${key}=${JSON.stringify(value)}`]),
+      ...buildCodexShellEnvArgs(environment),
       ...buildCodexMcpArgs(bridge), '-']
     const result = await new Promise((resolveChild, reject) => {
-      child = spawn(codexBinary, args, { env: environment, cwd: directory, stdio: ['pipe', 'pipe', 'pipe'], detached: process.platform !== 'win32', windowsHide: true })
+      child = spawn(codexBinary, args, { env: childEnv, cwd: directory, stdio: ['pipe', 'pipe', 'pipe'], detached: process.platform !== 'win32', windowsHide: true })
       let stdout = '', stderr = ''
       const timer = setTimeout(() => { stop(); reject(new Error('Native Codex smoke timed out')) }, timeoutMs)
       child.stdout.on('data', chunk => { stdout += chunk.toString() })
@@ -100,7 +128,8 @@ export async function runNativeCodexMcpSmoke({ codexBinary = 'codex', timeoutMs 
       child.on('close', code => { clearTimeout(timer); resolveChild({ code, stdout, stderr }) })
       child.stdin.end('Call the cloudflare_os describeBinding MCP tool and report its exact returned fixture marker.')
     })
-    const success = result.code === 0 && observations.mcpCalls > 0 && observations.consumedToolResult && result.stdout.includes(MARKER)
+    const success = result.code === 0 && observations.mcpCalls > 0 && observations.consumedToolResult && result.stdout.includes(MARKER) &&
+      (!checkEnvironment || observations.shellEnvironmentIsolated)
     return { agent: 'Codex CLI', version: version.stdout.trim(), model: 'synthetic loopback Responses fixture', success, readOnlyHint, ...observations, exitCode: result.code,
       ...(success ? {} : { error: result.stderr.slice(-1500) || result.stdout.slice(-500) }) }
   } finally {
@@ -113,6 +142,6 @@ export async function runNativeCodexMcpSmoke({ codexBinary = 'codex', timeoutMs 
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  try { const result = await runNativeCodexMcpSmoke({ readOnlyHint: process.argv.includes('--unannotated-tool') ? null : !process.argv.includes('--write-tool') }); process.stdout.write(JSON.stringify(result) + '\n'); if (!result.success) process.exitCode = 1 }
+  try { const result = await runNativeCodexMcpSmoke({ readOnlyHint: process.argv.includes('--unannotated-tool') ? null : !process.argv.includes('--write-tool'), checkEnvironment: process.argv.includes('--check-environment') }); process.stdout.write(JSON.stringify(result) + '\n'); if (!result.success) process.exitCode = 1 }
   catch (error) { process.stdout.write(JSON.stringify({ success: false, error: error.message }) + '\n'); process.exitCode = 1 }
 }

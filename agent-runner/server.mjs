@@ -19,6 +19,7 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { PiMcpSession, sessionIdFromCallId } from './pi-mcp-session.mjs'
 import { buildClaudeMcpArgs, buildCodexMcpArgs, buildAcpMcpServers, buildMcpBridgeEnv } from './mcp-config.mjs'
+import { buildCodexEnv, buildCodexShellEnvArgs } from './codex-env.mjs'
 
 const env = process.env
 const port = Number(env.AGENT_RUNNER_PORT ?? 4100)
@@ -166,9 +167,10 @@ const agents = {
         cmd: 'codex',
         args: ['exec', '--skip-git-repo-check', '--ephemeral', '--color', 'never', '--sandbox', ctx.readOnly ? 'read-only' : 'workspace-write',
           ...(env.CODEX_MODEL ? ['--model', env.CODEX_MODEL] : []),
+          ...buildCodexShellEnvArgs(env),
           ...buildCodexMcpArgs(ctx.bridge),
           '--output-last-message', outFile, '-'],
-        stdin: prompt, env: { ...env, CODEX_HOME: codexHome, ...buildMcpBridgeEnv(ctx.bridge) },
+        stdin: prompt, env: buildCodexEnv(env, ctx.bridge, codexHome),
         parse: () => {
           if (!existsSync(outFile)) throw new Error('Codex produced no final message')
           return { text: readFileSync(outFile, 'utf8') }

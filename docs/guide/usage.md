@@ -41,6 +41,8 @@ The runner automatically exposes the request's Pi tools as a `cloudflare_os` std
 
 Sharing is scoped to the connections granted to that chat. Local files and native conversation histories are separate. Every team stage receives the same Pi connection access; existing native file and shell permission settings still apply.
 
+Codex receives an explicit runtime environment allowlist rather than the runner's `.env`. Its mounted ChatGPT login and CLI proxy/CA settings still work; provider keys, the LiteLLM master key, and the runner token are not forwarded. The request-scoped MCP transport token is forwarded to the bridge proxy, but excluded from Codex tool-shell environments along with CLI proxy settings. Shells start from a separate runtime-only allowlist, including when there is no Pi bridge. This environment filtering does not isolate files or other processes in the shared runner container.
+
 Tune retained sessions with `AGENT_RUNNER_MCP_SESSION_TTL_SECONDS` (default 1800 seconds) and `AGENT_RUNNER_MCP_MAX_SESSIONS` (default 16). Native processes also have the separate `AGENT_RUNNER_TIMEOUT_SECONDS` timeout (default 900 seconds).
 
 Rebuild the runner after updating its code:
@@ -66,9 +68,11 @@ Test the built container's real Claude Code, Codex, and Hermes against synthetic
 docker run --rm --network none --entrypoint node cloudflare-os-local-agent-runner:latest /app/native-mcp-smoke.mjs --agent claude
 docker run --rm --network none --entrypoint node cloudflare-os-local-agent-runner:latest /app/native-mcp-smoke.mjs --agent codex
 docker run --rm --network none --entrypoint node cloudflare-os-local-agent-runner:latest /app/native-mcp-smoke.mjs --agent hermes
+docker run --rm --network none --entrypoint node cloudflare-os-local-agent-runner:latest /app/native-codex-mcp-smoke.mjs --check-environment
 ```
 
 This verifies real CLI interoperability with synthetic models; it does not test external providers or real upstream MCP endpoints.
+The Codex environment probe also executes a real tool shell with synthetic secret canaries and hostile shell-environment config, verifies that none reaches the shell, then checks the authenticated MCP round trip. Repository QA runs this probe with the same pinned Codex version as the image.
 
 For a live check through the deployed LiteLLM, install the pinned Pi runtime in an ignored artifacts directory and run the public documentation probe:
 
