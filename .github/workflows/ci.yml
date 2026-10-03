@@ -36,18 +36,31 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
+      - name: Set up runner Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
       - name: Validate Compose file
         shell: bash
         run: |
           cp .env.example .env
           docker compose config --quiet
-      - name: Syntax-check QA scripts
+      - name: Validate optional coding-agent Compose file
+        env:
+          CODEX_AUTH_FILE: /tmp/cfos-ci-codex-auth.json
+          ANTIGRAVITY_RUNTIME_DIR: /tmp/cfos-ci-antigravity-runtime
+          ANTIGRAVITY_PROFILE_DIR: /tmp/cfos-ci-antigravity-profile
+        run: docker compose -f docker-compose.yml -f docker-compose.agents.yml config --quiet
+      - name: Syntax-check QA and runner scripts
         shell: bash
         run: |
           set -euo pipefail
           while IFS= read -r file; do
             node --check "$file"
-          done < <(find qa -maxdepth 1 -type f -name '*.mjs' -print)
+          done < <(find qa agent-runner -type f -name '*.mjs' -not -path '*/node_modules/*' -print)
+      - name: Test agent-runner MCP sharing
+        # Agent adapters and MCP/Pi round trips use local fixtures, without provider credentials.
+        run: node --test agent-runner/*.test.mjs qa/live-mcp-evidence.test.mjs
       - name: Reject private payloads
         shell: bash
         run: |

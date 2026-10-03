@@ -1,0 +1,44 @@
+# Optional native coding agents. Use together with docker-compose.yml after configuring
+# AGENT_RUNNER_TOKEN and the three host paths in .env; the base stack needs none of these mounts.
+services:
+  agent-runner:
+    build:
+      context: ./agent-runner
+    image: cloudflare-os-local-agent-runner:latest
+    env_file:
+      - .env
+    environment:
+      TZ: Asia/Tokyo
+    volumes:
+      - agent-runner-workspace:/workspace
+      - agent-runner-state:/agents/state
+      # Share Codex's local login file so native token refreshes stay in sync.
+      - type: bind
+        source: ${CODEX_AUTH_FILE:?Set CODEX_AUTH_FILE to your ~/.codex/auth.json}
+        target: /agents/codex/auth.json
+      # The signed-in Antigravity profile is copied before use; source mounts stay read-only.
+      - antigravity-runtime:/agents/antigravity-runtime:ro
+      - antigravity-profile:/agents/antigravity-profile-source:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4100/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  agent-runner-workspace:
+  agent-runner-state:
+  # Resolve these Linux paths inside the Podman/Docker machine rather than as Windows binds.
+  antigravity-runtime:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${ANTIGRAVITY_RUNTIME_DIR:?Set ANTIGRAVITY_RUNTIME_DIR to the Linux ACP runtime directory}
+  antigravity-profile:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${ANTIGRAVITY_PROFILE_DIR:?Set ANTIGRAVITY_PROFILE_DIR to the signed-in Linux profile directory}
